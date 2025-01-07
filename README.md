@@ -1,22 +1,22 @@
 # kooljs 
 - kooljs is a multithreaded animation tool.
 - its one task per animator instance
-- it is still in developed and further features are planned
+- this project is still in developed 
 
 # how to run the example project
-- git clone git@github.com:ji-podhead/kooljs.git
+- git clone `git@github.com:ji-podhead/kooljs.git`
 - cd example_project
 - copy the kooljs folder to the project folder and initialize the bun project
 - you can also run the start.sh to start and install
 
 - i left the vscode folder in the branch so you can directly debug it with chrome
-  - firefox is apprently having some issues with trigger breakpoints
+  - firefox is apprently having some issues with triggering breakpoints on rhel
 
 ## codebase
 
 - the app.js contains the only components
-- the only current animations are the width of the main div based on the window size
-- the Animation class es in the Animator Component including the event callbacks
+- the only current animation is the size of the main div -> based on the window size
+- the Animation class instances are in the Animator Component within App.js (including the event callbacks)
 
 ## roadmap
 - rendering canvas 
@@ -26,4 +26,4 @@
 ---
 
 ### info
-a cool animation tool for js. name provided by thebusinessman0920_55597 and bomi helped with the name!
+a cool animation tool for js. name provided by thebusinessman0920_55597 and bomi from the programers hangout helped with the name!

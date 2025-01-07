@@ -10,7 +10,7 @@
 **/example_project/node_modules
 **/example_project/buid
 # production
-
+*.lockb
 
 # misc
 .DS_Store
