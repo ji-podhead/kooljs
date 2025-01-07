@@ -57,6 +57,10 @@ async function animate() {
                 if (registry.progress[val] % registry.render_interval[val] == 0) {
                     v = registry.progress[val] / registry.duration[val];
                     registry.results[val]=smoothLerp(registry.min[val], registry.max[val], v)
+                }else{
+                    registry.delay_delta[val]=0
+                    registry.progress[val]=0
+                    finished.push(index);
                 }
             }
         }
@@ -74,13 +78,7 @@ const finished_event = new CustomEvent('finished', {});
         signal = controller.signal;
         var timer=0
         while (true) {
-            //loop()
            await sleep(fps)
-            // timer++
-            // if (timer == 10) {
-            //     timer = 0
-            //     console.log(registry.activelist)
-            // }
             if (signal.aborted==true) {
                 break
                }
@@ -90,7 +88,6 @@ const finished_event = new CustomEvent('finished', {});
                 if (registry.results["length"] > 0) {
                     render()
                 }
-                //postMessage(render_event);
                 if (finished["length"] > 0 && registry.results.length >0) {
                     fin()
                 }
@@ -99,7 +96,6 @@ const finished_event = new CustomEvent('finished', {});
 }
 function init(x, start, active,fps) {
     registry.activelist = []
-
     x.forEach((array, name) => {
         registry[name] = new Float32Array(array)
     })
@@ -161,11 +157,9 @@ function update(id, values) {
         start_loop()
     }
 }
-
 function change_framerate(fps_new) {
     fps = fps_new
 }
-
 onmessage = (event) => {
     switch (event.data.method) {
         case 'init':
@@ -186,13 +180,7 @@ onmessage = (event) => {
             break;
         case 'start':
             change_framerate(event.data.fps)
-
             start_loop(event.data.data);
             break;
     }
 };
-
-
-
-// finished_event.detail=finished
-// self.postMessage(finished_event);
