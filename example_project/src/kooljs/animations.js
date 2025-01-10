@@ -34,7 +34,6 @@ class Conditional_Weight {
         }
     }
 }
-var tempSet, tempGet
 class Prop {
     update_callback(value) {
         this.setter(value)
@@ -100,6 +99,7 @@ class Prop {
                 else {
                     this.updater = this.update_callback
                     this.setter = target
+                    break;
                 }
             }
             case "int": {
@@ -110,14 +110,17 @@ class Prop {
                     this.setter = target
                 }
                 this.updater = this.update_other
+                break;
             }
             case "map": {
                 this.setter = target
                 this.updater = this.update_map
+                break;
             }
             case "object": {
                 this.setter = target
                 this.updater = this.update_dict
+                break;
             }
             default: {
                 this.updater = this.update_other
@@ -127,6 +130,7 @@ class Prop {
                 else {
                     this.setter = target
                 }
+                break;
             }
         }
     }
@@ -271,6 +275,7 @@ class Animator {
             };
             if(ev.data.message=="finished"){
                 console.log('finished event:', ev);
+                // eslint-disable-next-line array-callback-return
                 ev.data.map((index) => {
                     this.obj = this.animation_objects.get(this.indexlist[index])
                     this.registry_map.get("progress")[index] = 0
