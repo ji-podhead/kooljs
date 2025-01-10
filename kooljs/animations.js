@@ -1,13 +1,14 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
 const types = ["callback", "function", "number", "Linear", "Lerp", "constant"]
+const animation_types=["constant", "linear", "lerp"]
 class AnimationTrigger {
     /**
      * @param {Lerp} target - the animation this object will trigger
      * @param {float} start  - normalized time intervall(0-1) to trigger the animation at. a value of 1 will trigger the animation at the end
      */
     constructor(target, start) {
-        this.time = start
+        this.start = start
         this.target = target.id
+        this.target_type = target.type
     }
 }
 // wenn eine constant als target gesetzt wird, dann muss auch manuell geupdated werden, 
@@ -34,7 +35,6 @@ class Conditional_Weight {
         }
     }
 }
-var tempSet, tempGet
 class Prop {
     update_callback(value) {
         this.setter(value)
@@ -100,6 +100,7 @@ class Prop {
                 else {
                     this.updater = this.update_callback
                     this.setter = target
+                    break;
                 }
             }
             case "int": {
@@ -110,14 +111,17 @@ class Prop {
                     this.setter = target
                 }
                 this.updater = this.update_other
+                break;
             }
             case "map": {
                 this.setter = target
                 this.updater = this.update_map
+                break;
             }
             case "object": {
                 this.setter = target
                 this.updater = this.update_dict
+                break;
             }
             default: {
                 this.updater = this.update_other
@@ -127,6 +131,7 @@ class Prop {
                 else {
                     this.setter = target
                 }
+                break;
             }
         }
     }
@@ -146,16 +151,17 @@ class Constant {
     constructor(animator, prop, delay = 0, animationTrigger = undefined) {
         //currentValue = currentValue;
         index = animator.registry_map.get("min").length
-        animator.registry_map.get("min").push(undefined)
+        this.id = index
+        this.type=0
+        animator.registry_map.get("type").push(0)
         animator.registry_map.get("max").push(undefined)
-        animator.registry_map.get("constant").push(prop.get())
+        animator.registry_map.get("min").push(prop.get())
         animator.registry_map.get("duration").push(1)
         animator.registry_map.get("render_interval").push(1)
         animator.registry_map.get("delay_delta").push(0)
         animator.registry_map.get("delay").push(delay)
         animator.registry_map.get("progress").push(0)
         prop.id = index
-        this.id = index
         animator.animation_objects.set(prop.id, {
             index: index,
             callback: undefined,
@@ -183,16 +189,22 @@ class Lerp {
      * @param {number} max - the maximum value of the animation; NOT REQUIRED HERE! we set this in our first update call  
     * @returns {[prop_target, index]} - returns an array consisting of the prob target and the index of the typed array where the Lerp value is stored in the worker. You can use the index for conditional weights that get calculated on the worker.
     */
-    constructor(animator, prop = undefined, duration = 10, render_interval = 1, delay = 0, callback = undefined, animationTrigger = undefined, conditional_weight = undefined, min = undefined, max = undefined,) {
+    constructor(animator, prop = undefined, duration = 10, render_interval = 1, delay = 0, callback, animationTrigger, conditional_weight, min , max,) {
         //currentValue = currentValue;
-        index = animator.registry_map.get("min")["length"]
-        if (min != undefined && max != undefined) {
-            animator.activelist.push(index)
+        if(animator==undefined){
+            return
         }
-        else {
+        index = animator.registry_map.get("min")["length"]
+        // if (min != undefined && max != undefined) {
+        //     animator.activelist.push(index)
+        // }
+       // else {
             min = min == undefined ? 1 : min
             max = max == undefined ? 1 : max
-        }
+        //}
+        this.id = index
+        this.type = 2
+        animator.registry_map.get("type").push(2)
         animator.registry_map.get("min").push(min)
         animator.registry_map.get("max").push(max)
         animator.registry_map.get("duration").push(duration)
@@ -206,7 +218,15 @@ class Lerp {
         animator.conditional_map.get("cond_target").push(conditional_weight != undefined && conditional_weight.mainthread_args == undefined ? conditional_weight.target : undefined)
         animator.update_list.push(0)
         prop.id = index
-        this.id = index
+        if(animationTrigger!=undefined){
+            animator.registry_map.get("trigger_start").push(animationTrigger.start)
+            animator.registry_map.get("trigger_target").push(animationTrigger.target)
+            animator.registry_map.get("trigger_type").push(animationTrigger.target_type)
+        }else{
+            animator.registry_map.get("trigger_start").push(undefined)
+            animator.registry_map.get("trigger_target").push(undefined)
+            animator.registry_map.get("trigger_type").push(undefined)
+        }
         animator.animation_objects.set(prop.id, {
             index: index,
             callback: callback,
@@ -229,11 +249,13 @@ class Animator {
      * @author JI-Podhead
      */
     constructor(fps = 9000) {
-        this.fps = fps
+        //      --> REGRISTRIES <-- 
         this.registry_map = new Map()
         this.conditional_map = new Map()
+        this.registry_map.set('type', []);
+
+        //--> animation objects (Constant, Linear, Lerp...) <-- 
         this.registry_map.set('min', []);
-        this.registry_map.set('constant', []);
         this.registry_map.set('max', []);
         this.registry_map.set('type', []);
         this.registry_map.set('duration', []);
@@ -241,45 +263,50 @@ class Animator {
         this.registry_map.set('delay_delta', []);
         this.registry_map.set('delay', []);
         this.registry_map.set('progress', []);
+        //      --> Trigger <--
+        this.registry_map.set('trigger_start', []);
+        this.registry_map.set('trigger_target', []);
+        this.registry_map.set('trigger_type', []);
 
+        //      --> CONDITIONAL <--
         this.conditional_map.set('conditional_weight', []);
         this.conditional_map.set("cond_type", [])
         this.conditional_map.set("cond_multiplicator", [])
         this.conditional_map.set("cond_threshold", [])
         this.conditional_map.set("cond_target", [])
-
+        //      --> UTIL <--
+        this.fps = fps
         this.animation_objects = new Map()
         this.indexlist = new Map()
         this.update_list = []
         this.obj = undefined
         this.activelist = []
         this.worker = new Worker(new URL('./worker.js', import.meta.url));
-
+        //      --> WORKER MESSAGES <--
         this.worker.onmessage = ev => {
             if (ev.data.message == "render") {
-                console.log(ev.data.results)
+                
                 ev.data.result_indices.map((value, index) => {
-                    //this.animation_objects.get(this.indexlist[key]).setter.set(value);
-                    //const obj= this.animation_objects.get(this.indexlist.get(value))
-                    this.animation_objects.get(value).prop.updater(ev.data.results[value])
-                    //obj.prop.setter(ev.data.results[index])
+                                console.log(`index: ${value} val: ${ev.data.results[index]}`)
+                              this.animation_objects.get(value).prop.updater(ev.data.results[index])
                     // nur für mainthread conditional weighjts
                     //   if(this.animation_objects[this.indexlist[value]].conditional_weight!=undefined){
                     //    // this.animation_objects.get(this.indexlist[key]).conditional_weight_func(this.animation_objects.get(this.indexlist[key]).conditional_weight_args)
                     //   }
                 })
             };
-            // if(ev.data.message=="finished"){
-            // //     console.log('finished event:', ev);
-            // //     ev.data.map((index) => {
-            // //         this.obj = this.animation_objects.get(this.indexlist[index])
-            // //         this.registry_map.get("progress")[index] = 0
-            // //         this.registry_map.get("delay_delta")[index] = 0
-            // //         if (this.obj.callback) {
-            // //             this.obj.callback()
-            // //         }
-            // //     })
-            // // };
+            if(ev.data.message=="finished"){
+                console.log('finished event:', ev);
+                // eslint-disable-next-line array-callback-return
+                ev.data.map((index) => {
+                    this.obj = this.animation_objects.get(this.indexlist[index])
+                    this.registry_map.get("progress")[index] = 0
+                    this.registry_map.get("delay_delta")[index] = 0
+                    if (this.obj.callback) {
+                        this.obj.callback()
+                    }
+                })
+            };
             if (ev.data.message == "trigger_event") {
                 console.log('trigger event:');
                 console.log(ev.data);
@@ -313,6 +340,7 @@ class Animator {
         // const update_index=[]
         // const update_val=[]
         // const update_name=[]
+        // eslint-disable-next-line array-callback-return
         data.map((x) => {
             // this.update_list.push({ id: x.animObject.id, values: x.value })
             this.worker.postMessage({ method: 'update', id: x.animObject.id, values: x.value });

@@ -9,7 +9,10 @@ async function sleep(milliseconds) {
 }
 class Registry {
     constructor() {
-        this.constant = undefined
+        this.trigger_start = undefined
+        this.trigger_target = undefined
+        this.trigger_type = undefined
+        this.type = undefined
         this.min = undefined
         this.max = undefined
         this.type = undefined
@@ -19,7 +22,7 @@ class Registry {
         this.delay = undefined
         this.progress = undefined
         this.activelist = []
-        this.results=[]
+        this.results = []
     }
 }
 class Conditional_Weight {
@@ -39,75 +42,80 @@ function lerp(min, max, v) {
 }
 function smoothLerp(min, max, v) {
     const t = smoothstep(v)
-    return (min * t) + (max * (1 - t))
+    return (max * t) + (min * (1 - t))
 }
 function smoothstep(x) {
     return x * x * (3 - 2 * x);
 }
 var v
 async function animate() {
-    registry.activelist.reverse().map((val,index) => {
+    registry.activelist.reverse().map((val, index) => {
         if (registry.progress[val] < registry.duration[val]) {
             if (registry.delay_delta[val] < registry.delay[val]) {
                 registry.delay_delta[val] += 1
             }
             else {
-                //buffer.set("progress")[index] += 1
                 registry.progress[val] += 1
-                if (registry.progress[val] % registry.render_interval[val] == 0) {
-                    v = registry.progress[val] / registry.duration[val];
-                    registry.results[val]=smoothLerp(registry.min[val], registry.max[val], v)
-                }else{
-                    registry.delay_delta[val]=0
-                    registry.progress[val]=0
-                    finished.push(index);
+                if (registry.trigger_target[val] >= 0) {
+                    if (registry.progress[val] >= registry.trigger_start[val]) {
+                        reset(registry.trigger_target[val], registry.type[registry.trigger_target[val]])
+                    }
                 }
+                if (registry.progress[val] % registry.render_interval[val] == 0) {
+                    //v = Math.floor(registry.progress[val] / registry.duration[val]);
+                    v = registry.progress[val] / registry.duration[val];
+                    // the length of results is equal to the length of activelists
+                    registry.results[index] = smoothLerp(registry.min[val], registry.max[val], v)
+                }
+                console.log(`"id" ${val} "progres:" ${registry.progress[val]} "res:" ${registry.results[index]}`)
             }
-        }
-        else {
-            registry.delay_delta[val]=0
-            registry.progress[val]=0
-            finished.push(index);
+
+        } else {
+            registry.delay_delta[val] = 0
+            registry.progress[val] = 0
+            finished.push(val);
         }
     })
 }
-const render_event = new CustomEvent('render', {});
-const finished_event = new CustomEvent('finished', {});
-  async function animateLoop() {
-        controller = new AbortController();
-        signal = controller.signal;
-        var timer=0
-        while (true) {
-           await sleep(fps)
-            if (signal.aborted==true) {
-                break
-               }
-            if (registry.activelist["length"] > 0) {
-                finished=[]
-                animate()
+async function animateLoop() {
+    controller = new AbortController();
+    signal = controller.signal;
+    while (true) {
+        await sleep(fps)
+        if (signal.aborted == true) {
+            break
+        }
+        if (registry.activelist["length"] > 0) {
+            finished = []
+            // eslint-disable-next-line no-loop-func
+            animate().then(() => {
                 if (registry.results["length"] > 0) {
+                    // hier promise einabuen
+                    if (finished["length"] > 0) {
+                        fin()
+                    }
                     render()
                 }
-                if (finished["length"] > 0 && registry.results.length >0) {
-                    fin()
-                }
-            }
+
+            })
         }
+    }
 }
-function init(x, start, active,fps) {
-    registry.activelist = []
+function init(x, start, active, fps) {
+
     x.forEach((array, name) => {
         registry[name] = new Float32Array(array)
     })
+    registry.activelist = []
     if (start == true) {
         start_loop()
     }
 }
-function render() {
-    postMessage({message:"render",results:registry.results, result_indices:registry.activelist})
+async function render() {
+    postMessage({ message: "render", results: registry.results, result_indices: registry.activelist })
 }
 function trigger() {
-    postMessage({message:"trigger",results:registry.results, result_indices:registry.activelist})
+    postMessage({ message: "trigger", results: registry.results, result_indices: registry.activelist })
 }
 var resultsnew
 function fin() {
@@ -124,11 +132,11 @@ function fin() {
         }
         return false; // Entfernen Sie das Element
     });
-        if(registry.activelist["length"]==0){
-            stop_loop()
-        }
-    registry.results=resultsnew
-    finished=[]
+    if (registry.activelist["length"] == 0) {
+        stop_loop()
+    }
+    registry.results = resultsnew
+    finished = []
 }
 function start_loop() {
     task = animateLoop()
@@ -139,20 +147,30 @@ function stop_loop() {
         controller = null
     }
 }
+function reset(id, type) {
+    if (type > 0) {
+        registry.progress[id] = 0
+    }
+    if (registry.activelist.includes(id) == false) {
+        registry.results = new Float32Array(registry.results.length + 1)
+        registry.activelist.push(id)
+    }
+}
 function update(id, values) {
     Object.entries(values).map((val) => {
         registry[val[0]][id] = val[1]
+        registry.progress[id] = 0
         if (registry.activelist.includes(id) == false) {
-            registry.results= new Float32Array(registry.results.length+1)
+            registry.results = new Float32Array(registry.results.length + 1)
             registry.activelist.push(id)
-            
-        }else{
-            registry.results[id]=val[1]
-        }  
+
+        } else {
+            registry.results[id] = val[1]
+        }
     })
-    if(controller==null){
+    if (controller == null) {
         start_loop()
-    }else{
+    } else {
         stop_loop()
         start_loop()
     }
@@ -161,6 +179,7 @@ function change_framerate(fps_new) {
     fps = fps_new
 }
 onmessage = (event) => {
+    // eslint-disable-next-line default-case
     switch (event.data.method) {
         case 'init':
             init(event.data.data, event.data.start, event.data.activelist);

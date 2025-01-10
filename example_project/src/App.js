@@ -1,36 +1,50 @@
 import './App.css';
-import { ExampleMain } from './examples/exampleMain';
-import { Prop, Animator, Lerp, Conditional_Weight, Constant, AnimationTrigger } from "./kooljs/animations"
+import { e1_init, E1 } from './examples/exampleMain';
+import { Animator} from "./kooljs/animations"
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Util } from './kooljs/util_component';
+const exampleProps=[{w:0,h:0}]
+function App() {
 
-
-function App_Wrapper() {
-
-// ----------------------------------------------------------------------
-//  Those are the the parameters we define for managing the Animations.
-//  We also define some UseState Values that will get animated in exampleMain.js.
-//  w & h are the animated  screenSize parameter we use in the other examples.
-// -----------------------------------------------------------------------
+  // ----------------------------------------------------------------------
+  //  Those are the the parameters we define for managing the Animations.
+  //  We also define some UseState Values that will get animated in exampleMain.js.
+  //  w & h are the animated  screenSize parameter we use in the other examples.
+  // -----------------------------------------------------------------------
+  //utils  
   const [fps, setFps] = useState(900)
   const [play, setPlay] = useState(false)
-
+  //const [, setExampleProps] = useState(["LOADING"])
   const [example_selector, example_selector_set] = new useState(0)
-  const mainProps = useMemo(() =>({
-      animator: new Animator(),
-      play:play,
-      setPlay:setPlay,
-      fps:fps,
-      setFps:setFps,
-      example_selector:example_selector,
-      example_selector_set:example_selector_set,
-    }),[]);
+  // Example1
+  const [w, wset] = new useState(window.innerWidth)
+  const [h, hset] = new useState(window.innerHeight)
+  const [t, tset] = new useState(0)
+  useMemo(() => {
+    console.log("---------------------------")
+    console.log(`${w} ${window.innerWidth} | ${h} ${window.innerHeight}  | ${t}   `)
+    console.log("---------------------------")
+  }, [w,h,t])
+  useEffect(() => {
+    const animator = new Animator()
+    const e1Props = { animator, w, wset, h, hset, t, tset }
+    
+    const utilProps = { animator, play, setPlay, fps, setFps, example_selector, example_selector_set }
+    new Promise((resolve) => {
+      e1_init(e1Props,w,h)
+      resolve();
+    }).then(() => {
+      utilProps.animator.init(true);
+    });
+  }, []);
   return (
     <div>
-    <div className="App" style={{width: window.innerWidth, height: window.innerHeight}}>
-    <ExampleMain props={mainProps}/>
-    </div>
+      <div className="App" style={{ width: w, height: h }} class="bg-red-500">
+      {t}
+        
+      </div>
     </div>
   );
 }
-export default App_Wrapper;
+
+export default App;
