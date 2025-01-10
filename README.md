@@ -19,12 +19,13 @@
 
 ## how to use
 > ***so far this repo has only bin tested with react***
-- import the animator and create some useStates you wanna animate
+- import the animator 
 - create a function to initialize your animation object (examples->e1_init)
-  - create the props, animation-objects and add your callback or any other trigger
-  - call that function in a useEffect and if the initializing function is not inside the useEffect: await it using async
-- after you set up all your animation objects you can finally call the init method of the animator instance
-  - its important that you do this after you initialized the other stuff cause the animator.init method will pass the typed arrays over to the worker 
+  - create the props, animation-objects, callbacks, or triggers here
+    - await the initialization those functions in the main component
+- initialize the worker by calling Animator.init
+  - its important that you do this after you initialized the other stuff because the Animator.init method will pass the typed arrays over to the worker
+- call the component you wanna animate and overwrite the targets of the animation objects with your useStates if your using react 
 
 ## roadmap
 - linear animation

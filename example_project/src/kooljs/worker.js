@@ -128,9 +128,9 @@ function fin() {
     registry.activelist = registry.activelist.filter((index) => {
         if (!finished.includes(index)) {
             resultsnew[index] = registry.results[index];
-            return true; // Behalten Sie das Element bei
+            return true; 
         }
-        return false; // Entfernen Sie das Element
+        return false; 
     });
     if (registry.activelist["length"] == 0) {
         stop_loop()

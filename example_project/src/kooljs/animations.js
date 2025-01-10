@@ -248,7 +248,7 @@ class Animator {
      * @class
      * @author JI-Podhead
      */
-    constructor(fps = 9000) {
+    constructor(fps) {
         //      --> REGRISTRIES <-- 
         this.registry_map = new Map()
         this.conditional_map = new Map()
@@ -285,7 +285,7 @@ class Animator {
         //      --> WORKER MESSAGES <--
         this.worker.onmessage = ev => {
             if (ev.data.message == "render") {
-                
+                requestAnimationFrame(()=>{
                 ev.data.result_indices.map((value, index) => {
                                 console.log(`index: ${value} val: ${ev.data.results[index]}`)
                               this.animation_objects.get(value).prop.updater(ev.data.results[index])
@@ -294,6 +294,7 @@ class Animator {
                     //    // this.animation_objects.get(this.indexlist[key]).conditional_weight_func(this.animation_objects.get(this.indexlist[key]).conditional_weight_args)
                     //   }
                 })
+            })
             };
             if(ev.data.message=="finished"){
                 console.log('finished event:', ev);
@@ -317,6 +318,7 @@ class Animator {
     init(autostart = true) {
         var length = this.registry_map.get("min")["length"]
         this.worker.postMessage({ method: 'init', data: this.registry_map, start: false, activelist: [] });
+        this.setFPS(this.fps)
     }
     /**
      * Updates the animations with new data
