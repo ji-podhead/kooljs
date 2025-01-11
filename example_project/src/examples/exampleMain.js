@@ -14,11 +14,9 @@ function e1_init(animator) {
   const screenHeightProp = new Prop("useState", [animationProps.h, animationProps.hset])
   const triggerProp = new Prop("useState", [animationProps.t, animationProps.tset])
   animationObjects.triggerobj = new Lerp(animationProps.animator, triggerProp, 10, 1,undefined,undefined,undefined,undefined,1,10)
-
-  animationObjects.screenWidth = new Lerp(animator,screenWidthProp,50,1,0,undefined, new AnimationTrigger(animationObjects.triggerobj,5))
-  animationObjects.screenHeight = new Lerp(animator,screenHeightProp,50,1,0,undefined, undefined,undefined,undefined,undefined)
+  animationObjects.screenWidth = new Lerp(animator,screenWidthProp,50,1,30,undefined, new AnimationTrigger(animationObjects.triggerobj,5))
+  animationObjects.screenHeight = new Lerp(animator,screenHeightProp,50,1,30,undefined, undefined,undefined,undefined,undefined)
   // animationObjects.screenWidth = new Lerp(props.animator, screenWidthProp, 10, 1)
-
   // animationObjects.screenHeight = new Lerp(props.animator, screenHeightProp, 10, 1)
   window.addEventListener('resize', zoom);
   window.addEventListener('orientationchange', zoom);
@@ -52,6 +50,11 @@ function e1_init(animator) {
 }
 
 function E1() {
+   // ----------------------------------------------------------------------
+  //  Those are the the parameters we define for managing the Animations.
+  //  We also define some UseState Values that will get animated in exampleMain.js.
+  //  w & h are the animated  screenSize parameter we use in the other examples.
+  // -----------------------------------------------------------------------
   const [w, wset] = new useState(window.innerWidth)
   const [h, hset] = new useState(window.innerHeight)
   const [t, tset] = new useState(0)
@@ -68,8 +71,6 @@ function E1() {
     console.log(`${w} ${window.innerWidth} | ${h} ${window.innerHeight}  | ${t}   `)
     console.log("---------------------------")
   }, [w,h,t])
-
-  
   return (
     <div class="w-full h-full">
       {w}

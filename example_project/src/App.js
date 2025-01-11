@@ -4,19 +4,10 @@ import { Animator} from "./kooljs/animations"
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Util } from './kooljs/util_component';
 function App() {
-
-  // ----------------------------------------------------------------------
-  //  Those are the the parameters we define for managing the Animations.
-  //  We also define some UseState Values that will get animated in exampleMain.js.
-  //  w & h are the animated  screenSize parameter we use in the other examples.
-  // -----------------------------------------------------------------------
-  //utils  
   const [fps, setFps] = useState(24)
   const [play, setPlay] = useState(false)
   //const [, setExampleProps] = useState(["LOADING"])
   //const [example_selector, example_selector_set] = new useState(0)
-  // Example1
-
   useEffect(() => {
     const animator = new Animator(fps)
     //const utilProps = { animator, play, setPlay, fps, setFps }

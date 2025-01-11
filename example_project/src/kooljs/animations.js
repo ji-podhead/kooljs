@@ -216,7 +216,6 @@ class Lerp {
         animator.conditional_map.get("cond_multiplicator").push(conditional_weight != undefined && conditional_weight.mainthread_args == undefined ? conditional_weight.multiplicator : undefined)
         animator.conditional_map.get("cond_threshold").push(conditional_weight != undefined && conditional_weight.mainthread_args == undefined ? conditional_weight.threshold : undefined)
         animator.conditional_map.get("cond_target").push(conditional_weight != undefined && conditional_weight.mainthread_args == undefined ? conditional_weight.target : undefined)
-        animator.update_list.push(0)
         prop.id = index
         if(animationTrigger!=undefined){
             animator.registry_map.get("trigger_start").push(animationTrigger.start)
@@ -278,7 +277,6 @@ class Animator {
         this.fps = fps
         this.animation_objects = new Map()
         this.indexlist = new Map()
-        this.update_list = []
         this.obj = undefined
         this.activelist = []
         this.worker = new Worker(new URL('./worker.js', import.meta.url));
@@ -314,7 +312,6 @@ class Animator {
             };
         }
     }
-
     init(autostart = true) {
         var length = this.registry_map.get("min")["length"]
         this.worker.postMessage({ method: 'init', data: this.registry_map, start: false, activelist: [] });
@@ -339,15 +336,9 @@ class Animator {
      *     ])
      */
     update(data) {
-        // const update_index=[]
-        // const update_val=[]
-        // const update_name=[]
-        // eslint-disable-next-line array-callback-return
         data.map((x) => {
-            // this.update_list.push({ id: x.animObject.id, values: x.value })
             this.worker.postMessage({ method: 'update', id: x.animObject.id, values: x.value });
         })
-        this.update_list = []
     }
     start() {
         this.worker.postMessage({ method: 'start', fps: this.fps });
