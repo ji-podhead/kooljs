@@ -18,7 +18,7 @@
 - trigger animations and chaining
 
 ## how to use
-> ***so far this repo has only bin tested with react***
+> ***so far this repo was only tested with react***
 - import the animator 
 - create a function to initialize your animation object (examples->e1_init)
   - create the props, animation-objects, callbacks, or triggers here
