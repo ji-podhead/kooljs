@@ -1,5 +1,6 @@
-import { Prop, Animator, Lerp, Conditional_Weight, Constant, AnimationTrigger } from "../kooljs/animations"
+import { Prop, Animator, Lerp, Callback, Constant, Trigger } from "../kooljs/animations"
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { get_value } from "../kooljs/worker";
 const animationObjects = {}
 const animationProps={
   w:0,
@@ -13,9 +14,10 @@ function e1_init(animator) {
   const screenWidthProp = new Prop("useState", [animationProps.w, animationProps.wset])
   const screenHeightProp = new Prop("useState", [animationProps.h, animationProps.hset])
   const triggerProp = new Prop("useState", [animationProps.t, animationProps.tset])
-  animationObjects.triggerobj = new Lerp(animationProps.animator, triggerProp, 10, 1,undefined,undefined,undefined,undefined,1,10)
-  animationObjects.screenWidth = new Lerp(animator,screenWidthProp,50,1,30,undefined, new AnimationTrigger(animationObjects.triggerobj,5))
-  animationObjects.screenHeight = new Lerp(animator,screenHeightProp,50,1,30,undefined, undefined,undefined,undefined,undefined)
+  const condi=new Callback('((index,value,progress)=>get_value(1)*-1)',0)
+  animationObjects.triggerobj = new Lerp(animationProps.animator, triggerProp, 10, 1,undefined,undefined,undefined,1,10)
+  animationObjects.screenWidth = new Lerp(animator,screenWidthProp,50,1,30, new Trigger(animationObjects.triggerobj,5))
+  animationObjects.screenHeight = new Lerp(animator,screenHeightProp,50,1,30,undefined,condi, undefined,undefined)
   // animationObjects.screenWidth = new Lerp(props.animator, screenWidthProp, 10, 1)
   // animationObjects.screenHeight = new Lerp(props.animator, screenHeightProp, 10, 1)
   window.addEventListener('resize', zoom);

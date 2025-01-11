@@ -1,5 +1,5 @@
 import './App.css';
-import { e1_init, E1 } from './examples/exampleMain';
+import { e1_init, E1 } from './examples/e1';
 import { Animator} from "./kooljs/animations"
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Util } from './kooljs/util_component';

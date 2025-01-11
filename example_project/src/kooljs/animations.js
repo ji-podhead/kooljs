@@ -1,6 +1,6 @@
 const types = ["callback", "function", "number", "Linear", "Lerp", "constant"]
 const animation_types=["constant", "linear", "lerp"]
-class AnimationTrigger {
+class Trigger {
     /**
      * @param {Lerp} target - the animation this object will trigger
      * @param {float} start  - normalized time intervall(0-1) to trigger the animation at. a value of 1 will trigger the animation at the end
@@ -14,7 +14,7 @@ class AnimationTrigger {
 // wenn eine constant als target gesetzt wird, dann muss auch manuell geupdated werden, 
 // weil ich sonst ein parent-target(list) hier einbauen müsst, was die sache viel zu kompliziert macht 
 // und keiner universalen logik mehr entspricht 
-class Conditional_Weight {
+class Callback {
     /**
      * A class to manipulate the  animated values, after the main calculations have been done.
      * If you pass type function it will run on the separate thread and you so fore need to pass a lambda/array function.
@@ -24,15 +24,9 @@ class Conditional_Weight {
      * @param {"number"} [threshold=0] - the calculated weight will only get added to the animation value, after it reaches the threshold value; default=0;
      * @param {dict} [mainthread_args=undefined]  - the arguments that will get passed to the callback. The Animation Values will be added to the value of the field with the key animation_value; default=undefined
      */
-    constructor(type, target, multiplicator = 1, threshold = 0, mainthread_args = undefined) {
-        this.type = types.find(t => t == type)
-        this.multiplicator = multiplicator
+    constructor(callback, threshold) {
         this.threshold = threshold
-        this.target = target
-        this.mainthread_args = mainthread_args
-        if (type == "callback" && mainthread_args == undefined) {
-            return Error("mainthread_args is undefined")
-        }
+        this.callback = callback
     }
 }
 class Prop {
@@ -145,7 +139,7 @@ class Constant {
      * @param {Prop} prop - the Prob instance that will be used to return the animated value
      * @param {Animator} animator - the Animator Instance
      * @param {number} delay - the maximum time to wait before starting the animation
-     * @param {AnimationTrigger} animationTrigger - the AnimationTrigger instance to trigger other animations
+     * @param {Trigger} animationTrigger - the AnimationTrigger instance to trigger other animations
      * @returns {number} returns the index of the typed array where the constant value is stored in the worker 
      */
     constructor(animator, prop, delay = 0, animationTrigger = undefined) {
@@ -183,13 +177,13 @@ class Lerp {
      * @param {number} render_interval - the amount of fps to render / calculate the values
      * @param {number} delay - the maximum time to wait before starting the animation
      * @param {function} callback - the callback function to be called after the animation is complete
-     * @param {AnimationTrigger} animationTrigger - the AnimationTrigger instance to trigger other animation
-     * @param {Conditional_Weight} conditinoal_weight - the Conditional_Weight instance
+     * @param {Trigger} animationTrigger - the AnimationTrigger instance to trigger other animation
+     * @param {Callback} conditinoal_weight - the Conditional_Weight instance
      * @param {number} min - the minimum value of the animation; NOT REQUIRED HERE! we set this in our first update call 
      * @param {number} max - the maximum value of the animation; NOT REQUIRED HERE! we set this in our first update call  
     * @returns {[prop_target, index]} - returns an array consisting of the prob target and the index of the typed array where the Lerp value is stored in the worker. You can use the index for conditional weights that get calculated on the worker.
     */
-    constructor(animator, prop = undefined, duration = 10, render_interval = 1, delay = 0, callback, animationTrigger, conditional_weight, min , max,) {
+    constructor(animator, prop = undefined, duration = 10, render_interval = 1, delay = 0, animationTrigger, callback, min , max,) {
         //currentValue = currentValue;
         if(animator==undefined){
             return
@@ -212,10 +206,6 @@ class Lerp {
         animator.registry_map.get("delay_delta").push(0)
         animator.registry_map.get("delay").push(delay)
         animator.registry_map.get("progress").push(1)
-        animator.conditional_map.get("cond_type").push(conditional_weight != undefined && conditional_weight.mainthread_args == undefined ? conditional_weight.type : undefined)
-        animator.conditional_map.get("cond_multiplicator").push(conditional_weight != undefined && conditional_weight.mainthread_args == undefined ? conditional_weight.multiplicator : undefined)
-        animator.conditional_map.get("cond_threshold").push(conditional_weight != undefined && conditional_weight.mainthread_args == undefined ? conditional_weight.threshold : undefined)
-        animator.conditional_map.get("cond_target").push(conditional_weight != undefined && conditional_weight.mainthread_args == undefined ? conditional_weight.target : undefined)
         prop.id = index
         if(animationTrigger!=undefined){
             animator.registry_map.get("trigger_start").push(animationTrigger.start)
@@ -232,11 +222,23 @@ class Lerp {
             animationTrigger: animationTrigger,
             prop: prop
         })
-        if (conditional_weight != undefined && conditional_weight.type == "callback") {
-            animator.animation_objects[prop.id]["conditional_weight"] = conditional_weight
+        if (callback != undefined) {
+            animator.callback_map.get("callback").push(callback.callback)
+            animator.callback_map.get("threshold").push(callback.threshold)
+
         }
         animator.indexlist.set(index, prop.id)
         //return [prop.setter,index]
+    }
+}
+class Spring{
+    constructor(animator,elements,duration,spring_tension,spring_whatever){
+        this.elements=elements
+    }
+}
+class MatrixLerp{
+    constructor(das_selbe_wie_lerp_bloß_andere_tüp){
+        this.das_selbe_wie_lerp_bloß_andere_tüp=das_selbe_wie_lerp_bloß_andere_tüp
     }
 }
 class Animator {
@@ -250,9 +252,9 @@ class Animator {
     constructor(fps) {
         //      --> REGRISTRIES <-- 
         this.registry_map = new Map()
-        this.conditional_map = new Map()
+        this.callback_map = new Map()
         this.registry_map.set('type', []);
-
+        this.spring_map=new Map()
         //--> animation objects (Constant, Linear, Lerp...) <-- 
         this.registry_map.set('min', []);
         this.registry_map.set('max', []);
@@ -262,17 +264,18 @@ class Animator {
         this.registry_map.set('delay_delta', []);
         this.registry_map.set('delay', []);
         this.registry_map.set('progress', []);
+        //      --> Spring <--
+        this.spring_map.set("spring_elements",[])
+        this.spring_map.set("spring_duration",[])
+        this.spring_map.set("spring_tension",[])
         //      --> Trigger <--
         this.registry_map.set('trigger_start', []);
         this.registry_map.set('trigger_target', []);
         this.registry_map.set('trigger_type', []);
-
         //      --> CONDITIONAL <--
-        this.conditional_map.set('conditional_weight', []);
-        this.conditional_map.set("cond_type", [])
-        this.conditional_map.set("cond_multiplicator", [])
-        this.conditional_map.set("cond_threshold", [])
-        this.conditional_map.set("cond_target", [])
+        this.callback_map.set("callback", [])
+        this.callback_map.set("threshold", [])
+        
         //      --> UTIL <--
         this.fps = fps
         this.animation_objects = new Map()
@@ -314,7 +317,7 @@ class Animator {
     }
     init(autostart = true) {
         var length = this.registry_map.get("min")["length"]
-        this.worker.postMessage({ method: 'init', data: this.registry_map, start: false, activelist: [] });
+        this.worker.postMessage({ method: 'init', data: this.registry_map, start: false, activelist: [],callback_map:this.callback_map,spring_map:this.spring_map });
         this.setFPS(this.fps)
     }
     /**
@@ -350,4 +353,4 @@ class Animator {
         this.worker.postMessage({ method: 'change_framerate', fps_new: fps });
     }
 }
-export { Prop, Animator, Lerp, Conditional_Weight, Constant, AnimationTrigger }
+export { Prop, Animator, Lerp, Callback, Constant, Trigger }

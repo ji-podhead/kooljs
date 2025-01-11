@@ -1,7 +1,5 @@
 var finished = []
-var animationmap = new Map()
 var fps = 33.33
-var task = undefined
 var controller = null;
 var signal = null;
 async function sleep(milliseconds) {
@@ -21,21 +19,30 @@ class Registry {
         this.delay_delta = undefined
         this.delay = undefined
         this.progress = undefined
+
         this.activelist = []
         this.results = []
+        this.last_value=[]
     }
 }
-class Conditional_Weight {
+class Callback {
     constructor() {
         // hier einach -1 für keine weights setzen, 
         // oder eine liste erstellen die nur die elemente enthält die eine condi haben
-        this.cond_type = undefined
-        this.cond_multiplicator = undefined
-        this.cond_threshold = undefined
-        this.cond_target = undefined
+        this.callback=undefined
+        this.threshold=undefined
     }
 }
+class Spring{
+constructor(elements,duration,spring_tension,spring_whatever,){
+        this.elements=elements
+        this.duration=duration
+        this.spring_tension=spring_tension
+
+}
+}
 const registry = new Registry()
+const condi = new Callback()
 function lerp(min, max, v) {
     const t = (min * v) + (max * (1 - v))
     return t
@@ -47,27 +54,51 @@ function smoothLerp(min, max, v) {
 function smoothstep(x) {
     return x * x * (3 - 2 * x);
 }
-var v
+//dijkstra algo für matrix
+function shortest_path(){
+
+}
+// k nearest neigbor for matrix (not sure if also for lerp)
+function knn(){
+
+}
+//matrix and callback for lerp
+function convex_hull(){
+
+}
+function spring(){
+
+}
+var v,t
 async function animate() {
     registry.activelist.reverse().map((val, index) => {
+        //checking if the element is finished and needs to be deleted
         if (registry.progress[val] < registry.duration[val]) {
+            //waiting for delay
             if (registry.delay_delta[val] < registry.delay[val]) {
                 registry.delay_delta[val] += 1
             }
             else {
+                //increment progress
                 registry.progress[val] += 1
-                if (registry.trigger_target[val] >= 0) {
-                    if (registry.progress[val] >= registry.trigger_start[val]) {
-                        reset(registry.trigger_target[val], registry.type[registry.trigger_target[val]])
-                    }
+                // First for registry.trigger_target[val]: If this value is null or undefined, 0 is used instead.
+                // Then again for registry.type[...]: Similarly, 0 is used if the index is null or undefined.
+                if (registry.trigger_target[val] ?? 0 >= registry.trigger_start[val]) {
+                    reset(registry.trigger_target[val] ?? 0, registry.type[registry.trigger_target[val] ?? 0])
                 }
                 if (registry.progress[val] % registry.render_interval[val] == 0) {
-                    //v = Math.floor(registry.progress[val] / registry.duration[val]);
+                    // v = normalized time delta
                     v = registry.progress[val] / registry.duration[val];
-                    // the length of results is equal to the length of activelists
-                    registry.results[index] = smoothLerp(registry.min[val], registry.max[val], v)
+                    // t = lerp
+                    t= smoothLerp(registry.min[val], registry.max[val], v)
+                    //t += perform callback if there is one
+                    //t = condi.callback.get(val)?.(val, t) ?? undefined; //  Null-Coalescing-Operator -- if callback not undefined then use and process the value t for callback
+                    t=condi.callback.get(val)!=undefined?condi.callback.get(val)(val,t,v):t//?.(val, t) ?? undefined;
+                    //adding the lastvalue for static 
+                  //  registry.last_value[val] = registry.results[index] =t // the length of results is equal to the length of activelists
                 }
                 console.log(`"id" ${val} "progres:" ${registry.progress[val]} "res:" ${registry.results[index]}`)
+                // at this point the element that is finished can also get removed
             }
 
         } else {
@@ -101,11 +132,25 @@ async function animateLoop() {
         }
     }
 }
-function init(x, start, active, fps) {
-
+function init(x, start, condi_new, springs, active, fps) {
+//hier über map iterieren
+    condi.callback=new Map()
+    condi_new.get("callback").forEach((val,ke)=>{
+    //     console.log(ke)
+    //     console.log(val)
+          condi.callback.set(ke,eval(val))
+    })
+    // // springs.
+    // condi_new.get("callback").forEach((funcStr, index) => {
+    //     const func = new Function('index', 'value','progress', `'use strict'; return (${funcStr});`);
+    //     condi.callback.set(index,func)
+    // });
+    
+    condi.threshold= new Float32Array(condi_new.threshold)
     x.forEach((array, name) => {
         registry[name] = new Float32Array(array)
     })
+    registry.last_value=new Float32Array(registry.min)
     registry.activelist = []
     if (start == true) {
         start_loop()
@@ -118,6 +163,8 @@ function trigger() {
     postMessage({ message: "trigger", results: registry.results, result_indices: registry.activelist })
 }
 var resultsnew
+//TODO
+//IMPLEMENT ON CLIENT
 function fin() {
     postMessage({
         message: "finish",
@@ -138,14 +185,22 @@ function fin() {
     registry.results = resultsnew
     finished = []
 }
+//this function is for custom callback functions
+//its used for getting other values via index
+function get_value(index){
+return registry.last_value[index]
+}
 function start_loop() {
-    task = animateLoop()
+    animateLoop()
 }
 function stop_loop() {
     if (controller !== null) {
         controller.abort()
         controller = null
     }
+}
+function set(id){
+    //activelist,results,lastvalue,min/max
 }
 function reset(id, type) {
     if (type > 0) {
@@ -182,7 +237,7 @@ onmessage = (event) => {
     // eslint-disable-next-line default-case
     switch (event.data.method) {
         case 'init':
-            init(event.data.data, event.data.start, event.data.activelist);
+            init(event.data.data, event.data.start, event.data.callback_map,event.data.spring_map);
             break;
         case 'update':
             update(event.data.id, event.data.values);
@@ -203,3 +258,7 @@ onmessage = (event) => {
             break;
     }
 };
+
+export {get_value,reset,set,change_framerate}
+
+//v = Math.floor(registry.progress[val] / registry.duration[val]);
