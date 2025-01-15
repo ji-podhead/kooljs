@@ -136,33 +136,17 @@ class Constant {
      * Constructor for Lerp class.
      * You can either pass in the target as a react prop or a map prop
      * the object you pass as prob will get overriden and will either be a map, or a react use state
-     * @param {Prop} prop - the Prob instance that will be used to return the animated value
      * @param {Animator} animator - the Animator Instance
-     * @param {number} delay - the maximum time to wait before starting the animation
-     * @param {Trigger} animationTrigger - the AnimationTrigger instance to trigger other animations
-     * @returns {number} returns the index of the typed array where the constant value is stored in the worker 
+     * @param {string} type - the type of the constant can be number, matrix
+     * @param {number | } value - the AnimationTrigger instance to trigger other animations
+     * @returns {void} 
      */
-    constructor(animator, prop, delay = 0, animationTrigger = undefined) {
+    constructor(animator, type,value) {
         //currentValue = currentValue;
-        index = animator.registry_map.get("min").length
+        index = animator.constant_map.get(type).length
         this.id = index
-        this.type=0
-        animator.registry_map.get("type").push(0)
-        animator.registry_map.get("max").push(undefined)
-        animator.registry_map.get("min").push(prop.get())
-        animator.registry_map.get("duration").push(1)
-        animator.registry_map.get("render_interval").push(1)
-        animator.registry_map.get("delay_delta").push(0)
-        animator.registry_map.get("delay").push(delay)
-        animator.registry_map.get("progress").push(0)
-        prop.id = index
-        animator.animation_objects.set(prop.id, {
-            index: index,
-            callback: undefined,
-            animationTrigger: animationTrigger,
-            prop: prop
-        })
-        animator.indexlist.set(index, prop.id)
+        this.type=type
+        this.value=value
     }
 }
 class Lerp {
@@ -183,7 +167,7 @@ class Lerp {
      * @param {number} max - the maximum value of the animation; NOT REQUIRED HERE! we set this in our first update call  
     * @returns {[prop_target, index]} - returns an array consisting of the prob target and the index of the typed array where the Lerp value is stored in the worker. You can use the index for conditional weights that get calculated on the worker.
     */
-    constructor(animator, prop = undefined, duration = 10, render_interval = 1, delay = 0, animationTrigger, callback, min , max,) {
+    constructor(animator, prop = undefined, duration = 10, render_interval = 1, smoothstep=1, delay = 0, animationTrigger, callback, min , max,) {
         //currentValue = currentValue;
         if(animator==undefined){
             return
@@ -206,6 +190,7 @@ class Lerp {
         animator.registry_map.get("delay_delta").push(0)
         animator.registry_map.get("delay").push(delay)
         animator.registry_map.get("progress").push(1)
+        animator.registry_map.get("smoothstep").push(smoothstep)
         prop.id = index
         if(animationTrigger!=undefined){
             animator.registry_map.get("trigger_start").push(animationTrigger.start)
@@ -231,6 +216,9 @@ class Lerp {
         //return [prop.setter,index]
     }
 }
+class lerpDiv{
+    
+}
 class Spring{
     constructor(animator,elements,duration,spring_tension,spring_whatever){
         this.elements=elements
@@ -255,7 +243,11 @@ class Animator {
         this.callback_map = new Map()
         this.registry_map.set('type', []);
         this.spring_map=new Map()
-        //--> animation objects (Constant, Linear, Lerp...) <-- 
+        //--> constant <--
+        this.constant_map= new Map()
+        this.constant_map.set("number",[])
+        this.constant_map.set("matrix",[])
+        //--> animation objects (Lerp...) <-- 
         this.registry_map.set('min', []);
         this.registry_map.set('max', []);
         this.registry_map.set('type', []);
@@ -264,6 +256,7 @@ class Animator {
         this.registry_map.set('delay_delta', []);
         this.registry_map.set('delay', []);
         this.registry_map.set('progress', []);
+        this.registry_map.set('smoothstep', []);
         //      --> Spring <--
         this.spring_map.set("spring_elements",[])
         this.spring_map.set("spring_duration",[])
@@ -317,30 +310,21 @@ class Animator {
     }
     init(autostart = true) {
         var length = this.registry_map.get("min")["length"]
-        this.worker.postMessage({ method: 'init', data: this.registry_map, start: false, activelist: [],callback_map:this.callback_map,spring_map:this.spring_map });
+        this.worker.postMessage({ method: 'init', data: this.registry_map, constants:this.constant_map, start: false, activelist: [],callback_map:this.callback_map,spring_map:this.spring_map });
         this.setFPS(this.fps)
     }
     /**
      * Updates the animations with new data
      * @param {Object} data - the data to update
-     * @example
-     * animator.update([
-     *       {
-     *         target: constant,
-     *         value:{constant:10}
-     *       },
-     *       {
-     *         target: screenHeight,
-     *         value:{
-     *         min: screenHeight,
-     *         max: window.innerHeight,
-     *         }
-     *       },
-     *     ])
      */
-    update(data) {
+    update_lerp(data) {
         data.map((x) => {
-            this.worker.postMessage({ method: 'update', id: x.animObject.id, values: x.value });
+            this.worker.postMessage({ method: 'update_lerp',type:x.animObject.prop, id: x.animObject.id, values: x.value });
+        })
+    }
+    update_constant(data) {
+        data.map((x) => {
+            this.worker.postMessage({ method: 'update_constant',type:x.constant.type, id: x.constant.id, value: x.value });
         })
     }
     start() {

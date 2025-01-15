@@ -1,8 +1,7 @@
 import { Prop, Animator, Lerp, Callback, Constant, Trigger } from "../kooljs/animations"
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { get_value } from "../kooljs/worker";
 const animationObjects = {}
-const animationProps={
+var animationProps={
   w:0,
   setw:(()=>{}),
   h:0,
@@ -14,12 +13,11 @@ function e1_init(animator) {
   const screenWidthProp = new Prop("useState", [animationProps.w, animationProps.wset])
   const screenHeightProp = new Prop("useState", [animationProps.h, animationProps.hset])
   const triggerProp = new Prop("useState", [animationProps.t, animationProps.tset])
-  const condi=new Callback('((index,value,progress)=>get_value(1)*-1)',0)
-  animationObjects.triggerobj = new Lerp(animationProps.animator, triggerProp, 10, 1,undefined,undefined,undefined,1,10)
+  const callback1=new Callback('((index,value,progress)=>get_value(1)*-1)',0)
+  const constant1= new Constant(animator,"number",2)
+  animationObjects.triggerobj = new Lerp(animator, triggerProp, 10, 1,undefined,undefined,undefined,1,10)
   animationObjects.screenWidth = new Lerp(animator,screenWidthProp,50,1,30, new Trigger(animationObjects.triggerobj,5))
-  animationObjects.screenHeight = new Lerp(animator,screenHeightProp,50,1,30,undefined,condi, undefined,undefined)
-  // animationObjects.screenWidth = new Lerp(props.animator, screenWidthProp, 10, 1)
-  // animationObjects.screenHeight = new Lerp(props.animator, screenHeightProp, 10, 1)
+  animationObjects.screenHeight = new Lerp(animator,screenHeightProp,50,1,30,undefined,undefined, undefined,undefined)
   window.addEventListener('resize', zoom);
   window.addEventListener('orientationchange', zoom);
   window.onbeforeunload = function () {
@@ -29,7 +27,13 @@ function e1_init(animator) {
   };
   async function zoom() {
     try {
-      animator.update([
+      animator.update_constant([
+        {
+          constant:constant1,
+          value: constant1.value+1
+        }
+      ])
+      animator.update_lerp([
         {   
           animObject: animationObjects.screenWidth,
           value: {
@@ -61,12 +65,7 @@ function E1() {
   const [h, hset] = new useState(window.innerHeight)
   const [t, tset] = new useState(0)
   useEffect(() => {
-    animationProps.w=w
-    animationProps.wset=wset
-    animationProps.h=h
-    animationProps.hset=hset
-    animationProps.t=t
-    animationProps.tset=tset
+    animationProps={w,wset,h,hset,t,tset}
   })
   useMemo(() => {
     console.log("---------------------------")

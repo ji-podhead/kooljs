@@ -1,5 +1,6 @@
 import './App.css';
 import { e1_init, E1 } from './examples/e1';
+import { e2_init, E2 } from './examples/e2';
 import { Animator} from "./kooljs/animations"
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Util } from './kooljs/util_component';
@@ -12,7 +13,7 @@ function App() {
     const animator = new Animator(fps)
     //const utilProps = { animator, play, setPlay, fps, setFps }
     new Promise((resolve) => {
-      e1_init(animator)
+      e2_init(animator)
       resolve();
     }).then(() => {
       animator.init(true);
@@ -21,7 +22,7 @@ function App() {
   return (
     <div>
       <div className="App" class="bg-blue-100 w-full h-full" style={{width:window.innerWidth, height:window.innerHeight}}>
-        <E1></E1>        
+        <E2></E2>        
       </div>
     </div>
   );
