@@ -22,12 +22,12 @@ function E3(animator) {
     animationProps.target=animator.Lerp({ accessor: [animationProps.c, animationProps.setc], duration: 10, steps: [0.1, 400.1, 0.1, 100, 20, 30, 40, 500, 0],sequence_max_lengt:10 })
   return (
     <div class="w-full h-full bg-[#ffffff]">
-      <div class="z-10 w-1/2 h-1/2 absolute ">
-      <div class="w-[70%] h-[25%] rounded-br-md  text-black bg-[#5C8F8D] flex flex-col justify-center items-center bg-opacity-45 border-b-2 border-r-2 border-black">
+      <div class="z-10 w-1/2 h-1/2 absolute flex  justify-center" style={{ width:window.innerWidth*0.67}}>
+      <div class=" rounded-b-md relative max-w-[45%] max-h-[30%] text-black bg-[#5C8F8D] flex flex-col justify-center items-center bg-opacity-45 border-b-2 border-l-2 border-r-2 border-black">
       <div class=" text-xl ">
         Example 3: Animation Squences
       </div>
-      <div class="w-[90%] text-sm text-left text-wrap">
+      <div class=" text-sm text-left text-wrap w-[90%]">
         This example demonstrates how to create animations using a sequence instead of min/max values.
         you can change the sequence by calling animator.update(). If you dont specify the max length of the sequence using the sequence_max_lengt argument, the length of the initial array will be used.
       </div>
