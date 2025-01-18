@@ -122,10 +122,10 @@ function CodeBlocks({ sel }) {
     if (sel >= 0) {
         return (
             <div class="w-full h-full flex flex-col b">
-                <div class="w-full h-[10%] bg-[#4A5A6A] text-white text-xl flex flex-row justify-center items-center text-center rounded-t-lg border-t-4 border-l-4 border-r-4 border-[#657a85] " style={{ height: window.innerHeight * 0.04 }}>
+                <div class="w-full h-[15%] bg-[#4A5A6A] text-white text-xl flex flex-row justify-center items-center text-center rounded-t-lg border-t-4 border-l-4 border-r-4 border-[#657a85] " style={{ height: window.innerHeight * 0.045 }}>
                     <div class="w-[92%] ">Code Snippet</div>
                     <div class="w-[8%]  h-full flex flex-row items-center gap-3 justify-center">
-                        <div id = {"git2"} class="h-[95%] aspect-square border-2 border-[#ffffff] self-end rounded-md bg-[#28323c] flex items-center justify-center"
+                        <div id = {"git2"} class="h-[90%] aspect-square border-2 border-[#ffffff] self-end rounded-md bg-[#28323c] flex items-center justify-center"
                         onMouseOver={()=>{changeBorder("git2","#C0E58B")}}
                         onMouseOut={()=>{changeBorder("git2","white")}}
                         >
@@ -133,7 +133,7 @@ function CodeBlocks({ sel }) {
                         <img src="https://cdn.pixabay.com/photo/2022/01/30/13/33/github-6980894_960_720.png" />
                         </a>
                         </div>
-                        <button  id={"cop"} class="h-[95%] aspect-square border-2 border-[#ffffff] self-end rounded-md bg-[#28323c] flex items-center justify-center"
+                        <button  id={"cop"} class="h-[90%] aspect-square border-2 border-[#ffffff] self-end rounded-md bg-[#28323c] flex items-center justify-center"
                             onMouseOver={()=>{changeBorder("cop","#C0E58B")}}
                             onMouseOut={()=>{changeBorder("cop","white")}}
                             onClick={()=>{navigator.clipboard.writeText(mdFiles[sel].split('\n').slice(1, -1).join('\n'))}}
