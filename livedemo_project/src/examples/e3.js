@@ -22,7 +22,7 @@ function E3(animator) {
     animationProps.target=animator.Lerp({ accessor: [animationProps.c, animationProps.setc], duration: 10, steps: [0.1, 400.1, 0.1, 100, 20, 30, 40, 500, 0],sequence_max_lengt:10 })
   return (
     <div class="w-full h-full bg-[#ffffff]">
-      <div class="z-10 w-1/2 h-1/2 absolute flex  justify-center" style={{ width:window.innerWidth*0.67}}>
+      <div class="z-10 w-1/2 h-1/2 absolute flex pointer-events-none justify-center" style={{ width:window.innerWidth*0.67}}>
       <div class=" rounded-b-md relative max-w-[45%] max-h-[30%] text-black bg-[#5C8F8D] flex flex-col justify-center items-center bg-opacity-45 border-b-2 border-l-2 border-r-2 border-black">
       <div class=" text-xl ">
         Example 3: Animation Squences
