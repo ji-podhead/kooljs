@@ -1,17 +1,17 @@
 {
   "files": {
-    "main.css": "/kooljs/static/css/main.e7f4bc05.css",
-    "main.js": "/kooljs/static/js/main.f8e5007d.js",
+    "main.css": "/kooljs/static/css/main.9feae39b.css",
+    "main.js": "/kooljs/static/js/main.d5eb4304.js",
     "static/js/921.852fcbf4.chunk.js": "/kooljs/static/js/921.852fcbf4.chunk.js",
     "static/js/453.a28bd35d.chunk.js": "/kooljs/static/js/453.a28bd35d.chunk.js",
     "index.html": "/kooljs/index.html",
-    "main.e7f4bc05.css.map": "/kooljs/static/css/main.e7f4bc05.css.map",
-    "main.f8e5007d.js.map": "/kooljs/static/js/main.f8e5007d.js.map",
+    "main.9feae39b.css.map": "/kooljs/static/css/main.9feae39b.css.map",
+    "main.d5eb4304.js.map": "/kooljs/static/js/main.d5eb4304.js.map",
     "921.852fcbf4.chunk.js.map": "/kooljs/static/js/921.852fcbf4.chunk.js.map",
     "453.a28bd35d.chunk.js.map": "/kooljs/static/js/453.a28bd35d.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.e7f4bc05.css",
-    "static/js/main.f8e5007d.js"
+    "static/css/main.9feae39b.css",
+    "static/js/main.d5eb4304.js"
   ]
 }
