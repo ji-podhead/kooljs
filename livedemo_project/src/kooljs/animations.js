@@ -1,5 +1,6 @@
 const types = ["callback", "function", "number", "Linear", "Lerp", "constant"]
 const animation_types=["constant", "linear", "lerp"]
+const animationProps={}
 class Trigger {
     /**
      * @param {Lerp} target - the animation this object will trigger
@@ -33,29 +34,8 @@ class Prop {
     update_callback(value) {
         this.setter(value)
     }
-    update_map(value) {
-        this.setter.set(this.point_to, value)
-    }
-    update_dict(value) {
-        this.point_to = value
-    }
-    update_other(value) {
-        this.setter = value
-    }
-    set(value) {
-        this.updater(value)
-    }
-
     get() {
-        if (this.type == "useState") {
             return this.getter()
-        }
-        else if (this.type == "callback") {
-            return this.getter("hier irgendwie ein val übergeben")
-        }
-        else {
-            return this.setter
-        }
     }
     /**
      * 
@@ -71,63 +51,13 @@ class Prop {
      * - object: new Prob(0.0,"object",{},"key")
      * The pointer is used to update the value of another variable or to call a function with the updated value as argument
      */
-    constructor(type, target, point_to = undefined, default_value = undefined) {
-        this.type = type
+    constructor( target, point_to = undefined, default_value = undefined) {
         this.default_value = default_value
         this.point_to = point_to;
         this.id = 0
-        switch (this.type) {
-            case "useState": {
-
-                if (target == undefined) {
-                    return Error("you need to pass a use state instance because they cant get created conditionaly")
-                }
-                this.setter = target[1]
-                this.getter = target[0]
-                this.updater = this.update_callback
-                break;
-            }
-            case "callback": {
-                if (target == undefined) {
-                    return Error("target is undefined")
-                }
-                else {
-                    this.updater = this.update_callback
-                    this.setter = target
-                    break;
-                }
-            }
-            case "int": {
-                if (this.target == undefined) {
-                    this.setter = 0
-                }
-                else {
-                    this.setter = target
-                }
-                this.updater = this.update_other
-                break;
-            }
-            case "map": {
-                this.setter = target
-                this.updater = this.update_map
-                break;
-            }
-            case "object": {
-                this.setter = target
-                this.updater = this.update_dict
-                break;
-            }
-            default: {
-                this.updater = this.update_other
-                if (this.setter == undefined) {
-                    this.setter = 0
-                }
-                else {
-                    this.setter = target
-                }
-                break;
-            }
-        }
+        this.setter = target[1]
+        this.getter = target[0]
+        this.updater = this.update_callback
     }
 }
 var index
@@ -167,11 +97,13 @@ class Lerp {
      * @param {number} max - the maximum value of the animation; NOT REQUIRED HERE! we set this in our first update call  
     * @returns {[prop_target, index]} - returns an array consisting of the prob target and the index of the typed array where the Lerp value is stored in the worker. You can use the index for conditional weights that get calculated on the worker.
     */
-    constructor(animator, prop = undefined, duration = 10, render_interval = 1, smoothstep=1, delay = 0, animationTrigger, callback, min , max,) {
+    constructor(animator, {accessor, duration = 10, render_interval = 1, smoothstep=1, delay = 0, animationTrigger, callback, min , max, steps=undefined, lerpStart=undefined, steps_max_length=undefined}) {
         //currentValue = currentValue;
         if(animator==undefined){
             return
         }
+        console.log(accessor)
+        const prop= new Prop(accessor)
         index = animator.registry_map.get("min")["length"]
         // if (min != undefined && max != undefined) {
         //     animator.activelist.push(index)
@@ -182,9 +114,27 @@ class Lerp {
         //}
         this.id = index
         this.type = 2
+        this.lerpStart=undefined
         animator.registry_map.get("type").push(2)
         animator.registry_map.get("min").push(min)
         animator.registry_map.get("max").push(max)
+        
+        if(steps!=undefined){
+            const original_length=steps.length
+            // last changes are here and steps related
+            animator.registry_map.get("lerp_chain_start").push(animator.chain_map_points_length)
+            const l = steps_max_length==undefined?steps.length:steps_max_length
+            steps=steps_max_length>steps.length?steps.concat([].fill(-1,0,steps_max_length-steps.length)):steps
+            animator.chain_map_points.push(steps)
+            animator.chain_map_points_length+=steps.length
+            animator.chain_map.get("lengths").push(original_length) // WE DONT USE STEPS LENGTH HERE! WE UPDATE THE LENGTH VALUE IF THE USER UPDAES THE STEP WHILE THE STEPSLENGTH IS NEW
+            animator.chain_map.get("progress").push(0)
+
+        }
+        else{
+            animator.registry_map.get("lerp_chain_start").push(undefined)
+        }
+        
         animator.registry_map.get("duration").push(duration)
         animator.registry_map.get("render_interval").push(render_interval)
         animator.registry_map.get("delay_delta").push(0)
@@ -217,7 +167,7 @@ class Lerp {
     }
 }
 class lerpDiv{
-    
+
 }
 class Spring{
     constructor(animator,elements,duration,spring_tension,spring_whatever){
@@ -238,16 +188,19 @@ class Animator {
      * @author JI-Podhead
      */
     constructor(fps) {
+
         //      --> REGRISTRIES <-- 
         this.registry_map = new Map()
         this.callback_map = new Map()
+        this.chain_map = new Map()
         this.registry_map.set('type', []);
         this.spring_map=new Map()
         //--> constant <--
         this.constant_map= new Map()
         this.constant_map.set("number",[])
         this.constant_map.set("matrix",[])
-        //--> animation objects (Lerp...) <-- 
+        //--> animation objects (Lerp...) <--
+
         this.registry_map.set('min', []);
         this.registry_map.set('max', []);
         this.registry_map.set('type', []);
@@ -257,6 +210,13 @@ class Animator {
         this.registry_map.set('delay', []);
         this.registry_map.set('progress', []);
         this.registry_map.set('smoothstep', []);
+        this.registry_map.set('lerp_chain_start', []); 
+        // --> chains <--
+        this.chain_map_points=[]
+        this.chain_map_points_length=0
+        this.chain_map.set('buffer', []); 
+        this.chain_map.set('progress', []);
+        this.chain_map.set('lengths', []); 
         //      --> Spring <--
         this.spring_map.set("spring_elements",[])
         this.spring_map.set("spring_duration",[])
@@ -275,6 +235,7 @@ class Animator {
         this.indexlist = new Map()
         this.obj = undefined
         this.activelist = []
+        this.chain_buffer=undefined
         this.worker = new Worker(new URL('./worker.js', import.meta.url));
         //      --> WORKER MESSAGES <--
         this.worker.onmessage = ev => {
@@ -308,9 +269,16 @@ class Animator {
             };
         }
     }
+    update_chain(id,val){
+       this.animation_objects.get(id).chain=new Float32Array(this.chain_map.get("buffer")).set(val)
+    }
     init(autostart = true) {
         var length = this.registry_map.get("min")["length"]
-        this.worker.postMessage({ method: 'init', data: this.registry_map, constants:this.constant_map, start: false, activelist: [],callback_map:this.callback_map,spring_map:this.spring_map });
+        // Erstellen Sie einen großen ArrayBuffer
+        this.chain_map.set("buffer",new ArrayBuffer(this.chain_map_points_length*4))
+        this.chain_map_points.map((val,index)=>{ this.update_chain(index,val) })
+        this.chain_map.set("buffer",((this.chain_map.get("buffer"))))
+        this.worker.postMessage({ method: 'init', data: this.registry_map, chain_map:this.chain_map,constants:this.constant_map, callback_map:this.callback_map,spring_map:this.spring_map });
         this.setFPS(this.fps)
     }
     /**
@@ -319,16 +287,41 @@ class Animator {
      */
     update_lerp(data) {
         data.map((x) => {
+            console.log(typeof(x["value"]))
+            switch(typeof(x.value)){
+                case "object":
+                   if(Array.isArray(x.value)){
+                    x.values.map((val,index)=>{
+                        this.animation_objects.get(x.animObject.id).chain[index]=val
+                    })
+                    this.worker.postMessage({ method: 'init',data:{
+                        buffer:new this.chain_map.get("buffer"),
+                        id:x.animObject.id,
+                        newLength: x.value.length
+                    }})
+                }
+                    break
+                default:
+                    x.value.value={
+                        min:x.animObject.min,
+                        max:x.animObject.max
+                    }
+                }
             this.worker.postMessage({ method: 'update_lerp',type:x.animObject.prop, id: x.animObject.id, values: x.value });
         })
     }
+    Lerp(args){
+            return new Lerp(this,args)
+    }
     update_constant(data) {
         data.map((x) => {
-            this.worker.postMessage({ method: 'update_constant',type:x.constant.type, id: x.constant.id, value: x.value });
+
+                this.worker.postMessage({ method: 'update_constant',type:x.constant.type, id: x.constant.id, value: x.value });
+            
         })
     }
-    start() {
-        this.worker.postMessage({ method: 'start', fps: this.fps });
+    start(indices) {
+        this.worker.postMessage({ method: 'start', indices: indices});
     }
     stop() {
         this.worker.postMessage({ method: 'stop' });

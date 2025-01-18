@@ -12,18 +12,13 @@ var animationProps={
 var elem
 function animate_div(id,val){
   elem=document.getElementById(id)
-  
   elem.style.transform=`translate(${val}%)`
   console.log(elem.style.transform)
 }
 function e2_init(animator) {
-  const aProp = new Prop("useState", [animationProps.a, animationProps.seta])
-  const bProp = new Prop("useState", [animationProps.b, animationProps.setb])
-  const cProp = new Prop("useState", [animationProps.c, animationProps.setc])
-
-  const aLerp = new Lerp(animator,aProp,50,1,1)
-  const bLerp = new Lerp(animator,bProp,50,1,1)
-  const cLerp = new Lerp(animator,cProp,50,1,1)
+  const aLerp = animator.Lerp({accessor:[animationProps.a, animationProps.seta],duration:50})
+  const bLerp = animator.Lerp({accessor:[animationProps.b, animationProps.setb],duration:50})
+  const cLerp = animator.Lerp({accessor:[animationProps.c, animationProps.setc],duration:50})
   console.log(document.getElementById("a"))
   animationProps.animFunc=animate
   console.log(animationProps)

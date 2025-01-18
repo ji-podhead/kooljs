@@ -1,10 +1,10 @@
 var finished = []
 var fps = 33.33
-var controller = null;
-var signal = null;
+var resultsnew,signal,controller = null
 async function sleep(milliseconds) {
     return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
+// ----------------------------------------> CLASS DEFINITIONS <--
 class Lerp {
     constructor() {
         this.trigger_start = undefined
@@ -20,10 +20,57 @@ class Lerp {
         this.delay = undefined
         this.progress = undefined
         this.smoothstep = undefined
+        this.lerp_chain_start=undefined
         this.activelist = []
         this.results = []
         this.last_value=[]
     }
+    reset(id) {
+        // if (type > 0) {
+        //     this.progress[id] = 0
+        // }
+        if (this.activelist.includes(id) == false) {
+            this.results = new Float32Array(this.results.length + 1)
+            this.activelist.push(id)
+        }
+    }
+    update(id, values) {
+        Object.entries(values).map((val) => {
+            this[val[0]][id] = val[1]
+        })     
+        start_animations(id)
+    }
+  get(index){//this function is for custom callback functions. its used for getting other values via index
+        return this.last_value[index]
+        }
+}
+class LerpChain{
+    constructor(){
+        this.buffer=undefined
+        this.progress=undefined
+        this.lengths=undefined
+    }
+    update_progress(id){
+        const step=this.progress[id]
+        if(step==this.lengths[id]-1){
+            this.reset(id)
+            return true
+        }
+        else{
+            
+            lerp_registry.min[id]=this.buffer[lerp_registry.lerp_chain_start[id]+this.progress[id]]
+            lerp_registry.max[id]=this.buffer[lerp_registry.lerp_chain_start[id]+this.progress[id]+1]
+            this.progress[id]+=1
+            lerp_registry.progress[id]=0
+            return(false)
+        }
+}
+reset(id){
+    lerp_registry.min[id]=this.buffer[lerp_registry.lerp_chain_start[id]]
+    lerp_registry.max[id]=this.buffer[lerp_registry.lerp_chain_start[id]+1]
+    lerp_registry.progress[id]=0
+    this.progress[id]=1
+}
 }
 class Callback {
     constructor() {
@@ -37,24 +84,22 @@ class Constant {
     constructor(matrices,numbers){
         this.matrix=undefined
         this.number=undefined
-
     }
+   update(type, id, value){
+        constant_registry[type][id]=value
+    }
+    get(type,index){
+        return constant_registry[type][index]
+        }
 }
-class Spring{
-constructor(elements,duration,spring_tension,spring_whatever,){
-        this.elements=elements
-        this.duration=duration
-        this.spring_tension=spring_tension
 
-}
-}
+// ----------------------------------------> DATABASE <--
 const lerp_registry = new Lerp()
 const constant_registry = new Constant()
 const condi = new Callback()
-function lerp(min, max, v) {
-    const t = (min * v) + (max * (1 - v))
-    return t
-}
+const lerpChain_registry = new LerpChain()
+
+// ----------------------------------------> ANIMATION <--
 var v,t
 function smoothLerp(min, max, v, amount) {
     t = smoothstep(v)
@@ -64,7 +109,6 @@ function smoothLerp(min, max, v, amount) {
 function smoothstep(x) {
     return x * x * (3 - 2 * x);
 }
-
 async function animate() {
     lerp_registry.activelist.reverse().map((val, index) => {
         //checking if the element is finished and needs to be deleted
@@ -79,7 +123,7 @@ async function animate() {
                 // First for registry.trigger_target[val]: If this value is null or undefined, 0 is used instead.
                 // Then again for registry.type[...]: Similarly, 0 is used if the index is null or undefined.
                 if (lerp_registry.trigger_target[val] ?? 0 >= lerp_registry.trigger_start[val]) {
-                    reset(lerp_registry.trigger_target[val] ?? 0, lerp_registry.type[lerp_registry.trigger_target[val] ?? 0])
+                    lerp_registry.reset(lerp_registry.trigger_target[val] ?? 0, lerp_registry.type[lerp_registry.trigger_target[val] ?? 0])
                 }
                 if (lerp_registry.progress[val] % lerp_registry.render_interval[val] == 0) {
                     // v = normalized time delta
@@ -97,9 +141,11 @@ async function animate() {
                 // at this point the element that is finished can also get removed
             }
         } else {
+            if(lerp_registry.lerp_chain_start[val]!=undefined&&lerpChain_registry.update_progress(val)==true){
             lerp_registry.delay_delta[val] = 0
             lerp_registry.progress[val] = 0
             finished.push(val);
+        }
         }
     })
 }
@@ -127,39 +173,9 @@ async function animateLoop() {
         }
     }
 }
-function init(lerps, start, constants, condi_new, springs, active, fps) {
-    condi.callback=new Map()
-    condi_new.get("callback").forEach((val,ke)=>{
-          condi.callback.set(ke,eval(val))
-    })
 
-    condi.threshold= new Float32Array(condi_new.threshold)
-    lerps.forEach((array, name) => {
-        lerp_registry[name] = new Float32Array(array)
-    })
-    if(constants.get("matrix")!=undefined){
-    constants.get("matrix").forEach((val)=>{
-        constant_registry.matrix.push(new Float32Array(val))
-    })
-}
-    if(constants.get("number")!=undefined){
-            constant_registry.number=(new Float32Array(constants.get("number")))
-    }
-    lerp_registry.last_value=new Float32Array(lerp_registry.min)
-    lerp_registry.activelist = []
-    if (start == true) {
-        start_loop()
-    }
-}
-async function render() {
-    postMessage({ message: "render", results: lerp_registry.results, result_indices: lerp_registry.activelist })
-}
-function trigger() {
-    postMessage({ message: "trigger", results: lerp_registry.results, result_indices: lerp_registry.activelist })
-}
-var resultsnew
-//TODO
-//IMPLEMENT ON CLIENT
+// ----------------------------------------> WORKER UTILS <--
+
 function fin() {
     postMessage({
         message: "finish",
@@ -180,73 +196,92 @@ function fin() {
     lerp_registry.results = resultsnew
     finished = []
 }
-//this function is for custom callback functions
-//its used for getting other values via index
-function get_lerp_value(index){
-return lerp_registry.last_value[index]
-}
-function get_constant_value(type,index){
-    return constant_registry[type][index]
-    }
+
+
 function start_loop() {
     animateLoop()
 }
+
 function stop_loop() {
     if (controller !== null) {
         controller.abort()
         controller = null
     }
 }
-function set(id){
-    //activelist,results,lastvalue,min/max
-}
-function reset(id, type) {
-    if (type > 0) {
-        lerp_registry.progress[id] = 0
-    }
-    if (lerp_registry.activelist.includes(id) == false) {
-        lerp_registry.results = new Float32Array(lerp_registry.results.length + 1)
-        lerp_registry.activelist.push(id)
-    }
-}
-function update_lerp(id, values) {
-    Object.entries(values).map((val) => {
-        lerp_registry[val[0]][id] = val[1]
-        lerp_registry.progress[id] = 0
+
+
+function start_animations(indices){
+    indices.map((id)=>{
+        if(lerp_registry.lerp_chain_start[id]!=undefined){
+            lerpChain_registry.reset(id)
+        }
         if (lerp_registry.activelist.includes(id) == false) {
             lerp_registry.results = new Float32Array(lerp_registry.results.length + 1)
             lerp_registry.activelist.push(id)
-
-        } else {
-            lerp_registry.results[id] = val[1]
         }
-    })
     if (controller == null) {
         start_loop()
     } else {
         stop_loop()
         start_loop()
     }
-}
-
-
-function update_constant(type, id, value){
-constant_registry[type][id]=value
+    })
 }
 function change_framerate(fps_new) {
     fps = fps_new
+}
+function init(lerps, lerpChains, constants, condi_new, springs) {
+    condi.callback=new Map()
+    condi_new.get("callback").forEach((val,ke)=>{
+          condi.callback.set(ke,eval(val))
+    })
+    lerpChains.forEach((arr,name)=>{
+        if(name!="buffer"){
+            lerpChain_registry[name]=arr
+        }
+        else{
+            lerpChain_registry[name]=new Float32Array(arr)
+        }
+    })
+    condi.threshold= new Float32Array(condi_new.threshold)
+    lerps.forEach((array, name) => {
+            lerp_registry[name] = new Float32Array(array)
+    })
+    if(constants.get("matrix")!=undefined){
+    constants.get("matrix").forEach((val)=>{
+        constant_registry.matrix.push(new Float32Array(val))
+    })
+}
+    if(constants.get("number")!=undefined){
+            constant_registry.number=(new Float32Array(constants.get("number")))
+    }
+    lerp_registry.last_value=new Float32Array(lerp_registry.min)
+    lerp_registry.activelist = []
+}
+
+// ----------------------------------------> EVENTS <--
+async function render() {
+    postMessage({ message: "render", results: lerp_registry.results, result_indices: lerp_registry.activelist })
+}
+function trigger() {
+    postMessage({ message: "trigger", results: lerp_registry.results, result_indices: lerp_registry.activelist })
 }
 onmessage = (event) => {
     // eslint-disable-next-line default-case
     switch (event.data.method) {
         case 'init':
-            init(event.data.data, event.data.start,event.data.constants, event.data.callback_map,event.data.spring_map,);
+            init(event.data.data, event.data.chain_map, event.data.constants, event.data.callback_map,event.data.spring_map,);
             break;
         case 'update_lerp':
-            update_lerp(event.data.id, event.data.values);
+            lerp_registry.update(event.data.id, event.data.values);
             break;
+        case "update_chain":
+                    lerpChain_registry.buffer=new Float32Array(event.data.buffer)
+                    lerpChain_registry.lengths[event.data.id]=event.data.newLength
+                    lerpChain_registry.reset(event.data.id)
+            break
         case 'update_constant':
-            update_constant(event.data.type, event.data.id,event.data.value);
+            constant_registry.update(event.data.type, event.data.id,event.data.value);
             break;
         case 'start_loop':
             change_framerate(event.data.fps)
@@ -259,11 +294,26 @@ onmessage = (event) => {
             change_framerate(event.data.fps_new);
             break;
         case 'start':
-            change_framerate(event.data.fps)
-            start_loop(event.data.data);
+            start_animations(event.data.indices);
             break;
     }
 };
+function get_lerp_value(id){return lerp_registry.get(id)}
+function reset_lerp(id){return lerp_registry.reset_lerp(id)}
+export {get_lerp_value,reset_lerp,set,change_framerate}
+
+// ----------------------------------------> REQUIRES IMPLEMENTATION <--
+function set(id){
+    //activelist,results,lastvalue,min/max
+}
+class Spring{
+    constructor(elements,duration,spring_tension,spring_whatever,){
+            this.elements=elements
+            this.duration=duration
+            this.spring_tension=spring_tension
+    
+    }
+    }
 //dijkstra algo für matrix
 function shortest_path(){
 
@@ -280,7 +330,7 @@ function spring(){
 
 }
 
-export {get_lerp_value as get_value,reset,set,change_framerate}
+
 
 //v = Math.floor(registry.progress[val] / registry.duration[val]);
 
