@@ -1,6 +1,6 @@
 {
-  "name": "example_project",
-  "homepage": "https://ji-podhead.github.io/kooljs/livedemo",
+  "name": "kooljs",
+  "homepage": "https://ji-podhead.github.io/kooljs",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -24,7 +24,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "deploy": "gh-pages -d build -m 'Deploy React app to GitHub Pages' --repo=git@github.com:ji-podhead/ji-podhead-blog.git"
+    "deploy": "gh-pages -d build"
+    
   },
   "eslintConfig": {
     "extends": [
@@ -45,7 +46,7 @@
     ]
   },
   "devDependencies": {
-    "gh-pages": "^6.1.1",
+    "gh-pages": "^6.3.0",
     "tailwindcss": "^3.4.16"
   }
 }

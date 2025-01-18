@@ -4,11 +4,11 @@
 / node_modules
 /.pnp
 .pnp.js
-/ build
+**build
 # testing
 /coverage
-**/example_project/node_modules
-**/example_project/buid
+**/livedemo_project/node_modules
+/livedemo_project/buid
 # production
 *.lockb
 

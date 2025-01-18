@@ -3,23 +3,35 @@
 - its one task per animator instance
 - this project is still in development 
 
+## what can it do?
+- compute animations on a worker thread
+- add addtional logic like lambda functions that run on the worker
+- trigger animations and chaining
+- use arrays for animated sequences
+  - you can update those values and even  use different sizes if you set the max_length parameter
+  -  you can disable/enable the sequence to use min/max lerp by any time
+
+
+## LiveDemo
+- check out the [LiveDemo](ji-podhead.github.io)
+- I will add adding additional Examples over time
+### contrbuting examples
+Feel free to contribute your own examples or open a feature request.
+- I deployed to gh-pages branch `using bun deploy`
+
 ## how to run the example project
 - git clone `git@github.com:ji-podhead/kooljs.git`
 - cd example_project
 - copy the kooljs folder to the project folder and initialize the bun project
 - you can also run the start.sh to start and install
 
-- i left the vscode folder in the branch so you can directly debug it with chrome
+- I left the vscode folder in the branch so you can directly debug it with chrome
   - firefox is apprently having some issues with triggering breakpoints on rhel
 
-## what can it do?
-- compute animations on a worker thread
-- add addtional logic like lambda functions
-- trigger animations and chaining
+
 
 ## how to use
-> ***so far this repo was only tested with react***
-- import the animator 
+- import the animator in 
 - create a function to initialize your animation object (examples->e1_init)
   - create the props, animation-objects, callbacks, or triggers here
     - await the initialization those functions in the main component
