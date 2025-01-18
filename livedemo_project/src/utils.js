@@ -6,12 +6,12 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { materialOceanic}  from 'react-syntax-highlighter/dist/esm/styles/prism'
 // a11yDark, atomDark, base16AteliersulphurpoolLight, cb, coldarkCold, coldarkDark, coy, coyWithoutShadows, darcula, dark, dracula, duotoneDark, duotoneEarth, duotoneForest, duotoneLight, duotoneSea, duotoneSpace, funky, ghcolors, gruvboxDark, gruvboxLight, holiTheme, hopscotch, lucario, materialDark, materialLight, , nightOwl, nord, okaidia, oneDark, oneLight, pojoaque, prism, shadesOfPurple, solarizedDarkAtom, solarizedlight, synthwave84, tomorrow, twilight, vs, vscDarkPlus, xonokai, zTouch
 
-const widgets = [{ name: "none", info: "none" }, { name: "none", info: "none" }, TutorialWidget3]
-
+const widgets = [TutorialWidget3, TutorialWidget3, TutorialWidget3]
+const mdFiles = [null, null, TutorialWidget3.mdfile]
 function Widgets({setsel}) {
     const Elements = (() => widgets.map((w) => {
         return (
-            <div class="w-full h-[7%] bg-slate-500 pt-5 pl-2 ">
+            <div class="w-full bg-slate-500 pt-5 pl-2 ">
                 <div class="rounded-md border-4 bg-[#bac9d0] border-slate-400 w-[95%] gap-y-5  flex flex-col  items-center justify-center">
                 <button id={w.name}   
                     onClick={(() => setsel(w.index))} 
@@ -20,7 +20,7 @@ function Widgets({setsel}) {
                     class="bg-white border-2 border-black w-[95%] rounded-md h-[30%]"
                 >
                     <div class="text-l">
-                        {w.name}
+                       <u> {w.name}</u> 
                     </div>
                     <div className="h-full w-[90%] text-sm text-left pl-1">
                         {w.info}
@@ -68,7 +68,7 @@ function AnimationControl({ args }) {
         }
     })
     return (<div class="w-full border-4 border-r-0 border-t-0 border-l-[#BF8DE1] border-b-[#BF8DE1] bg-[#657a85] rounded-bl-md h-full flex flex-col">
-        <div class="w-full h-[7%] bg-[#4A5A6A] text-xl justiy-center items-center   flex   rounded-b-lg  " style={{ height: window.innerHeight * 0.03 }}>
+        <div class="w-full h-[7%] bg-[#4A5A6A] text-xl flex flex-col justiy-center items-center      rounded-b-lg  " style={{ height: window.innerHeight * 0.03 }}>
             <div class="w-full h-full  text-white">Animation Control</div>
         </div>
         <div class="w-full h-full  flex flex-col gap-y-5 overflow-y-scroll pt-5 items-center  justiy-center border-r-4 border-b-4 border-slate-500">
@@ -141,7 +141,6 @@ function CodeBlocks({ sel }) {
                              <div class="w-[60%] h-[60%]">
                              <svg fill="#ffffff" viewBox="0 0 1920 1920" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M0 1919.887h1467.88V452.008H0v1467.88ZM1354.965 564.922v1242.051H112.914V564.922h1242.051ZM1920 0v1467.992h-338.741v-113.027h225.827V112.914H565.035V338.74H452.008V0H1920ZM338.741 1016.93h790.397V904.016H338.74v112.914Zm0 451.062h790.397v-113.027H338.74v113.027Zm0-225.588h564.57v-112.913H338.74v112.913Z" fill-rule="evenodd"></path> </g>
                              </svg>
-                             <img src="https://www.svgrepo.com/show/501523/copy-course.svg" />
                             </div>
                         </button>
                     </div>
@@ -180,38 +179,4 @@ function CodeBlocks({ sel }) {
 export { Widgets, AnimationControl, Header, CodeBlocks }
 
 
-const e3 = `\`\`\`javascript
-// this is our placeholder dict for the elements that get animated
-var animationProps = {
-  setc: ((val) => {
-      document.getElementById("b").style.transform = \`translate(\${val}%)\`;
-      console.log(document.getElementById("b").style.transform) 
-    }),
-    animator:undefined,
-    target:undefined
-}
 
-// utility functions to start the animation and update the sequence
-const update=(() => {
-    animationProps.animator.update_lerp([{animObject: animationProps.target,value: [0.0, 100.0, 0.0]}])
-   })
-const start=(()=>{
-    animationProps.animator.start([animationProps.target.id])
-   })
-  
-// the divs that get animated
-function E3(animator) {
-    animationProps.animator=animator
-    animationProps.target=animator.Lerp({ accessor: [animationProps.c, animationProps.setc], duration: 10, steps: [0.1, 400.1, 0.1, 100, 20, 30, 40, 500, 0],sequence_max_lengt:10 })
-  return (
-    <div class="w-full h-full flex flex-row">
-      <div class="w-full h-full items-center justify-center flex flex-col ">
-        <div class="shrink-1 items-center justify-center w-full h-full font-size-xl flex flex-row">
-          <div id="a" class="w-10 h-10 bg-blue-400">a</div>
-          <div id="b" class="w-10 h-10 bg-blue-500">b</div>
-        </div>
-      </div>
-    </div>
-  )}
-\`\`\``
-const mdFiles = [null, null, e3]
