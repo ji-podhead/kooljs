@@ -13,7 +13,7 @@
 
 
 ## LiveDemo
-- check out the [LiveDemo](ji-podhead.github.io/kools)
+- check out the [LiveDemo](ji-podhead.github.io/kooljs)
 - I will add adding additional Examples over time
 ### contrbuting examples
 Feel free to contribute your own examples or open a feature request.
