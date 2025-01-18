@@ -26,7 +26,6 @@ function App() {
   return (
 
 <div class="App  bg-[#242d36] w-full h-full flex flex-col  items-center justify-center" style={{ width: window.innerWidth, height: window.innerHeight }}>
-aaaaaaaaaaaaaaaaaaaa
       <div class=" w-[95%]  h-[7%] " >
           <Header />
         </div>
