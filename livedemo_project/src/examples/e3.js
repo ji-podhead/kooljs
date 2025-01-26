@@ -22,11 +22,11 @@ const start=(()=>{
 function Example(animator) {
     animationProps.animator=animator
     const div_containers=[]
-    const triggerduration=200
+    const triggerduration=201
     const triggers=[]
     var t
-    const amount = 49
-    for (let i=1; i<amount;i++){
+    const amount = 50
+    for (let i=1; i<=amount;i++){
       t=(animator.Lerp({accessor: [undefined, animationProps.set], duration: 10, steps: [0, 100],}))
       triggers.push({
         step:0,
