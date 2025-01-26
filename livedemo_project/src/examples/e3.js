@@ -25,7 +25,7 @@ function Example(animator) {
     const triggerduration=200
     const triggers=[]
     var t
-    const amount = 49
+    const amount = 50
     for (let i=1; i<=amount;i++){
       t=(animator.Lerp({accessor: [undefined, animationProps.set], duration: 10, steps: [0, 100],}))
       triggers.push({
