@@ -1,51 +1,57 @@
+
 import './App.css';
-import { e1_init, E1 } from './examples/e1';
-import { e2_init, E2 } from './examples/e3';
-import { e3_init, E3, Controls3, TutorialWidget3 } from './examples/e3';
-import { Widgets, AnimationControl, Header, CodeBlocks } from "./utils"
-import { Animator } from "./kooljs/animations"
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Animator } from "./kooljs/animations"
+import {  E1 } from './examples/e1';
+import {  E2 } from './examples/e2';
+import {  Example as E3} from './examples/e3';
+import { Widgets, AnimationControl, Header, CodeBlocks } from "./utils"
 import { Util } from './kooljs/util_component';
-const TutorialComponents = [undefined, undefined, Controls3]
-const Animated_Components = [undefined, undefined]
+const Animated_Components = [undefined]
 function App() {
-  const animator = new Animator(24)
+  const animator = new Animator(15)
   const [fps, setFps] = useState(24)
   const [play, setPlay] = useState(false)
   const [selector, setSelector] = useState(-1)
   useEffect(() => {
     new Promise((resolve) => {
+      Animated_Components.push(E2(animator))
       Animated_Components.push(E3(animator))
       resolve();
     }).then(() => {
       animator.init(true);
-      setSelector(2)
+      setSelector(1)
     });
   }, []);
 
   return (
 
-<div class="App  bg-[#242d36] w-full h-full flex flex-col  items-center justify-center" style={{ width: window.innerWidth, height: window.innerHeight }}>
+    <div class="App  bg-[#242d36] w-full h-full flex flex-col  items-center justify-center" style={{ width: window.innerWidth, height: window.innerHeight }}>
       <div class=" w-[95%]  h-[7%] " >
-          <Header />
-        </div>
-        <div class="flex flex-col w-[95%] h-[90%] items-center justify-center">
+        <Header />
+      </div>
+      <div class="flex flex-col w-[95%] h-[90%] items-center justify-center">
 
         <div class="w-full h-full flex flex-row">
-          <div class="w-[30%] h-full ">
-            <AnimationControl args={{ comp: TutorialComponents, sel: selector }} />
+          <div class="w-[20%] h-full ">
+            <AnimationControl args={{ sel: selector }} />
           </div>
-          <div class="w-full h-full flew flex-col bg-white">
-            <div class="w-full h-[50%]">
-              {Animated_Components[selector]}
+          <div class="w-[80%] h-full flew flex-col bg-white border-r-4 border-r-[#BF8DE1] rounded-br-md border-b-[#BF8DE1]">
+            <div class="w-full h-[50%] flex flex-row">
+              <div class="w-full h-full flex flex-row">
+                <div class="w-[90%] h-full">
+                  {Animated_Components[selector]}
+                </div>
+                <div class="w-[10%] h-full ">
+                  <Widgets setsel={setSelector} animator={animator} />
+                </div>
+              </div>
             </div>
-            <div class="h-[50%] ">
+            <div class="h-[50%] w-full ">
               <CodeBlocks sel={selector} />
             </div>
           </div >
-          <div class="w-[20%] h-full ">
-            <Widgets setsel={setSelector} />
-          </div>
+
         </div>
       </div>
     </div>

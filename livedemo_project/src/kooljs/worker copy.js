@@ -46,7 +46,7 @@ class LerpChain{
     }
     update_progress(id){
         const step=this.progress[id]
-        if(step==this.lengths[id]-1){
+        if(step==this.lengths[id]){
             
            // this.reset(id)
             return true
@@ -59,19 +59,19 @@ class LerpChain{
         }
     }
     reset(id){
-        // const triggers=trigger_registry.get(id)
-        // if(triggers!=undefined){
-        // triggers.forEach((triggers_step,key)=>{
+        const triggers=trigger_registry.get(id)
+        if(triggers!=undefined){
+        triggers.forEach((triggers_step,key)=>{
 
         
-        // const stride =triggers_step[0]
-        // const status_start= (stride*2)+1
-        // for(let i = status_start;i<triggers_step.length;i++){
-        //     triggers_step[i]=0
-        // }
-        // trigger_registry.get(id).set(key,triggers_step)
-        // })
-        // }
+        const stride =triggers_step[0]
+        const status_start= (stride*2)+1
+        for(let i = status_start;i<triggers_step.length;i++){
+            triggers_step[i-1]=0
+        }
+        trigger_registry.get(id).set(key,triggers_step)
+        })
+        }
     
     lerp_registry.progress[id]=0
     this.progress[id]=0
@@ -113,7 +113,6 @@ function smoothstep(x) {
     return x * x * (3 - 2 * x);
 }
 //var triggers,triggers_step
-var frames =0
 async function animate() {
     lerp_registry.activelist.map((val, index) => {
         //checking if the element is finished and needs to be deleted
@@ -137,21 +136,16 @@ async function animate() {
                                 status= triggers_step[status_start+i]
                                 startTime =triggers_step[(stride+1)+i]
                                 target = triggers_step[i+1]
-                            if(v>startTime&&v<startTime+0.01){
+                            if(status == 0 && v>startTime){
                             //    console.log(`index: ${target} status ${status} starttime ${startTime} t-delta ${v}`)
                                 lerpChain_registry.reset(target)
-                                //lerpChain_registry.progress[target]=0
                                 lerp_registry.reset(target)
-                                //triggers_step[status_start+i] = 1
-                                //trigger_registry.get(val).set(lerpChain_registry.progress[val],triggers_step)
+                                triggers_step[status_start+i] = 1
+                                trigger_registry.get(val).set(lerpChain_registry.progress[val],triggers_step)
                                 }
                            }
                         }
-                        if(val==1){
-                                console.log(frames)
-                                frames+=1
-                        }
-                        t= smoothLerp(lerpChain_registry.buffer[lerp_registry.lerp_chain_start[val]+lerpChain_registry.progress[val]],
+                    t= smoothLerp(lerpChain_registry.buffer[lerp_registry.lerp_chain_start[val]+lerpChain_registry.progress[val]],
                         lerpChain_registry.buffer[lerp_registry.lerp_chain_start[val]+lerpChain_registry.progress[val]+1],
                         v,
                         lerp_registry.smoothstep[val]
@@ -171,13 +165,14 @@ async function animate() {
     })
     return finished
 }
+var startTime
 async function animateLoop() {
-    var startTime 
     controller = new AbortController();
     signal = controller.signal;
     while (true) {
         startTime = performance.now();
 
+        if (signal.aborted) break
         finished = [] // HIER zurücksetzen VOR der Animation
         if (lerp_registry.activelist.length > 0) {
             await animate().then(finished=>{
@@ -185,11 +180,10 @@ async function animateLoop() {
                 if (finished.length > 0) fin()
             }) 
         }
-        if (signal.aborted) break
         const elapsed = performance.now() - startTime;
         const waitTime = Math.max(0, fps - elapsed);
         await sleep(waitTime);
-
+        
     }
 }
 // ----------------------------------------> WORKER UTILS <--

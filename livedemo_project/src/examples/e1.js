@@ -1,4 +1,4 @@
-import { Prop, Animator, Lerp, Callback, Constant, Trigger } from "../kooljs/animations"
+import { Prop, Animator, Lerp, Callback, Constant,  } from "../kooljs/animations"
 import { useState, useEffect, useMemo, useCallback } from 'react';
 const animationObjects = {}
 var animationProps={
@@ -16,7 +16,7 @@ function e1_init(animator) {
   const callback1=new Callback('((index,value,progress)=>get_value(1)*-1)',0)
   const constant1= new Constant(animator,"number",2)
   animationObjects.triggerobj = new Lerp(animator, triggerProp, 10, 1,undefined,undefined,undefined,1,10)
-  animationObjects.screenWidth = new Lerp(animator,screenWidthProp,50,1,30, new Trigger(animationObjects.triggerobj,5))
+  //animationObjects.screenWidth = new Lerp(animator,screenWidthProp,50,1,30, new Trigger(animationObjects.triggerobj,5))
   animationObjects.screenHeight = new Lerp(animator,screenHeightProp,50,1,30,undefined,undefined, undefined,undefined)
   window.addEventListener('resize', zoom);
   window.addEventListener('orientationchange', zoom);

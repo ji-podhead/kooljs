@@ -1,14 +1,12 @@
 // this is our placeholder dict for the elements that get animated
 var animationProps = {
   set: ((val,id) => {
-    // if(val==0){
-    // console.log(`val ${val} id ${id}`)  
-    // }
+    //console.log(`val ${val} id ${id}`)  
     document.getElementById(`e3_${id}`).style.transform = `translate(0%,${val}%)`;
     }),
     animationTrigger:undefined,
     trigger_set:((val,id) => {
-     console.log(val)
+     //console.log(val)
      document.getElementById('trigger_3').style.width = `${val}%`;
 
     }),
@@ -19,15 +17,19 @@ const start=(()=>{
     animationProps.animator.start([animationProps.animationTrigger.id])
    })
 // the divs that get animated
-function Example(animator) {
+function E3(animator) {
     animationProps.animator=animator
     const div_containers=[]
     const triggers=[]
     // thre divs that get triggered the getter of the accessor is undefined cause we dont need that here
     var t
     const amount = 100
-    for (let i=0; i<amount;i++){
-      t=(animator.Lerp({accessor: [undefined, animationProps.set], duration: 100, steps: [0, 100],}))
+    for (let i=1; i<=amount;i++){
+      const waveLength=10
+      const phase = (i % waveLength) / waveLength;
+      const amplitude = 100 * Math.sin(phase * 2 * Math.PI);
+      console.log("a "+JSON.stringify(amplitude))
+      t=(animator.Lerp({accessor: [undefined, animationProps.set], duration: 5, steps: [0, amplitude, 0],}))
       triggers.push({
         step:0,
         start:i/(amount),
@@ -43,7 +45,7 @@ function Example(animator) {
     // our animation trigger lerp  the getter of the accessor is undefined cause we dont need that here
     animationProps.animationTrigger=animator.Lerp({ 
       accessor: [undefined, animationProps.trigger_set],
-      duration: 300,
+      duration: 100,
       steps: [10,100,10],
       animationTriggers:triggers
     })
@@ -77,7 +79,7 @@ function Example(animator) {
 
 
   // this is just util stuff for the example project
-  const mdFile = `\`\`\`javascript
+  const md3 = `\`\`\`javascript
   // this is our placeholder dict for the elements that get animated
   var animationProps = {
     setc: ((val) => {
@@ -111,7 +113,7 @@ function Example(animator) {
       </div>
     )}
   \`\`\``
-const Controls=[
+const Controls3=[
   {
     name:"Start Animation",
     info:" This Event will start the animation with the values lerpPoint values that where set the last time. The initial values are the ones we have used for the initialisation of the Lerpclass: [0.1, 400.1 ,0.1 ,100, 20, 30, 40, 500, 0]",
@@ -123,13 +125,13 @@ const Controls=[
 ]
   
 
-const TutorialWidget={
+const TutorialWidget3={
   name:"3. Animation Sequence",
   info: "This Examples shows how to use Lerp animation with a sequence.",
   index:2,
   gitlink:"https://github.com/ji-podhead/kooljs/blob/main/livedemo_project/src/examples/e2.js",
-  mdfile:mdFile
+  mdfile:md3
 }
 
-export { Example,Controls,TutorialWidget }
+export { E3,Controls3,TutorialWidget3 }
 
