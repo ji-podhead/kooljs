@@ -1,3 +1,12 @@
+// Copyright (c) 2025 Ji-Podhead and Project Contributors
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, subject to the following conditions:
+
+// 1. All commercial uses of the Software must:  
+//    a) Include visible attribution to all contributors (listed in CONTRIBUTORS.md).  
+//    b) Provide a direct link to the original project repository (https://github.com/ji-podhead/kooljs).  
+
+// 2. The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. 
 const types = ["callback", "function", "number", "Linear", "Lerp", "constant"]
 const animation_types = ["constant", "linear", "lerp"]
 const animationProps = {}
