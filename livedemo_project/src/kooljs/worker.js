@@ -26,7 +26,6 @@ class Lerp {
             this.results = new Float32Array(this.results.length + 1)
             this.activelist.push(id)
         }
-        this.progress[id]=1
     }
     update(id, values) {
         Object.entries(values).map((val) => {
@@ -61,6 +60,7 @@ class LerpChain{
     }
     reset(id){
     lerp_registry.reset(id)
+    lerp_registry.progress[id]=0
     this.progress[id]=0
     }
 }
@@ -111,7 +111,7 @@ async function animate() {
             }
             else {
                 //increment progress
-                
+                lerp_registry.progress[val] += 1
                 // if (lerp_registry.progress[val] % lerp_registry.render_interval[val] == 0) {
                     // v = normalized time delta
                     v = lerp_registry.progress[val] / lerp_registry.duration[val];
@@ -135,7 +135,7 @@ async function animate() {
                     //adding the lastvalue for static 
                     lerp_registry.last_value[val] = lerp_registry.results[index] =t // the length of results is equal to the length of activelists
                 // }
-                lerp_registry.progress[val] += 1
+                
             }
         } else {
             if(lerp_registry.lerp_chain_start[val]!=undefined&&lerpChain_registry.update_progress(val)==true){

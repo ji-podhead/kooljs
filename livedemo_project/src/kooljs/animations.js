@@ -153,7 +153,7 @@ class Lerp {
         animator.registry_map.get("render_interval").push(render_interval)
         animator.registry_map.get("delay_delta").push(0)
         animator.registry_map.get("delay").push(delay)
-        animator.registry_map.get("progress").push(1)
+        animator.registry_map.get("progress").push(0)
         animator.registry_map.get("smoothstep").push(smoothstep)
         prop.id = index
         animator.animation_objects.set(prop.id, {
