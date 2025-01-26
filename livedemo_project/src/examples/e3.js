@@ -42,10 +42,9 @@ function Example(animator) {
     }
     // our animation trigger lerp  the getter of the accessor is undefined cause we dont need that here
     animationProps.animationTrigger=animator.Lerp({ 
-      accessor: [undefined, animationProps.trigger_set],
-      duration: triggerduration,
+      accessor: [undefined, ((val,id) => {document.getElementById(`e3_${id}`).style.transform = `translate(0%,${val}%)`;})],
+      duration: 10,
       steps: [10,100],
-      animationTriggers:triggers
     })
   
     return (

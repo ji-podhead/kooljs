@@ -6,13 +6,12 @@
 ## what can it do?
 - compute animations on a worker thread
 - add addtional logic like lambda functions that run on the worker
-- trigger animations and chaining
+- trigger animations at a certain frame of another animation, or via custom renderevents on the worker
 - use arrays for animated sequences
   - you can update those values and even  use different sizes if you set the max_length parameter
-  -  you can disable/enable the sequence to use min/max lerp by any time
 
 
-## LiveDemo
+## LiveDemo v0.1.4
 - check out the [LiveDemo](https://ji-podhead.github.io/kooljs/)
 - I will add adding additional Examples over time
 ### contrbuting examples
@@ -22,8 +21,8 @@ Feel free to contribute your own examples or open a feature request.
 ## how to run the example project
 - git clone `git@github.com:ji-podhead/kooljs.git`
 - cd example_project
-- copy the kooljs folder to the project folder and initialize the bun project
-- you can also run the start.sh to start and install
+- bun start
+
 
 - I left the vscode folder in the branch so you can directly debug it with chrome
   - firefox is apprently having some issues with triggering breakpoints on rhel
@@ -31,21 +30,31 @@ Feel free to contribute your own examples or open a feature request.
 
 
 ## how to use
-- import the animator in 
-- create a function to initialize your animation object (examples->e1_init)
-  - create the props, animation-objects, callbacks, or triggers here
-    - await the initialization those functions in the main component
-- initialize the worker by calling Animator.init
-  - its important that you do this after you initialized the other stuff because the Animator.init method will pass the typed arrays over to the worker
-- call the component you wanna animate and overwrite the targets of the animation objects with your useStates if your using react 
+- since kooljs is using workers and typed  arrays, the procedure is as follows:
+  - 1. create an animator instance 
+    ```js
+    import { Animator } from "./kooljs/animations"
 
+    const animator = new Animator(30)
+    ```
+  - 2. create a Lerp instance
+    ```js
+      const new_lerp=animator.Lerp({ 
+        accessor: [undefined, ((val,id) => {document.getElementById(`e3_${id}`).style.transform = `translate(0%,${val}%)`;})],
+        duration: 10,
+        steps: [10,100],
+    })
+    ```
+  - 3. initialize the worker
+    ```js
+    animator.init()
+    ```
+> each time you call animator.init() it will recreate the entire registry in the worker, so do that only if you really have to and pass down the animator where ever you can
 ## roadmap
-- linear animation
 - rendering canvas 
-- additional lerping techniques
+- spline
 - matrix lerp and complex magrix calculcations via callback function
-- use special keywords in the callback to use the registry of the worker thread 
-- clear codebase and use inheritance
+~~- use special keywords in the callback to use the registry of the worker thread~~
 ~~- triggering animations on the worker thread~~
 
 ---
