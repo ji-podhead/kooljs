@@ -90,7 +90,7 @@ class Lerp {
      * @param {Callback} conditinoal_weight - the Conditional_Weight instance
     * @returns {[prop_target, index]} - returns an array consisting of the prob target and the index of the typed array where the Lerp value is stored in the worker. You can use the index for conditional weights that get calculated on the worker.
     */
-    constructor(animator, { accessor, duration = 10, render_interval = 1, smoothstep = 1, delay = 0, animationTriggers, callback, steps = undefined, lerpStart = undefined, steps_max_length }) {
+    constructor(animator, { accessor, duration = 10, render_interval = 1, smoothstep = 1, delay = 0, animationTriggers, callback, steps = undefined, loop=false, steps_max_length }) {
         //currentValue = currentValue;
         if (animator == undefined) {
             return
@@ -105,17 +105,19 @@ class Lerp {
             const original_length = steps.length
             // last changes are here and steps related
             animator.registry_map.get("lerp_chain_start").push(animator.chain_map_points_length)
-
-//                     >>> TRIGGERS <<<
-//                       Trigger_Map           <- new Map
-//                          Index              <- this.id eg 1
-//                           \|/ 
-//                           Step              <- new Map eg [1,5,6]
-//    _________ _______ ____ \|/_       
-//   |  stride |target | start   |     
-//   |   [3]   |[0 1 2]|[0 0.5 1]|   <- Float32     
-//   *****************************
-
+            if(loop==true){
+                const loop_trigger={
+                    step:original_length-2,
+                    start:duration,
+                    target:index
+                  }
+                if(animationTriggers==undefined){
+                    animationTriggers=loop_trigger
+                }
+                else{
+                    animationTriggers.push(loop_trigger)
+                }
+            }
             if (animationTriggers != undefined) {
                 const stepMap = new Map()
                 
@@ -136,10 +138,12 @@ class Lerp {
                             }
                             frames.get(x[1]).push(x[0])
                         })
+                        
                         frames.forEach((targets, frame) => {
                             const idArray = new Uint16Array(targets); // 2x schneller als normale Arrays
                             frames.set(frame, idArray);
                         });
+                        
                     stepMap.set(i,(frames))
                     }                    
                 })
