@@ -8,7 +8,7 @@ var animationProps = {
     }),
     animationTrigger:undefined,
     trigger_set:((val,id) => {
-     console.log(val)
+    // console.log(val)
      document.getElementById('trigger_3').style.width = `${val}%`;
 
     }),
@@ -22,15 +22,15 @@ const start=(()=>{
 function Example(animator) {
     animationProps.animator=animator
     const div_containers=[]
+    const triggerduration=200
     const triggers=[]
-    // thre divs that get triggered the getter of the accessor is undefined cause we dont need that here
     var t
-    const amount = 100
-    for (let i=0; i<amount;i++){
-      t=(animator.Lerp({accessor: [undefined, animationProps.set], duration: 100, steps: [0, 100],}))
+    const amount = 49
+    for (let i=1; i<amount;i++){
+      t=(animator.Lerp({accessor: [undefined, animationProps.set], duration: 10, steps: [0, 100],}))
       triggers.push({
         step:0,
-        start:i/(amount),
+        start:i*(4),
         target:t.id
       })
       div_containers.push(
@@ -43,8 +43,8 @@ function Example(animator) {
     // our animation trigger lerp  the getter of the accessor is undefined cause we dont need that here
     animationProps.animationTrigger=animator.Lerp({ 
       accessor: [undefined, animationProps.trigger_set],
-      duration: 300,
-      steps: [10,100,10],
+      duration: triggerduration,
+      steps: [10,100],
       animationTriggers:triggers
     })
   

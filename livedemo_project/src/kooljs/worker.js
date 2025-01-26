@@ -73,7 +73,7 @@ class LerpChain{
         // })
         // }
     
-    lerp_registry.progress[id]=0
+    lerp_registry.reset(id)
     this.progress[id]=0
     }
 }
@@ -113,7 +113,7 @@ function smoothstep(x) {
     return x * x * (3 - 2 * x);
 }
 //var triggers,triggers_step
-var frames =0
+var targets
 async function animate() {
     lerp_registry.activelist.map((val, index) => {
         //checking if the element is finished and needs to be deleted
@@ -124,32 +124,18 @@ async function animate() {
             }
             else {
                 //increment progress
-                lerp_registry.progress[val] += 1
+                
                 if (lerp_registry.progress[val] % lerp_registry.render_interval[val] == 0) {
                     // v = normalized time delta
                     v = lerp_registry.progress[val] / lerp_registry.duration[val];
                         triggers=trigger_registry.get(val)
                         triggers_step=triggers!=undefined?triggers.get(lerpChain_registry.progress[val]):undefined
                     if ( triggers_step != undefined) {
-                        const stride =triggers_step[0]
-                        for(let i=0; i<stride;i++){
-                                status_start= (stride*2)+1
-                                status= triggers_step[status_start+i]
-                                startTime =triggers_step[(stride+1)+i]
-                                target = triggers_step[i+1]
-                            if(v>startTime&&v<startTime+0.01){
-                            //    console.log(`index: ${target} status ${status} starttime ${startTime} t-delta ${v}`)
+                               targets= triggers_step.get(lerp_registry.progress[val])
+                               targets&&targets.map((target)=>{
                                 lerpChain_registry.reset(target)
-                                //lerpChain_registry.progress[target]=0
-                                lerp_registry.reset(target)
-                                //triggers_step[status_start+i] = 1
                                 //trigger_registry.get(val).set(lerpChain_registry.progress[val],triggers_step)
-                                }
-                           }
-                        }
-                        if(val==1){
-                                console.log(frames)
-                                frames+=1
+                                })
                         }
                         t= smoothLerp(lerpChain_registry.buffer[lerp_registry.lerp_chain_start[val]+lerpChain_registry.progress[val]],
                         lerpChain_registry.buffer[lerp_registry.lerp_chain_start[val]+lerpChain_registry.progress[val]+1],
@@ -162,6 +148,7 @@ async function animate() {
                     //adding the lastvalue for static 
                     lerp_registry.last_value[val] = lerp_registry.results[index] =t // the length of results is equal to the length of activelists
                 }
+                lerp_registry.progress[val] += 1
             }
         } else {
             if(lerp_registry.lerp_chain_start[val]!=undefined&&lerpChain_registry.update_progress(val)==true){

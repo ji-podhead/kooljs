@@ -9,7 +9,7 @@ import { Widgets, AnimationControl, Header, CodeBlocks } from "./utils"
 import { Util } from './kooljs/util_component';
 const Animated_Components = [undefined]
 function App() {
-  const animator = new Animator(15)
+  const animator = new Animator(30)
   const [fps, setFps] = useState(24)
   const [play, setPlay] = useState(false)
   const [selector, setSelector] = useState(-1)

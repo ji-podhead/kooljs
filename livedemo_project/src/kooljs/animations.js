@@ -102,10 +102,10 @@ class Lerp {
 //                          Index              <- this.id eg 1
 //                           \|/ 
 //                           Step              <- new Map eg [1,5,6]
-//    _________ _______ ____ \|/_ __________      
-//   |  stride |target | start   | status  |     
-//   |   [3]   |[0 1 2]|[0 0.5 1]| [1,0,0] |   <- Float32     
-//   ***************************************
+//    _________ _______ ____ \|/_       
+//   |  stride |target | start   |     
+//   |   [3]   |[0 1 2]|[0 0.5 1]|   <- Float32     
+//   *****************************
 
             if (animationTriggers != undefined) {
                 const stepMap = new Map()
@@ -118,27 +118,23 @@ class Lerp {
                         }
                         st[t.step].push([t.target, t.start])
                     })
-                
                 st.map((s,i) => {
                     if (s.length > 0) {
-                    const length = s.length
-                    const steparr = new Float64Array((length*3)+1)
-                    steparr[0]=length  // stride
-                        s.map((x,index2)=>{ 
-                            
-                            const target_pos=index2+1
-                            const start_pos=(index2)+(length)+1
-                            const status_pos=(index2)+(length*2)+1
-                            const target = x[0]
-                            const start_start=x[1]
-                            steparr[target_pos]= target
-                            steparr[start_pos]=start_start
-                            steparr[status_pos]=0
-                          })
-                    stepMap.set(i,steparr)
-                    }
+                        const frames=new Map()
+                        s.map((x)=>{
+                            if(frames.get(x[1])==undefined){
+                                frames.set(x[1],[])
+                            }
+                            frames.get(x[1]).push(x[0])
+                        })
+                        frames.forEach((targets, frame) => {
+                            const idArray = new Uint16Array(targets); // 2x schneller als normale Arrays
+                            frames.set(frame, idArray);
+                        });
+                    stepMap.set(i,(frames))
+                    }                    
                 })
-                animator.trigger_map.set(this.id,stepMap)
+            animator.trigger_map.set(this.id,stepMap)
             }
 
             if (steps_max_length != undefined) {
