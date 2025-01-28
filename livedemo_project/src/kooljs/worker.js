@@ -230,13 +230,19 @@ function stop_animations(indices){
     }
     indices.map((id)=>{
         if(lerp_registry.activelist.includes(id)){
-        lerpChain_registry.reset(id)
-        lerp_registry.activelist.splice(lerp_registry.activelist.find(id),1)
+        //lerpChain_registry.reset(id)
+        lerp_registry.activelist=lerp_registry.activelist.filter((x)=>x!=id)
         }
     if (lerp_registry.activelist.length == 0) {
         stop_loop()
     } 
   })
+}
+function reset_animations(indices){
+    if(indices=="all"){stop_loop();indices=lerp_registry.activelist}
+    stop_animations(indices)
+    indices.map((x)=>{lerpChain_registry.reset(x);lerp_registry.reset(x)})
+    postMessage({ message: "render", results: lerp_registry.results, result_indices: indices })
 }
 function change_framerate(fps_new) {
     fps = fps_new
@@ -382,6 +388,12 @@ onmessage = (event) => {
             break;
         case 'start_animations':
             start_animations(event.data.indices);
+            break;
+        case 'stop_animations':
+            stop_animations(event.data.indices);
+            break;
+        case 'reset_animations':
+            reset_animations(event.data.indices);
             break;
         case 'addTrigger':
             addTrigger(event.data.id,event.data.target,event.data.step,event.data.time);

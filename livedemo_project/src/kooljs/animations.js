@@ -275,15 +275,23 @@ class Animator {
                
                 requestAnimationFrame(() => {
                     if(this.status!=false){
-                        try{
+                        
                     ev.data.result_indices.map((value, index) => {
                         // console.log(`index: ${value} val: ${ev.data.results[index]}`)
+                        try{
                         this.animation_objects.get(value).prop.updater(ev.data.results.get(value), ev.data.result_indices[index])
-                        
+                        }catch(err){
+                            console.log(`could not set value of animation ${ev.data.result_indices[index]} -` + err)
+                            try{
+                            this.stop_animations([ev.data.result_indices[index]])
+                            }
+                            catch(err){
+                                this.stop_animations("all")
+                                console.error("stopping all animations. There was am Error while stopping animations: "+ err);
+                                
+                        }
+                    }
                     })
-                }catch(err){
-                    console.log("got err while setting value " + err)
-                }
                 }
                 })
             
@@ -326,13 +334,15 @@ class Animator {
             this.worker.postMessage({ method: 'update_constant', type: x.constant.type, id: x.constant.id, value: x.value });
         })
     }
-    start(indices) {
+    start_animations(indices) {
         this.status=true
         this.worker.postMessage({ method: 'start_animations', indices: indices });
     }
-    stop_indices(indices) {
-        this.status=true
-        this.worker.postMessage({ method: 'stop_matrices', indices: indices });
+    stop_animations(indices) {
+        this.worker.postMessage({ method: 'stop_animations', indices: indices });
+    }
+    reset_animations(indices) {
+        this.worker.postMessage({ method: 'reset_animations', indices: indices });
     }
     stop() {
         this.status=false

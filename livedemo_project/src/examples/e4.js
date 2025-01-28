@@ -16,7 +16,7 @@ var animationProps = {
 }
 // utility functions to start the animation and update the sequence
 const start=(()=>{
-    animationProps.animator.start([animationProps.matrixLerp.id])
+    animationProps.animator.start_animations([animationProps.matrixLerp.id])
    })
 // the divs that get animated
 function Example(animator) {

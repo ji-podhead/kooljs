@@ -21,7 +21,7 @@ function Widgets({setsel,animator}) {
                 <div class="rounded-md border-4 bg-[#bac9d0] border-slate-400 w-[95%] gap-y-5  flex flex-col  items-center justify-center">
                 <button id={w.name}   
                     onClick={(() => {
-                        animator.stop()
+                        animator.reset_animations("all")
                         setsel(w.index)
                     })} 
                     onMouseOver={(()=>{changeBackground(w.name,"#C0E58B")})}

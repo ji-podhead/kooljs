@@ -16,7 +16,7 @@ var animationProps = {
 }
 // utility functions to start the animation and update the sequence
 const start=(()=>{
-    animationProps.animator.start([animationProps.animationTrigger.id])
+    animationProps.animator.start_animations([animationProps.animationTrigger.id])
    })
 // the divs that get animated
 function Example(animator) {
@@ -63,8 +63,8 @@ function Example(animator) {
       </div>
       </div>
       </div>
-      <div class="w-full h-full items-center justify-center flex">
-        <div class="w-[50%] h-20 flex flex-col">
+      <div class="w-full h-full items-center justify-center flex shrink-0">
+        <div class="w-[50%] h-20 flex flex-col shrink-0">
         <div key={"trigger_3"} id={"trigger_3"} class="w-[10%] h-10 bg-red-600">Trigger</div>
         <div class="shrink-0 items-center justify-center w-full h-full font-size-xl flex flex-row text-white">
         <div  className="w-[10%] h-10 bg-black" ></div> 

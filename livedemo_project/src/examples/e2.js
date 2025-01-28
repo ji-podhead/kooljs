@@ -20,10 +20,10 @@ const update=(() => {
     animationProps.animator.update_lerp([{id: animationProps.target.id,values:  [0.1, 400.1 ,0.1]}])
    })
 const start=(()=>{
-    animationProps.animator.start([animationProps.target.id])
+    animationProps.animator.start_animations([animationProps.target.id])
    })
 const stop=(()=>{
-  animationProps.animator.stop_indices([animationProps.target.id])
+  animationProps.animator.reset_animations([animationProps.target.id])
   })
   
 // the divs that get animated
