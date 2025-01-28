@@ -8,11 +8,12 @@ import { materialOceanic}  from 'react-syntax-highlighter/dist/esm/styles/prism'
 
 import { TutorialWidget2,Controls2 } from './examples/e2';
 import { TutorialWidget as TutorialWidget3,Controls as Controls3 } from './examples/e3';
+import { TutorialWidget as TutorialWidget4,Controls as Controls4 } from './examples/e4';
 
 
-const TutorialComponents = [undefined, Controls2, Controls3]
-const widgets = [TutorialWidget2, TutorialWidget2, TutorialWidget3]
-const mdFiles = [null, TutorialWidget2.mdfile, TutorialWidget3.mdfile]
+const TutorialComponents = [undefined, Controls2, Controls3,Controls4]
+const widgets = [TutorialWidget2, TutorialWidget2, TutorialWidget3,TutorialWidget4]
+const mdFiles = [null, TutorialWidget2.mdfile, TutorialWidget3.mdfile,TutorialWidget4.mdfile]
 function Widgets({setsel,animator}) {
     const Elements = (() => widgets.map((w,i) => {
         return (

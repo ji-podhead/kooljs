@@ -5,11 +5,13 @@ import { Animator } from "./kooljs/animations"
 import {  E1 } from './examples/e1';
 import {  E2 } from './examples/e2';
 import {  Example as E3} from './examples/e3';
+import {  Example as E4} from './examples/e4';
+
 import { Widgets, AnimationControl, Header, CodeBlocks } from "./utils"
 import { Util } from './kooljs/util_component';
 const Animated_Components = [undefined]
 function App() {
-  const animator = new Animator(30)
+  const animator = new Animator(50)
   const [fps, setFps] = useState(24)
   const [play, setPlay] = useState(false)
   const [selector, setSelector] = useState(-1)
@@ -17,6 +19,7 @@ function App() {
     new Promise((resolve) => {
       Animated_Components.push(E2(animator))
       Animated_Components.push(E3(animator))
+      Animated_Components.push(E4(animator))
       resolve();
     }).then(() => {
       animator.init(true);

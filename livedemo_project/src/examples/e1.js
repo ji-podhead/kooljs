@@ -1,4 +1,4 @@
-import { Prop, Animator, Lerp, Callback, Constant,  } from "../kooljs/animations"
+import { Prop, Animator, Lerp,  Constant,  } from "../kooljs/animations"
 import { useState, useEffect, useMemo, useCallback } from 'react';
 const animationObjects = {}
 var animationProps={
@@ -13,7 +13,7 @@ function e1_init(animator) {
   const screenWidthProp = new Prop("useState", [animationProps.w, animationProps.wset])
   const screenHeightProp = new Prop("useState", [animationProps.h, animationProps.hset])
   const triggerProp = new Prop("useState", [animationProps.t, animationProps.tset])
-  const callback1=new Callback('((index,value,progress)=>get_value(1)*-1)',0)
+  const callback1={callback:'((index,value,progress)=>get_value(1)*-1)'}
   const constant1= new Constant(animator,"number",2)
   animationObjects.triggerobj = new Lerp(animator, triggerProp, 10, 1,undefined,undefined,undefined,1,10)
   //animationObjects.screenWidth = new Lerp(animator,screenWidthProp,50,1,30, new Trigger(animationObjects.triggerobj,5))

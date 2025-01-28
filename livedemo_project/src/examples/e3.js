@@ -44,7 +44,7 @@ function Example(animator) {
     animationProps.animationTrigger=animator.Lerp({ 
       accessor: [undefined, animationProps.trigger_set],
       duration: triggerduration,
-      steps: [10,100],
+      steps: [10,100,10],
       animationTriggers:triggers,
       loop:true
 

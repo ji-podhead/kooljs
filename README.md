@@ -53,8 +53,17 @@ Feel free to contribute your own examples or open a feature request.
 ## roadmap
 - rendering canvas 
 - spline
+- spring
+- constant renderevents, when changing constants via worker_callback
+- lerp_divs
+- GPU acceleration
 - matrix lerp and complex magrix calculcations via callback function
-~~- use special keywords in the callback to use the registry of the worker thread~~
+
+
+### Enhancements
+- removeing accessor and exchange with *render_callback* (using setter only)
+- use fixed size for results
+~~- use special keywords in the callback to use the registry of the worker thread~~<br>
 ~~- triggering animations on the worker thread~~
 
 ---
