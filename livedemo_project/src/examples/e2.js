@@ -8,7 +8,7 @@ import{addTrigger,removeTrigger,
 // this is our placeholder dict for the elements that get animated
 var animationProps = {
   setc: ((val) => {
-      document.getElementById("b").style.transform = `translate(${val}%)`;
+      document.getElementById("b").style.transform = `translate(0,${val}%)`;
       console.log(document.getElementById("b").style.transform) 
     }),
     animator:undefined,
@@ -23,7 +23,11 @@ const start=(()=>{
     animationProps.animator.start_animations([animationProps.target.id])
    })
 const stop=(()=>{
-  animationProps.animator.reset_animations([animationProps.target.id])
+  animationProps.animator.reset_animations([animationProps.target.id]).then(()=>{
+    console.log("stop")
+}
+  )
+  
   })
   
 // the divs that get animated

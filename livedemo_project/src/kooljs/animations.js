@@ -170,14 +170,6 @@ class Lerp {
         //return [prop.setter,index]
     }
 }
-class lerpDiv {
-
-}
-class Spring {
-    constructor(animator, elements, duration, spring_tension, spring_whatever) {
-        this.elements = elements
-    }
-}
 class Matrix_Lerp {
     constructor(animator, { accessor, duration = 10, render_interval = 1, smoothstep = 1, delay = 0, animationTriggers, callback, steps = undefined, loop=false, steps_max_length }) {
         //currentValue = currentValue;
@@ -214,6 +206,15 @@ class Matrix_Lerp {
         animator.animation_objects.get(this.id).prop.id=this.id
     }
 }
+class lerpDiv {
+
+}
+class Spring {
+    constructor(animator, elements, duration, spring_tension, spring_whatever) {
+        this.elements = elements
+    }
+}
+
 class Animator {
     /**
      * The Animator Class lets you create and control the animation thread to manage your animations
@@ -267,6 +268,7 @@ class Animator {
         this.indexlist = new Map()
         this.obj = undefined
         this.activelist = []
+        this.promises=[]
         this.chain_buffer = undefined
         this.worker = new Worker(new URL('./worker.js', import.meta.url));
         //      --> WORKER MESSAGES <--
@@ -281,7 +283,7 @@ class Animator {
                         try{
                         this.animation_objects.get(value).prop.updater(ev.data.results.get(value), ev.data.result_indices[index])
                         }catch(err){
-                            console.log(`could not set value of animation ${ev.data.result_indices[index]} -` + err)
+                           // console.log(`could not set value of animation ${ev.data.result_indices[index]} -` + err)
                             try{
                             this.stop_animations([ev.data.result_indices[index]])
                             }
@@ -295,7 +297,11 @@ class Animator {
                 }
                 })
             
-            };
+            }
+            // // else if (ev.data.message == "resolve_promise") {
+            // // this.promises[ev.data.promise_index]()
+            // }
+
             // if (ev.data.message == "finished") {
             //     console.log('finished event:', ev);
             //     // eslint-disable-next-line array-callback-return
@@ -308,6 +314,9 @@ class Animator {
             // };
         }
     }
+    //TODO
+    //bei  update nachfragen ob resettet werden soll
+    // bei stop und reset_animations einen promise returnen
     update_chain(id, val) {
         this.animation_objects.get(id).chain = new Float32Array(this.chain_map.get("buffer")).set(val)
     }
@@ -338,12 +347,30 @@ class Animator {
         this.status=true
         this.worker.postMessage({ method: 'start_animations', indices: indices });
     }
+    waitForPromise(msg){
+        const promiseIndex = this.promises.length;
+        this.promises.push(null); // Platzhalter für den Promise
+        
+        return new Promise((resolve) => {
+            this.worker.postMessage(msg);
+            
+            this.worker.onmessage = (event) => {
+                if (event.data.promise_index === promiseIndex) {
+                    this.promises[promiseIndex] = event.data.result;
+                    resolve(this.promises[promiseIndex]);
+                }
+            };
+        });
+    }
+    
     stop_animations(indices) {
-        this.worker.postMessage({ method: 'stop_animations', indices: indices });
+        return this.waitForPromise({ method: 'stop_animations', indices: indices, promise_index: this.promises.length });
     }
+    
     reset_animations(indices) {
-        this.worker.postMessage({ method: 'reset_animations', indices: indices });
+        return this.waitForPromise({ method: 'reset_animations', indices: indices, promise_index: this.promises.length });
     }
+    
     stop() {
         this.status=false
         this.worker.postMessage({ method: 'stop' });

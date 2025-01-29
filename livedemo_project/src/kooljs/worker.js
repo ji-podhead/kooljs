@@ -238,11 +238,14 @@ function stop_animations(indices){
     } 
   })
 }
-function reset_animations(indices){
+async function reset_animations(indices,promise_index){
     if(indices=="all"){stop_loop();indices=lerp_registry.activelist}
     stop_animations(indices)
     indices.map((x)=>{lerpChain_registry.reset(x);lerp_registry.reset(x)})
     postMessage({ message: "render", results: lerp_registry.results, result_indices: indices })
+    if(promise_index!=undefined){
+        postMessage({ message: "resolve_promise", promise_index: promise_index})
+    }
 }
 function change_framerate(fps_new) {
     fps = fps_new
@@ -393,7 +396,7 @@ onmessage = (event) => {
             stop_animations(event.data.indices);
             break;
         case 'reset_animations':
-            reset_animations(event.data.indices);
+            reset_animations(event.data.indices,event.data.promise_index);
             break;
         case 'addTrigger':
             addTrigger(event.data.id,event.data.target,event.data.step,event.data.time);
