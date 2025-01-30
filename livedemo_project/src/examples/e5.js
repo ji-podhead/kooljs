@@ -16,9 +16,9 @@ function animate_div(id,val){
   console.log(elem.style.transform)
 }
 function e2_init(animator) {
-  const aLerp = animator.Lerp({accessor:[animationProps.a, animationProps.seta],duration:50})
-  const bLerp = animator.Lerp({accessor:[animationProps.b, animationProps.setb],duration:50})
-  const cLerp = animator.Lerp({accessor:[animationProps.c, animationProps.setc],duration:50})
+  const aLerp = animator.Lerp({render_callback:animationProps.seta,duration:50})
+  const bLerp = animator.Lerp({render_callback:animationProps.setb,duration:50})
+  const cLerp = animator.Lerp({render_callback:animationProps.setc,duration:50})
   console.log(document.getElementById("a"))
   animationProps.animFunc=animate
   console.log(animationProps)

@@ -35,12 +35,6 @@ class Lerp {
             this.activelist.push(id)
         }
     }
-    update(id, values) {
-        Object.entries(values).map((val) => {
-            this[val[0]][id] = val[1]
-        })     
-        start_animations(id)
-    }
     get(index){//this function is for custom callback functions. its used for getting other values via index
         return this.results.get(index)
     }
@@ -177,6 +171,7 @@ async function animateLoop() {
     controller = new AbortController();
     signal = controller.signal;
     while (true) {
+        if (signal.aborted || controller==null) break
         startTime = performance.now();
         finished = [] // HIER zurücksetzen VOR der Animation
         if (lerp_registry.activelist.length > 0) {
@@ -185,7 +180,7 @@ async function animateLoop() {
                 if (finished.length > 0) fin(finished)
             }) 
         }
-        if (signal.aborted) break
+        
         const elapsed = performance.now() - startTime;
         const waitTime = Math.max(0, fps - elapsed);
         await sleep(waitTime);
@@ -205,19 +200,27 @@ function fin(finished) {
     }
 }
 function start_loop() {
-    animateLoop()
+    if(controller==null){
+        animateLoop()
+    }
 }
 function stop_loop() {
     if (controller !== null) {
         controller.abort()
         controller = null
     }
-    lerp_registry.activelist=[]
+    //lerp_registry.activelist=[]
     // lerp_registry.last_value=[]
 }
 function start_animations(indices){
     indices.map((id)=>{
+        if((lerpChain_registry.progress[id]==lerpChain_registry.lengths[id]-1)&&(lerp_registry.progress[id]==lerp_registry.duration[id])){
         lerpChain_registry.reset(id)
+        }
+        else if(lerp_registry.activelist.includes(id)==false){
+            lerp_registry.activelist.push(id)
+        }
+
     if (controller == null) {
         start_loop()
     } 
@@ -238,11 +241,29 @@ function stop_animations(indices){
     } 
   })
 }
+
 async function reset_animations(indices){
     if(indices=="all"){stop_loop();indices=lerp_registry.activelist}
-    stop_animations(indices)
-    indices.map((x)=>{lerpChain_registry.reset(x);lerp_registry.reset(x)})
-    postMessage({ message: "render", results: lerp_registry.results, result_indices: indices })
+    //stop_animations(indices)
+    const stopped=[]    
+    indices.map((x)=>{
+        lerpChain_registry.reset(x);
+        lerp_registry.reset(x)
+        if(lerp_registry.activelist.includes(x)==false || controller==null){
+            stopped.push(x)
+            switch(lerp_registry.type[x]){
+            case(2):
+            lerp_registry.results.set(x,lerpChain_registry.buffer[lerp_registry.lerp_chain_start[x]])
+            break
+            case(3):
+            lerp_registry.results.set(x,lerpChain_registry.matrixChains.get(x).get(0))
+            break
+            default:break;
+            
+        }
+    }
+    })
+    if(stopped.length>0)    postMessage({ message: "render", results: lerp_registry.results, result_indices: indices })
 }
 function change_framerate(fps_new) {
     fps = fps_new
@@ -254,13 +275,8 @@ function init(lerps, lerpChains, matrixChains, triggers, constants, condi_new, s
           callback_registry.condition.set(key,eval(val.condition))
     })
     lerpChains.forEach((arr,name)=>{
-        if(name!="buffer"){
-            lerpChain_registry[name]=arr
-        }
-        else{
             lerpChain_registry[name]=new Float32Array(arr)
           //  console.log(lerpChain_registry[name])
-        }
     })
     lerpChain_registry.matrixChains=matrixChains
     lerps.forEach((array, name) => {
@@ -285,8 +301,7 @@ function init(lerps, lerpChains, matrixChains, triggers, constants, condi_new, s
             lerp_registry.results.set(i,new Float32Array(lerpChain_registry.matrixChains.get(i).get(0)))
         }
     })
-    lerp_registry.activelist = []
-       lerp_registry.delta_t=new Float32Array(lerp_registry.duration.length)
+    lerp_registry.delta_t=new Float32Array(lerp_registry.duration.length)
 }
 function addTrigger(id,target,step,time){
     var trigger = []
@@ -367,17 +382,13 @@ onmessage = (event) => {
         case 'init':
             init(event.data.data, event.data.chain_map, event.data.matrix_chain_map, event.data.trigger_map, event.data.constants, event.data.callback_map,event.data.spring_map,);
             break;
-        case 'update_lerp':
-            lerp_registry.update(event.data.id, event.data.values);
-            break;
         case "update":
             update(event.data.type,event.data.data)
             break
         case 'update_constant':
             constant_registry.update(event.data.type, event.data.id,event.data.value);
             break;
-        case 'start_loop':
-            change_framerate(event.data.fps)
+        case 'start':
             start_loop();
             break;
         case 'stop':
@@ -404,11 +415,11 @@ onmessage = (event) => {
     }
 };
 function setLerp(index,step,value){
-    console.log(lerpChain_registry.buffer[lerp_registry.lerp_chain_start[index]+step])
+    //console.log(lerpChain_registry.buffer[lerp_registry.lerp_chain_start[index]+step])
     lerpChain_registry.buffer[lerp_registry.lerp_chain_start[index]+step]=value
 }
 function setMatrix(index,step,value){
-    console.log(lerpChain_registry.matrixChains.get(index).get(step))
+   // console.log(lerpChain_registry.matrixChains.get(index).get(step))
     value.map((x,i) => {
         lerpChain_registry.matrixChains.get(index).get(step)[i]=x
     })
@@ -417,7 +428,9 @@ function setMatrix(index,step,value){
 function get_time(id){return lerp_registry.delay_delta(id)}
 function current_step(id){return lerpChain_registry.progress(id)}
 function get_lerp_value(id){return lerp_registry.results.get(id)}
-function reset_lerp(id){return lerp_registry.reset_lerp(id)}
+function reset_lerp(id){lerp_registry.reset_lerp(id)}
+function set_duration(id,val){lerp_registry.duration[id]=val}
+function set_sequence_length(id,val){lerpChain_registry.lengths[id]=val}
 export {
     addTrigger,removeTrigger,
     get_time,current_step,
@@ -425,6 +438,8 @@ export {
     setLerp,setMatrix,
     get_lerp_value,
     reset_lerp,
+    set_duration,
+    set_sequence_length,
     change_framerate
 }
 

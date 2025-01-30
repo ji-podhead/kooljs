@@ -17,22 +17,27 @@ var animationProps = {
 const start=(()=>{
     animationProps.animator.start_animations([animationProps.matrixLerp.id])
    })
+   const update=(() => {
+    animationProps.animator.update_matrix_lerp([{id: animationProps.matrixLerp.id,values:  [[225,0,0],[0,0,255]]}])
+   })
+
+   
 // the divs that get animated
 function Example(animator) {
     animationProps.animator=animator
     // our animation trigger lerp  the getter of the accessor is undefined cause we dont need that here
     animationProps.matrixLerp=animator.Matrix_Lerp({ 
-      accessor: [undefined, animationProps.set],
+      render_callback: animationProps.set,
       duration: 10,
-      steps: [[1,2,3],[100,200,300]],
-      loop:true,
+      steps: [[0,0,0],[100,200,300]],
+      // loop:true,
 
-      callback:{
-        callback:`(({id,time})=>{console.log(time);setMatrix(id,0,[Math.random()*255,Math.random()*255,Math.random()*255])})`,
-        condition:`((({step,time})=>step==0&&time==10))`
-      }
+      // callback:{
+      //   callback:`(({id,time})=>{console.log(time);setMatrix(id,0,[Math.random()*255,Math.random()*255,Math.random()*255])})`,
+      //   condition:`((({step,time})=>step==0&&time==10))`
+      // }
     })
-  
+    
     return (
     <div class="w-full h-full bg-white " key={"matrixLerp"} id={"matrixLerp"}>
       <div class="z-10 w-1/2 h-1/4 absolute flex pointer-events-none  flex-col items-center" style={{ width:window.innerWidth*0.67}}>
@@ -97,7 +102,16 @@ const Controls=[
       name:"start",
       onClick: start
     }
+  },
+  {
+    name:"Update Sequence",
+    info:" This Event will start the animation with the values lerpPoint values that where set the last time. The initial values are the ones we have used for the initialisation of the Lerpclass: [0.1, 400.1 ,0.1 ,100, 20, 30, 40, 500, 0]",
+    button:{
+      name:"update",
+      onClick: update
+    }
   }
+
 ]
   
 

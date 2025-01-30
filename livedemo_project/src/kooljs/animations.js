@@ -15,14 +15,11 @@ class Prop {
     update_callback(value, id) {
         this.setter(value, id)
     }
-    get() {
-        return this.getter()
-    }
     /**
      * 
      * @param {float} default_value - the default value of the variable
      * @param {"useState"|"callback"|"map"|"object"|"int"|"other"} type - the type of the variable
-     * @param {function|(float|number)} target - the target setter function of the useState hook or the value/object to be updated
+     * @param {function|(float|number)} render_callback - the target setter function of the useState hook or the value/object to be updated
      * @param {function|undefined} pointer - the function to be called with the updated value as argument
      * examples:
      * - useState: new Prob(0.0,"useState",<stateful value and function>)
@@ -32,11 +29,10 @@ class Prop {
      * - object: new Prob(0.0,"object",{},"key")
      * The pointer is used to update the value of another variable or to call a function with the updated value as argument
      */
-    constructor(target, point_to = undefined, default_value = undefined) {
+    constructor(render_callback, point_to = undefined, default_value = undefined) {
         this.default_value = default_value
         this.point_to = point_to;
-        this.setter = target[1]
-        this.getter = target[0]
+        this.setter = render_callback
         this.updater = this.update_callback
     }
 }
@@ -131,7 +127,7 @@ class Lerp {
      * @param {Callback} conditinoal_weight - the Conditional_Weight instance
     * @returns {[prop_target, index]} - returns an array consisting of the prob target and the index of the typed array where the Lerp value is stored in the worker. You can use the index for conditional weights that get calculated on the worker.
     */
-    constructor(animator, { accessor, duration = 10, render_interval = 1, smoothstep = 1, delay = 0, animationTriggers, callback, steps = undefined, loop=false, steps_max_length }) {
+    constructor(animator, { render_callback, duration = 10, render_interval = 1, smoothstep = 1, delay = 0, animationTriggers, callback, steps = undefined, loop=false, steps_max_length }) {
         //currentValue = currentValue;
         if (animator == undefined) {
             return
@@ -146,15 +142,18 @@ class Lerp {
             if(loop!=false || animationTriggers!=undefined){
             addTiggers(index,animator,animationTriggers,steps.length,loop,steps.length-2,duration )
             }
-            
+            else{
+                animator.registry_map.get("loop").push(0)
+            }
+            animator.chain_map.get("lengths").push(steps.length-1) // WE DONT USE STEPS LENGTH HERE! WE UPDATE THE LENGTH VALUE IF THE USER UPDAES THE STEP WHILE THE STEPSLENGTH IS NEW
+            animator.chain_map.get("progress").push(steps.length-2)
             if (steps_max_length != undefined) {
                 const n = new Array(steps_max_length - steps.length).fill(0, 0, steps_max_length - steps.length)
                 steps = steps.concat(n)
             }
             animator.chain_map.set("buffer", animator.chain_map.get("buffer").concat(steps))
             animator.chain_map_points_length += steps.length
-            animator.chain_map.get("lengths").push(steps.length-1) // WE DONT USE STEPS LENGTH HERE! WE UPDATE THE LENGTH VALUE IF THE USER UPDAES THE STEP WHILE THE STEPSLENGTH IS NEW
-            animator.chain_map.get("progress").push(0)
+
         }
         else {
             animator.registry_map.get("lerp_chain_start").push(undefined)
@@ -165,12 +164,12 @@ class Lerp {
         animator.registry_map.get("delay_delta").push(0)
         animator.registry_map.get("type").push(2)
         animator.registry_map.get("delay").push(delay)
-        animator.registry_map.get("progress").push(0)
+        animator.registry_map.get("progress").push(duration)
         animator.registry_map.get("smoothstep").push(smoothstep)
         animator.animation_objects.set(this.id, {
             index: index,
             callback: callback,
-            prop: new Prop(accessor)
+            prop: new Prop(render_callback)
         })
         animator.animation_objects.get(this.id).prop.id=this.id
 
@@ -186,7 +185,7 @@ class Spring {
     }
 }
 class Matrix_Lerp {
-    constructor(animator, { accessor, duration = 10, render_interval = 1, smoothstep = 1, delay = 0, animationTriggers, callback, steps = undefined, loop=false, steps_max_length }) {
+    constructor(animator, { render_callback, duration = 10, render_interval = 1, smoothstep = 1, delay = 0, animationTriggers, callback, steps = undefined, loop=false, steps_max_length }) {
         //currentValue = currentValue;
         if (animator == undefined) {
             return
@@ -203,24 +202,27 @@ class Matrix_Lerp {
             if(loop!=false || animationTriggers!=undefined){
                 addTiggers(index,animator,animationTriggers,steps.length,loop,duration )
                 }
+                else{
+                    animator.registry_map.get("loop").push(0)
+                }
         }
         addCallback(index,animator,callback)
         animator.matrix_chain_map.set(index, matrix_map)
         //const length=steps_max_length!=undefined?steps_max_length:steps.length-1
         animator.chain_map_points_length += 1
         animator.chain_map.get("lengths").push(1)
-        animator.chain_map.get("progress").push(0)
+        animator.chain_map.get("progress").push(steps.length-2)
         animator.registry_map.get("duration").push(duration)
         animator.registry_map.get("type").push(3)
         animator.registry_map.get("render_interval").push(render_interval)
         animator.registry_map.get("delay_delta").push(0)
         animator.registry_map.get("delay").push(delay)
-        animator.registry_map.get("progress").push(0)
+        animator.registry_map.get("progress").push(duration)
         animator.registry_map.get("smoothstep").push(smoothstep)
         animator.animation_objects.set(this.id, {
             index: index,
             callback: callback,
-            prop: new Prop(accessor)
+            prop: new Prop(render_callback)
         })
         animator.animation_objects.get(this.id).prop.id=this.id
     }
@@ -326,14 +328,23 @@ class Animator {
     }
     //TODO
     //bei  update nachfragen ob resettet werden soll
-    // bei stop und reset_animations einen promise returnen
-    update_chain(id, val) {
-        this.animation_objects.get(id).chain = new Float32Array(this.chain_map.get("buffer")).set(val)
-    }
+    // eventuelle im worker einen promise für den loop returnen damit man dazwischen die werte ändern kann
+    // update_chain(id, val) {
+    //     this.animation_objects.get(id).chain = new Float32Array(this.chain_map.get("buffer")).set(val)
+    // }
     init(autostart = true) {
-        this.chain_map.set("buffer", new Float32Array(this.chain_map.get("buffer")))
-        this.worker.postMessage({ method: 'init', data: this.registry_map, chain_map: this.chain_map, matrix_chain_map: this.matrix_chain_map, trigger_map:this.trigger_map,constants: this.constant_map, callback_map: this.callback_map, spring_map: this.spring_map });
+        const initF =(()=>this.worker.postMessage({ method: 'init', data: this.registry_map, chain_map: this.chain_map, matrix_chain_map: this.matrix_chain_map, trigger_map:this.trigger_map,constants: this.constant_map, callback_map: this.callback_map, spring_map: this.spring_map }))
+        if(this.status==true){
+            this.stop_animations("all")
+            this.reset_animations("all")
+            
+            initF()
+    }
+    else{
+        initF()
         this.setFPS(this.fps)
+    }
+        
     }
     /**
      * Updates the animations with new data
@@ -341,6 +352,9 @@ class Animator {
      */
     update_lerp(data) {
         this.worker.postMessage({ method: 'update', type: 2, data: data })
+    }    
+    update_matrix_lerp(data) {
+        this.worker.postMessage({ method: 'update', type: 3, data: data })
     }
     Lerp(args) {
         return new Lerp(this, args)
@@ -370,18 +384,23 @@ class Animator {
     }
     
     stop_animations(indices) {
-        this.status=false
+        if(indices=="all"){
+            this.status=false
+        }
         this.worker.postMessage({ method: 'stop_animations', indices: indices });
     }
     
     reset_animations(indices) {
-        this.status=false
         this.worker.postMessage({ method: 'reset_animations', indices: indices });
     }
     
     stop() {
         this.status=false
         this.worker.postMessage({ method: 'stop' });
+    }
+    start() {
+        this.status=true
+        this.worker.postMessage({ method: 'start' });
     }
     setFPS(fps) {
         this.worker.postMessage({ method: 'change_framerate', fps_new: fps });

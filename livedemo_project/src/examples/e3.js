@@ -27,7 +27,7 @@ function Example(animator) {
     var t
     const amount = 50
     for (let i=1; i<=amount;i++){
-      t=(animator.Lerp({accessor: [undefined, animationProps.set], duration: 10, steps: [0, 100],}))
+      t=(animator.Lerp({render_callback: animationProps.set, duration: 10, steps: [0, 100],}))
       triggers.push({
         step:0,
         start:i*(4),
@@ -42,7 +42,7 @@ function Example(animator) {
     }
     // our animation trigger lerp  the getter of the accessor is undefined cause we dont need that here
     animationProps.animationTrigger=animator.Lerp({ 
-      accessor: [undefined, animationProps.trigger_set],
+      render_callback: animationProps.trigger_set,
       duration: triggerduration,
       steps: [10,100,10],
       animationTriggers:triggers,

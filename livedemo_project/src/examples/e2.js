@@ -9,7 +9,7 @@ import{addTrigger,removeTrigger,
 var animationProps = {
   setc: ((val) => {
       document.getElementById("b").style.transform = `translate(0,${val}%)`;
-      console.log(document.getElementById("b").style.transform) 
+      //console.log(document.getElementById("b").style.transform) 
     }),
     animator:undefined,
     target:undefined
@@ -23,27 +23,29 @@ const start=(()=>{
     animationProps.animator.start_animations([animationProps.target.id])
    })
 const stop=(()=>{
-  animationProps.animator.reset_animations([animationProps.target.id]).then(()=>{
-    console.log("stop")
-}
-  )
-  
+  animationProps.animator.stop_animations([animationProps.target.id])
   })
-  
+  const reset=(()=>{
+    animationProps.animator.reset_animations([animationProps.target.id])
+    })
+    const init=(()=>{
+      animationProps.animator.init()
+      })
 // the divs that get animated
 function E2(animator) {
   
     animationProps.animator=animator
     animationProps.target=animator.Lerp({ 
-        accessor: [animationProps.c, animationProps.setc], 
+      render_callback: animationProps.setc, 
         duration: 10, 
         steps: [0.1, 400.1, 0.1, 100, 20, 30, 40, 500, 0],
         steps_max_length:20,
-        loop:true,      
-        callback:{
-        callback:`(({id})=>{setLerp(id,1,Math.random()*255);console.log(id)})`,
-        condition:`(({step})=>step==0)`
-    } })
+    //     loop:true,      
+    //     callback:{
+    //     callback:`(({id})=>{setLerp(id,1,Math.random()*255);console.log(id)})`,
+    //     condition:`((({step,time})=>step==0&&time==1))`
+    // } 
+  })
     return (
     <div class="w-full h-full bg-[#ffffff]">
       <div class="z-10 w-1/2 h-1/4 absolute flex pointer-events-none  flex flex-col items-center" style={{ width:window.innerWidth*0.67}}>
@@ -111,23 +113,40 @@ const Controls2=[
       onClick: start
     }
   },
+  
+  {
+    name:"stop animation",
+    info:"Stops the animation sequence.",
+    button:{
+      name:"stop",
+      onClick:() => {stop() }
+    },
+  },
+  {
+    name:"reset animation",
+    info:"Resets the animation sequence.",
+    button:{
+      name:"reset",
+      onClick:() => {reset() }
+    },
+  },
   {
     name:"Update Sequence",
-    info:"This Event will update the animation sequence. The new array is [0.0, 100.0, 0.0]. It will also reset the animation state and restart the animation.",
+    info:"Updates the animation sequence. The new array is [0.0, 100.0, 0.0]. It will also reset the animation state and restart the animation.",
     button:{
       name:"update sequence",
       onClick:() => {update() }
     }
   },
-    {
-    name:"stop animation",
-    info:"This Event will stop the animation sequence.",
+  {
+    name:"initliaize Animator",
+    info:"initliazes the animator. Note that if you updated the sequence, the original sequece will get copied to the worker, since this is the initial value that is stored in the animator.",
     button:{
-      name:"stop",
-      onClick:() => {stop() }
+      name:"initialize Animator",
+      onClick:() => {init() }
     }
-  }
-  ]
+  },   
+]
 
 const TutorialWidget2={
   name:"simple_Animation_2",
