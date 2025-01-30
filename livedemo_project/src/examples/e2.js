@@ -8,7 +8,7 @@ import{addTrigger,removeTrigger,
 // this is our placeholder dict for the elements that get animated
 var animationProps = {
   setc: ((val) => {
-      document.getElementById("b").style.transform = `translate(0,${val}%)`;
+      document.getElementById("e2_b").style.transform = `translate(0,${val}%)`;
       //console.log(document.getElementById("b").style.transform) 
     }),
     animator:undefined,
@@ -32,7 +32,7 @@ const stop=(()=>{
       animationProps.animator.init()
       })
 // the divs that get animated
-function E2(animator) {
+function Example(animator) {
   
     animationProps.animator=animator
     animationProps.target=animator.Lerp({ 
@@ -40,11 +40,11 @@ function E2(animator) {
         duration: 10, 
         steps: [0.1, 400.1, 0.1, 100, 20, 30, 40, 500, 0],
         steps_max_length:20,
-    //     loop:true,      
-    //     callback:{
-    //     callback:`(({id})=>{setLerp(id,1,Math.random()*255);console.log(id)})`,
-    //     condition:`((({step,time})=>step==0&&time==1))`
-    // } 
+        loop:true,      
+        callback:{
+        callback:`(({id})=>{setLerp(id,1,Math.random()*255);console.log(id)})`,
+        condition:`((({step,time})=>step==0&&time==1))`
+    } 
   })
     return (
     <div class="w-full h-full bg-[#ffffff]">
@@ -61,8 +61,8 @@ function E2(animator) {
       </div>
       <div class="w-full h-full items-center justify-center flex flex-col">
         <div class="shrink-1 items-center justify-center w-full h-full font-size-xl flex flex-row">
-          <div id="a" class="w-10 h-10 bg-blue-400">a</div>
-          <div id="b" class="w-10 h-10 bg-blue-500">b</div>
+          <div id="e2_a" class="w-10 h-10 bg-blue-400">a</div>
+          <div id="e2_b" class="w-10 h-10 bg-blue-500">b</div>
         </div>
       </div>
     </div>
@@ -70,7 +70,7 @@ function E2(animator) {
 
 
   // this is just util stuff for the example project
-  const md2 = `\`\`\`javascript
+  const mdFile = `\`\`\`javascript
   // this is our placeholder dict for the elements that get animated
   var animationProps = {
     setc: ((val) => {
@@ -104,7 +104,7 @@ function E2(animator) {
       </div>
     )}
   \`\`\``
-const Controls2=[
+const Controls=[
   {
     name:"Start Animation",
     info:" This Event will start the animation with the values lerpPoint values that where set the last time. The initial values are the ones we have used for the initialisation of the Lerpclass: [0.1, 400.1 ,0.1 ,100, 20, 30, 40, 500, 0]",
@@ -148,12 +148,12 @@ const Controls2=[
   },   
 ]
 
-const TutorialWidget2={
+const TutorialWidget={
   name:"simple_Animation_2",
   info: "This Examples shows how to use Lerp animation with a sequence.",
   gitlink:"https://github.com/ji-podhead/kooljs/blob/main/livedemo_project/src/examples/e3.js",
-  mdfile:md2
+  mdfile:mdFile
 }
 
-export { E2,Controls2,TutorialWidget2 }
+export { Example,Controls,TutorialWidget }
 

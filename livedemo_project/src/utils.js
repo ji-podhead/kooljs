@@ -5,28 +5,48 @@ import remarkGfm from 'remark-gfm'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { materialOceanic}  from 'react-syntax-highlighter/dist/esm/styles/prism'
 // a11yDark, atomDark, base16AteliersulphurpoolLight, cb, coldarkCold, coldarkDark, coy, coyWithoutShadows, darcula, dark, dracula, duotoneDark, duotoneEarth, duotoneForest, duotoneLight, duotoneSea, duotoneSpace, funky, ghcolors, gruvboxDark, gruvboxLight, holiTheme, hopscotch, lucario, materialDark, materialLight, , nightOwl, nord, okaidia, oneDark, oneLight, pojoaque, prism, shadesOfPurple, solarizedDarkAtom, solarizedlight, synthwave84, tomorrow, twilight, vs, vscDarkPlus, xonokai, zTouch
-
-import { TutorialWidget2,Controls2 } from './examples/e2';
+import { TutorialWidget as TutorialWidget1,Controls as Controls1 } from './examples/e1';
+import { TutorialWidget as TutorialWidget2,Controls as Controls2 } from './examples/e2';
 import { TutorialWidget as TutorialWidget3,Controls as Controls3 } from './examples/e3';
 import { TutorialWidget as TutorialWidget4,Controls as Controls4 } from './examples/e4';
 
+const tutorials=[
+    {
+        controls:Controls1,
+        widgets:TutorialWidget1
+    },
+    {
+        controls:Controls2,
+        widgets:TutorialWidget2
+    },
+    {
+        controls:Controls3,
+        widgets:TutorialWidget3
+    },
+    {
+        controls:Controls4,
+        widgets:TutorialWidget4
+    },
+    {
+        controls:Controls4,
+        widgets:TutorialWidget4
+    }
 
-const TutorialComponents = [undefined, Controls2, Controls3,Controls4]
-const widgets = [TutorialWidget2, TutorialWidget2, TutorialWidget3,TutorialWidget4]
-const mdFiles = [null, TutorialWidget2.mdfile, TutorialWidget3.mdfile,TutorialWidget4.mdfile]
+
+]
 function Widgets({setsel,animator}) {
-    const Elements = (() => widgets.map((w,i) => {
+    const Elements = (() => tutorials.map((w,i) => {
         return (
             <div class="w-full  pt-5 pl-2 ">
                 <div class="rounded-md border-4 bg-[#bac9d0] border-slate-400 w-[95%] gap-y-5  flex flex-col  items-center justify-center">
-                <button id={w.name}   
+                <button id={`w_${i}`}   
                     onClick={(() => {
                         animator.stop()
                             setsel(i)
                         
                     })} 
-                    onMouseOver={(()=>{changeBackground(w.name,"#C0E58B")})}
-                    onMouseOut={(()=>{changeBackground(w.name,"white")})}
+                    onMouseOver={(()=>{changeBackground(`w_${i}`,"#C0E58B")})}
+                    onMouseOut={(()=>{changeBackground(`w_${i}`,"white")})}
                     class="bg-white border-2 border-black w-[95%] rounded-md h-[30%]"
                 >
                     <div class="text-sm">
@@ -61,18 +81,19 @@ const changeBorder = (element,color) => {
   };
 function AnimationControl({ args }) {
     const Elements = (() => {
-        if (args != undefined && args.sel >= 0 && TutorialComponents[args.sel]!=undefined) {
+        if (args != undefined && args.sel >= 0 ) {
             //console.log(TutorialComponents[args.sel])
-            return TutorialComponents[args.sel].map((control) => (
+            return tutorials[args.sel].controls.map((t) => (
                 <div class="rounded-md border-4 bg-[#bac9d0] items-center border-slate-400 w-[90%] gap-y-5  flex flex-col">
                     <div class="text-xl">
-                        {control.name}
+                        {t.name}
                     </div>
-                    <button id={control.button.name}   onClick={(() => control.button.onClick())} onMouseOver={(()=>{changeBackground(control.button.name,"#C0E58B")})} onMouseOut={(()=>{changeBackground(control.button.name,"white")})} class="bg-white border-4 border-black w-[50%] rounded-md h-[30%]">
-                        {control.button.name}
+                    <button id={t.name}   onClick={(() => t.button.onClick())} onMouseOver={(()=>{
+                        changeBackground(t.name,"#C0E58B")})} onMouseOut={(()=>{changeBackground(t.name,"white")})} class="bg-white border-4 border-black w-[50%] rounded-md h-[30%]">
+                        {t.button.name}
                     </button>
                     <div className="h-full w-[90%] text-sm text-left">
-                        {control.info}
+                        {t.info}
                     </div>
                 </div>
             ))
@@ -147,7 +168,7 @@ function CodeBlocks({ sel }) {
                         <button  id={"cop"} class="h-[90%] aspect-square border-2 border-[#ffffff] self-end rounded-md bg-[#28323c] flex items-center justify-center"
                             onMouseOver={()=>{changeBorder("cop","#C0E58B")}}
                             onMouseOut={()=>{changeBorder("cop","white")}}
-                            onClick={()=>{navigator.clipboard.writeText(mdFiles[sel].split('\n').slice(1, -1).join('\n'))}}
+                            onClick={()=>{navigator.clipboard.writeText(tutorials[sel].widgets.mdfile.split('\n').slice(1, -1).join('\n'))}}
                         >
                              <div class="w-[60%] h-[60%]">
                              <svg fill="#ffffff" viewBox="0 0 1920 1920" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M0 1919.887h1467.88V452.008H0v1467.88ZM1354.965 564.922v1242.051H112.914V564.922h1242.051ZM1920 0v1467.992h-338.741v-113.027h225.827V112.914H565.035V338.74H452.008V0H1920ZM338.741 1016.93h790.397V904.016H338.74v112.914Zm0 451.062h790.397v-113.027H338.74v113.027Zm0-225.588h564.57v-112.913H338.74v112.913Z" fill-rule="evenodd"></path> </g>
@@ -160,7 +181,7 @@ function CodeBlocks({ sel }) {
                 <div class="w-full h-full overflow-y-scroll  bg-[#4A5A6A] border-l-4 border-r-4  border-[#657a85] border-b-[#BF8DE1] border-b-4" >
                     <Markdown
                         class=""
-                        children={mdFiles[sel]}
+                        children={tutorials[sel].widgets.mdfile}
                         components={{
                             code(props) {
                                 const { children, className, node, ...rest } = props

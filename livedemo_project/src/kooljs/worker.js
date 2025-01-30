@@ -50,8 +50,6 @@ class LerpChain{
     update_progress(id){
         const step=this.progress[id]
         if(step==this.lengths[id]-1){
-            
-           // this.reset(id)
             return true
         }
         else{
@@ -65,6 +63,18 @@ class LerpChain{
     lerp_registry.reset(id)
     lerp_registry.progress[id]=0
     this.progress[id]=0
+    }
+    soft_reset(id){
+        if(lerp_registry.progress[id]==lerp_registry.duration[id]){
+            lerp_registry.reset(id)
+            lerp_registry.progress[id]=0
+        }
+        if(lerpChain_registry.progress[id]==lerpChain_registry.lengths[id]-1){
+            lerpChain_registry.reset(id)
+        }
+        else if(lerp_registry.activelist.includes(id)==false){
+            lerp_registry.activelist.push(id)
+        }
     }
 }
 class Callback {
@@ -152,7 +162,8 @@ async function animate() {
                    if ( triggers_step != undefined) {
                               targets= triggers_step.get(lerp_registry.progress[val])
                               targets&&targets.map((target)=>{
-                               lerpChain_registry.reset(target)
+
+                               lerpChain_registry.soft_reset(target)
                                })
                    }
             }
@@ -214,17 +225,8 @@ function stop_loop() {
 }
 function start_animations(indices){
     indices.map((id)=>{
-        if((lerpChain_registry.progress[id]==lerpChain_registry.lengths[id]-1)&&(lerp_registry.progress[id]==lerp_registry.duration[id])){
-        lerpChain_registry.reset(id)
-        }
-        else if(lerp_registry.activelist.includes(id)==false){
-            lerp_registry.activelist.push(id)
-        }
-
-    if (controller == null) {
+        lerpChain_registry.soft_reset(id)
         start_loop()
-    } 
-        
     })
 }
 function stop_animations(indices){

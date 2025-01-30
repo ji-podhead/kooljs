@@ -140,7 +140,7 @@ class Lerp {
             // last changes are here and steps related
             animator.registry_map.get("lerp_chain_start").push(animator.chain_map_points_length)
             if(loop!=false || animationTriggers!=undefined){
-            addTiggers(index,animator,animationTriggers,steps.length,loop,steps.length-2,duration )
+            addTiggers(index,animator,animationTriggers,steps.length,loop,duration )
             }
             else{
                 animator.registry_map.get("loop").push(0)
@@ -294,7 +294,7 @@ class Animator {
                         try{
                         this.animation_objects.get(value).prop.updater(ev.data.results.get(value), ev.data.result_indices[index])
                         }catch(err){
-                           // console.log(`could not set value of animation ${ev.data.result_indices[index]} -` + err)
+                           console.log(`could not set value of animation ${ev.data.result_indices[index]} -` + err)
                             try{
                             this.stop_animations([ev.data.result_indices[index]])
                             }
