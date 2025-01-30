@@ -130,9 +130,8 @@ const Controls2=[
   ]
 
 const TutorialWidget2={
-  name:"2. Animation Sequence",
+  name:"simple_Animation_2",
   info: "This Examples shows how to use Lerp animation with a sequence.",
-  index:1,
   gitlink:"https://github.com/ji-podhead/kooljs/blob/main/livedemo_project/src/examples/e3.js",
   mdfile:md2
 }

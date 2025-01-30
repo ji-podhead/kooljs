@@ -9,7 +9,6 @@ change_framerate} from "../kooljs/worker"
 var animationProps = {
     matrixLerp:undefined,
     set:((val,id) => {
-     console.log(val)
      document.getElementById('matrixLerp').style.backgroundColor = `rgba(${val[0]}, ${val[1]},${val[2]}, 1)` 
     }),
     animator:undefined,
@@ -27,9 +26,10 @@ function Example(animator) {
       duration: 10,
       steps: [[1,2,3],[100,200,300]],
       loop:true,
+
       callback:{
-        callback:`setMatrix(${animator.count},0,[Math.random()*255,Math.random()*255,Math.random()*255])`,
-        condition:`current_step(${animator.count})==0`
+        callback:`(({id,time})=>{console.log(time);setMatrix(id,0,[Math.random()*255,Math.random()*255,Math.random()*255])})`,
+        condition:`((({step,time})=>step==0&&time==10))`
       }
     })
   
@@ -102,9 +102,8 @@ const Controls=[
   
 
 const TutorialWidget={
-  name:"4. Animation Sequence",
+  name:"Matrix_Lerp_1",
   info: "This Examples shows how to use Lerp animation with a sequence.",
-  index:3,
   gitlink:"https://github.com/ji-podhead/kooljs/blob/main/livedemo_project/src/examples/e2.js",
   mdfile:mdFile
 }

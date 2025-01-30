@@ -149,7 +149,7 @@ async function animate() {
                         default:
                             return console.error("wrong type"+String(val));
                     }
-                    const args={id:val,value:lerp_registry.results.get(val),time:lerp_registry.delta_t[val] ,step:lerpChain_registry.progress[val]}
+                    const args={id:val,value:lerp_registry.results.get(val),time:lerp_registry.progress[val] ,step:lerpChain_registry.progress[val]} //time war vorther lerp_registry.delta_t[val]
                    if(callback_registry.condition.get(val)!=undefined
                    &&callback_registry.condition.get(val)(args)==true) {
                      callback_registry.callback.get(val)(args)
@@ -238,14 +238,11 @@ function stop_animations(indices){
     } 
   })
 }
-async function reset_animations(indices,promise_index){
+async function reset_animations(indices){
     if(indices=="all"){stop_loop();indices=lerp_registry.activelist}
     stop_animations(indices)
     indices.map((x)=>{lerpChain_registry.reset(x);lerp_registry.reset(x)})
     postMessage({ message: "render", results: lerp_registry.results, result_indices: indices })
-    if(promise_index!=undefined){
-        postMessage({ message: "resolve_promise", promise_index: promise_index})
-    }
 }
 function change_framerate(fps_new) {
     fps = fps_new
@@ -396,7 +393,7 @@ onmessage = (event) => {
             stop_animations(event.data.indices);
             break;
         case 'reset_animations':
-            reset_animations(event.data.indices,event.data.promise_index);
+            reset_animations(event.data.indices);
             break;
         case 'addTrigger':
             addTrigger(event.data.id,event.data.target,event.data.step,event.data.time);
@@ -411,7 +408,10 @@ function setLerp(index,step,value){
     lerpChain_registry.buffer[lerp_registry.lerp_chain_start[index]+step]=value
 }
 function setMatrix(index,step,value){
-    lerpChain_registry.matrixChains.get(index).get(step).map((x,i) => x[i]=value[i])
+    console.log(lerpChain_registry.matrixChains.get(index).get(step))
+    value.map((x,i) => {
+        lerpChain_registry.matrixChains.get(index).get(step)[i]=x
+    })
    // lerpChain_registry.matrixChains.get(index).get(step)
 }
 function get_time(id){return lerp_registry.delay_delta(id)}

@@ -59,6 +59,62 @@ class Constant {
         this.value = value
     }
 }
+function addTiggers(index,animator,animationTriggers,stepLength,loop,loop_start_time){
+    if(loop==true){
+        animator.registry_map.get("loop").push(1)
+        const loop_trigger={
+            step:stepLength-2,
+            start:loop_start_time,
+            target:index
+          }
+        if(animationTriggers==undefined){
+            animationTriggers=[loop_trigger]
+        }
+        else{
+            animationTriggers.push(loop_trigger)
+        }
+    }
+    else{
+        animator.registry_map.get("loop").push(0)
+    }
+    if (animationTriggers != undefined) {
+        const stepMap = new Map()
+        
+        let st = new Array(stepLength)
+        // im sorting after steps and then add the values to the registr.
+            animationTriggers.map((t) => {
+                if (Array.isArray(st[t.step]) == false) {
+                    st[t.step] = []
+                }
+                st[t.step].push([t.target, t.start])
+            })
+        st.map((s,i) => {
+            if (s.length > 0) {
+                const frames=new Map()
+                s.map((x)=>{
+                    if(frames.get(x[1])==undefined){
+                        frames.set(x[1],[])
+                    }
+                    frames.get(x[1]).push(x[0])
+                })
+                
+                frames.forEach((targets, frame) => {
+                    const idArray = new Uint16Array(targets); // 2x schneller als normale Arrays
+                    frames.set(frame, idArray);
+                });
+                
+            stepMap.set(i,(frames))
+            }                    
+        })
+    animator.trigger_map.set(index,stepMap)
+    }
+}
+function addCallback(index,animator,callback){
+    if (callback != undefined&&callback.callback!=undefined) {
+        callback.condition=callback.condition==undefined?true:callback.condition
+        animator.callback_map.set(index,callback)
+    }
+}
 class Lerp {
     /**
      * Constructor for Lerp class.
@@ -85,74 +141,25 @@ class Lerp {
         this.lerpStart = undefined
         animator.count+=1
         if (steps != undefined) {
-            const original_length = steps.length
             // last changes are here and steps related
             animator.registry_map.get("lerp_chain_start").push(animator.chain_map_points_length)
-            if(loop==true){
-                animator.registry_map.get("loop").push(1)
-                const loop_trigger={
-                    step:original_length-2,
-                    start:duration,
-                    target:index
-                  }
-                if(animationTriggers==undefined){
-                    animationTriggers=[loop_trigger]
-                }
-                else{
-                    animationTriggers.push(loop_trigger)
-                }
+            if(loop!=false || animationTriggers!=undefined){
+            addTiggers(index,animator,animationTriggers,steps.length,loop,steps.length-2,duration )
             }
-            else{
-                animator.registry_map.get("loop").push(0)
-            }
-            if (animationTriggers != undefined) {
-                const stepMap = new Map()
-                
-                let st = new Array(steps.length)
-                // im sorting after steps and then add the values to the registr.
-                    animationTriggers.map((t) => {
-                        if (Array.isArray(st[t.step]) == false) {
-                            st[t.step] = []
-                        }
-                        st[t.step].push([t.target, t.start])
-                    })
-                st.map((s,i) => {
-                    if (s.length > 0) {
-                        const frames=new Map()
-                        s.map((x)=>{
-                            if(frames.get(x[1])==undefined){
-                                frames.set(x[1],[])
-                            }
-                            frames.get(x[1]).push(x[0])
-                        })
-                        
-                        frames.forEach((targets, frame) => {
-                            const idArray = new Uint16Array(targets); // 2x schneller als normale Arrays
-                            frames.set(frame, idArray);
-                        });
-                        
-                    stepMap.set(i,(frames))
-                    }                    
-                })
-            animator.trigger_map.set(this.id,stepMap)
-            }
-
+            
             if (steps_max_length != undefined) {
                 const n = new Array(steps_max_length - steps.length).fill(0, 0, steps_max_length - steps.length)
                 steps = steps.concat(n)
             }
             animator.chain_map.set("buffer", animator.chain_map.get("buffer").concat(steps))
             animator.chain_map_points_length += steps.length
-            animator.chain_map.get("lengths").push(original_length-1) // WE DONT USE STEPS LENGTH HERE! WE UPDATE THE LENGTH VALUE IF THE USER UPDAES THE STEP WHILE THE STEPSLENGTH IS NEW
+            animator.chain_map.get("lengths").push(steps.length-1) // WE DONT USE STEPS LENGTH HERE! WE UPDATE THE LENGTH VALUE IF THE USER UPDAES THE STEP WHILE THE STEPSLENGTH IS NEW
             animator.chain_map.get("progress").push(0)
         }
         else {
             animator.registry_map.get("lerp_chain_start").push(undefined)
         }
-        if (callback != undefined&&callback.callback!=undefined) {
-            callback.condition=callback.condition==undefined?true:callback.condition
-            animator.callback_map.set(index,callback)
-        }
+        addCallback(index,animator,callback)
         animator.registry_map.get("duration").push(duration)
         animator.registry_map.get("render_interval").push(render_interval)
         animator.registry_map.get("delay_delta").push(0)
@@ -170,6 +177,14 @@ class Lerp {
         //return [prop.setter,index]
     }
 }
+class lerpDiv {
+
+}
+class Spring {
+    constructor(animator, elements, duration, spring_tension, spring_whatever) {
+        this.elements = elements
+    }
+}
 class Matrix_Lerp {
     constructor(animator, { accessor, duration = 10, render_interval = 1, smoothstep = 1, delay = 0, animationTriggers, callback, steps = undefined, loop=false, steps_max_length }) {
         //currentValue = currentValue;
@@ -185,11 +200,15 @@ class Matrix_Lerp {
             steps.map((step,index)=>{
                 matrix_map.set(index,new Float32Array(step))
             })
+            if(loop!=false || animationTriggers!=undefined){
+                addTiggers(index,animator,animationTriggers,steps.length,loop,duration )
+                }
         }
+        addCallback(index,animator,callback)
         animator.matrix_chain_map.set(index, matrix_map)
-        const length=steps_max_length!=undefined?steps_max_length:steps.length-1
-        animator.chain_map_points_length += length
-        animator.chain_map.get("lengths").push(length)
+        //const length=steps_max_length!=undefined?steps_max_length:steps.length-1
+        animator.chain_map_points_length += 1
+        animator.chain_map.get("lengths").push(1)
         animator.chain_map.get("progress").push(0)
         animator.registry_map.get("duration").push(duration)
         animator.registry_map.get("type").push(3)
@@ -206,15 +225,6 @@ class Matrix_Lerp {
         animator.animation_objects.get(this.id).prop.id=this.id
     }
 }
-class lerpDiv {
-
-}
-class Spring {
-    constructor(animator, elements, duration, spring_tension, spring_whatever) {
-        this.elements = elements
-    }
-}
-
 class Animator {
     /**
      * The Animator Class lets you create and control the animation thread to manage your animations
@@ -268,7 +278,6 @@ class Animator {
         this.indexlist = new Map()
         this.obj = undefined
         this.activelist = []
-        this.promises=[]
         this.chain_buffer = undefined
         this.worker = new Worker(new URL('./worker.js', import.meta.url));
         //      --> WORKER MESSAGES <--
@@ -298,6 +307,7 @@ class Animator {
                 })
             
             }
+
             // // else if (ev.data.message == "resolve_promise") {
             // // this.promises[ev.data.promise_index]()
             // }
@@ -347,6 +357,7 @@ class Animator {
         this.status=true
         this.worker.postMessage({ method: 'start_animations', indices: indices });
     }
+    //deprecated
     waitForPromise(msg){
         const promiseIndex = this.promises.length;
         this.promises.push(null); // Platzhalter für den Promise
@@ -354,21 +365,18 @@ class Animator {
         return new Promise((resolve) => {
             this.worker.postMessage(msg);
             
-            this.worker.onmessage = (event) => {
-                if (event.data.promise_index === promiseIndex) {
-                    this.promises[promiseIndex] = event.data.result;
-                    resolve(this.promises[promiseIndex]);
-                }
-            };
+
         });
     }
     
     stop_animations(indices) {
-        return this.waitForPromise({ method: 'stop_animations', indices: indices, promise_index: this.promises.length });
+        this.status=false
+        this.worker.postMessage({ method: 'stop_animations', indices: indices });
     }
     
     reset_animations(indices) {
-        return this.waitForPromise({ method: 'reset_animations', indices: indices, promise_index: this.promises.length });
+        this.status=false
+        this.worker.postMessage({ method: 'reset_animations', indices: indices });
     }
     
     stop() {

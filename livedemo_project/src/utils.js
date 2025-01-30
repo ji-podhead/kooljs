@@ -21,9 +21,8 @@ function Widgets({setsel,animator}) {
                 <div class="rounded-md border-4 bg-[#bac9d0] border-slate-400 w-[95%] gap-y-5  flex flex-col  items-center justify-center">
                 <button id={w.name}   
                     onClick={(() => {
-                        animator.reset_animations("all").then((()=>{
-                            setsel(w.index)
-                        }))
+                        animator.reset_animations("all")
+                            setsel(i)
                         
                     })} 
                     onMouseOver={(()=>{changeBackground(w.name,"#C0E58B")})}
@@ -62,7 +61,8 @@ const changeBorder = (element,color) => {
   };
 function AnimationControl({ args }) {
     const Elements = (() => {
-        if (args != undefined && args.sel >= 0) {
+        if (args != undefined && args.sel >= 0 && TutorialComponents[args.sel]!=undefined) {
+            //console.log(TutorialComponents[args.sel])
             return TutorialComponents[args.sel].map((control) => (
                 <div class="rounded-md border-4 bg-[#bac9d0] items-center border-slate-400 w-[90%] gap-y-5  flex flex-col">
                     <div class="text-xl">
