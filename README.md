@@ -11,7 +11,7 @@
   - you can update those values and even  use different sizes if you set the max_length parameter
 
 
-## LiveDemo v0.1.4
+## LiveDemo v0.1.5
 - check out the [LiveDemo](https://ji-podhead.github.io/kooljs/)
 - I will add adding additional Examples over time
 ### contrbuting examples
