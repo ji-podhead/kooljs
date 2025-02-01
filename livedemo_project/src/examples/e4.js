@@ -1,49 +1,61 @@
-import{addTrigger,removeTrigger,
-get_time,current_step,
-start_animations,stop_animations,
-setLerp,setMatrix,
-get_lerp_value,
-reset_lerp,
-change_framerate} from "../kooljs/worker"
 // this is our placeholder dict for the elements that get animated
 var animationProps = {
-    matrixLerp:undefined,
-    set:((val,id) => {
-     document.getElementById('matrixLerp').style.backgroundColor = `rgba(${val[0]}, ${val[1]},${val[2]}, 1)` 
+  set: ((val,id) => {
+    // if(val==0){
+    // console.log(`val ${val} id ${id}`)  
+    // }
+    document.getElementById(`e3_${id}`).style.transform = `translate(0%,${val}%)`;
+    }),
+    animationTrigger:undefined,
+    trigger_set:((val,id) => {
+    // console.log(val)
+     document.getElementById('trigger_3').style.width = `${val}%`;
+
     }),
     animator:undefined,
 }
 // utility functions to start the animation and update the sequence
 const start=(()=>{
-    animationProps.animator.start_animations([animationProps.matrixLerp.id])
+    animationProps.animator.start_animations([animationProps.animationTrigger.id])
    })
-   const update=(() => {
-    animationProps.animator.update_matrix_lerp([{id: animationProps.matrixLerp.id,values:  [[225,0,0],[0,0,255]]}])
-   })
-
-   
 // the divs that get animated
 function Example(animator) {
     animationProps.animator=animator
+    const div_containers=[]
+    const triggerduration=200
+    const triggers=[]
+    var t
+    const amount = 50
+    for (let i=1; i<=amount;i++){
+      t=(animator.Lerp({render_callback: animationProps.set, duration: 10, steps: [0, 100],}))
+      triggers.push({
+        step:0,
+        start:i*(4),
+        target:t.id
+      })
+      div_containers.push(
+        <div key={`e3_${t.id}`} id={`e3_${t.id}`} className="w-[1px] h-10 bg-blue-400 "           
+        style={{width: `calc(100%/${amount})`,  backgroundColor: `rgba(0, 0, 255, ${0.1 + (i / 10)})` }}>
+        {/* {t.id} */}
+        </div>
+      )
+    }
     // our animation trigger lerp  the getter of the accessor is undefined cause we dont need that here
-    animationProps.matrixLerp=animator.Matrix_Lerp({ 
-      render_callback: animationProps.set,
-      duration: 10,
-      steps: [[0,0,0],[100,200,300]],
-      // loop:true,
+    animationProps.animationTrigger=animator.Lerp({ 
+      render_callback: animationProps.trigger_set,
+      duration: triggerduration,
+      steps: [10,100,10],
+      animationTriggers:triggers,
+      loop:true
 
-      // callback:{
-      //   callback:`(({id,time})=>{console.log(time);setMatrix(id,0,[Math.random()*255,Math.random()*255,Math.random()*255])})`,
-      //   condition:`((({step,time})=>step==0&&time==10))`
-      // }
     })
-    
+  
     return (
-    <div class="w-full h-full bg-white " key={"matrixLerp"} id={"matrixLerp"}>
+    <div class="w-full h-full bg-white">
       <div class="z-10 w-1/2 h-1/4 absolute flex pointer-events-none  flex-col items-center" style={{ width:window.innerWidth*0.67}}>
       <div class=" rounded-b-md   max-w-[45%]  text-black bg-[#5C8F8D]  items-center bg-opacity-45 border-b-2 border-l-2 border-r-2 border-black">
       <div class=" text-xl ">
-        Example 4: matrices
+        Example 3: Triggers
       </div>
       <div class=" text-sm pl-5> text-left text-wrap w-[90%]">
         This example demonstrates how to create animations using a sequence instead of min/max values.
@@ -51,8 +63,15 @@ function Example(animator) {
       </div>
       </div>
       </div>
-      <div class="w-full h-full items-center justify-center flex">
-        <div class="w-[50%] h-20 flex flex-col">
+      <div class="w-full h-full items-center justify-center flex shrink-0">
+        <div class="w-[50%] h-20 flex flex-col shrink-0">
+        <div key={"trigger_3"} id={"trigger_3"} class="w-[10%] h-10 bg-red-600">Trigger</div>
+        <div class="shrink-0 items-center justify-center w-full h-full font-size-xl flex flex-row text-white">
+        <div  className="w-[10%] h-10 bg-black" ></div> 
+          {
+            div_containers.map((val)=>{return val})
+          }
+          </div>        
         </div>
       </div>
     </div>
@@ -102,21 +121,12 @@ const Controls=[
       name:"start",
       onClick: start
     }
-  },
-  {
-    name:"Update Sequence",
-    info:" This Event will start the animation with the values lerpPoint values that where set the last time. The initial values are the ones we have used for the initialisation of the Lerpclass: [0.1, 400.1 ,0.1 ,100, 20, 30, 40, 500, 0]",
-    button:{
-      name:"update",
-      onClick: update
-    }
   }
-
 ]
   
 
 const TutorialWidget={
-  name:"Matrix_Lerp_1",
+  name:"Animation_Sequence_1",
   info: "This Examples shows how to use Lerp animation with a sequence.",
   gitlink:"https://github.com/ji-podhead/kooljs/blob/main/livedemo_project/src/examples/e2.js",
   mdfile:mdFile

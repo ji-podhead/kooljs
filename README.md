@@ -62,7 +62,7 @@ Feel free to contribute your own examples or open a feature request.
 
 ### Enhancements
 - removeing accessor and exchange with *render_callback* (using setter only)
-- use fixed size for results
+- use fixed size for results<br>
 ~~- use special keywords in the callback to use the registry of the worker thread~~<br>
 ~~- triggering animations on the worker thread~~
 

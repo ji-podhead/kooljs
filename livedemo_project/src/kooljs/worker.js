@@ -119,14 +119,14 @@ async function animate() {
     finished=[]
     lerp_registry.activelist.map((val, index) => {
         //checking if the element is finished and needs to be deleted
-        if (lerp_registry.progress[val] < lerp_registry.duration[val]) {
+        if (lerp_registry.progress[val] <= lerp_registry.duration[val]) {
             //waiting for delay
             if (lerp_registry.delay_delta[val] < lerp_registry.delay[val]) {
                 lerp_registry.delay_delta[val] += 1
             }
             else {
                 //increment progress
-                lerp_registry.progress[val] += 1
+                
                 // if (lerp_registry.progress[val] % lerp_registry.render_interval[val] == 0) {
                     lerp_registry.delta_t[val] = lerp_registry.progress[val] / lerp_registry.duration[val];
 
@@ -166,6 +166,7 @@ async function animate() {
                                lerpChain_registry.soft_reset(target)
                                })
                    }
+                   lerp_registry.progress[val] += 1
             }
         } else {
             if(lerp_registry.lerp_chain_start[val]!=undefined&&lerpChain_registry.update_progress(val)==true){
@@ -307,6 +308,9 @@ function init(lerps, lerpChains, matrixChains, triggers, constants, condi_new, s
 }
 function addTrigger(id,target,step,time){
     var trigger = []
+    if(trigger_registry.get(id)==undefined){
+        trigger_registry.set(id,new Map())
+    }
     if(trigger_registry.get(id).get(step)==undefined){
         trigger_registry.get(id).set(step, new Map())
         trigger_registry.get(id).get(step).set(time,new Uint8Array([target]))
@@ -316,11 +320,13 @@ function addTrigger(id,target,step,time){
     }
     else{
     trigger=trigger_registry.get(id).get(step).get(time)
-    console.log(trigger)
     if(trigger.includes(target)==false){
         const newtriggers= new Uint8Array(new Array(trigger).push(target))
         console.log(newtriggers)
         trigger_registry.get(id).get(step).set(time,newtriggers)
+    }
+    else{
+        console.warn(`trigger already exists: target ${target} in timeframe ${time} in step ${step} on animation with id ${id}`)
     }
 }
 }
@@ -329,24 +335,31 @@ function removeTrigger(id,target,step,time){
     
     if(trigger!=undefined)
         {
-            trigger=trigger.get(time)!=undefined?trigger.get(time):trigger
+            if(trigger.get(time)!=undefined){
+                trigger=trigger.get(time)
+            }
+            else{
+                return(console.warn("the slected timeframe in the  step does not include the target"))
+            }
+            
         }
         else{
-            return(console.error("the trigger registr has now element for the step"))
+            return(console.warn("the trigger registr has does not include the step"))
         }
     
     console.log(trigger)
-    if(trigger!= undefined&&trigger.includes(target)==false&&trigger_registry.get(id).get(step).get(time).length>1){
-        const newtriggers= new Uint8Array(new Array(trigger).splice(trigger.find(target),1))
-        console.log(newtriggers)
+    const targetId=trigger.indexOf(target)
+    if(targetId!=undefined&&trigger.length>1){
+        const newtriggers= new Uint8Array(new Array(trigger).splice(targetId,1))
+        console.log(`removed trigger target ${target} in timeframe ${time} in step ${step} from from id ${id}`)
         trigger_registry.get(id).get(step).set(time,newtriggers)
     }
-    else if(trigger_registry.get(id).get(step).size>1) {
+    else {
         trigger_registry.get(id).get(step).set(time,undefined)
     }
-    else{
-        trigger_registry.get(id).set(step,undefined)
-    }
+    // else{
+    //     trigger_registry.get(id).set(step,undefined)
+    // }
 }
 function update(type,values){
         values.map((x)=>{
@@ -379,7 +392,6 @@ async function render() {
     postMessage({ message: "render", results: lerp_registry.results, result_indices: lerp_registry.activelist })
 }
 onmessage = (event) => {
-    // eslint-disable-next-line default-case
     switch (event.data.method) {
         case 'init':
             init(event.data.data, event.data.chain_map, event.data.matrix_chain_map, event.data.trigger_map, event.data.constants, event.data.callback_map,event.data.spring_map,);
@@ -414,6 +426,9 @@ onmessage = (event) => {
         case 'removeTrigger':
             removeTrigger(event.data.id,event.data.target,event.data.step,event.data.time);
             break;
+        default:
+            console.warn("no method selected during worker call")
+            break
     }
 };
 function setLerp(index,step,value){

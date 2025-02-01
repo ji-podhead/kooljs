@@ -372,16 +372,16 @@ class Animator {
         this.worker.postMessage({ method: 'start_animations', indices: indices });
     }
     //deprecated
-    waitForPromise(msg){
-        const promiseIndex = this.promises.length;
-        this.promises.push(null); // Platzhalter für den Promise
+    // waitForPromise(msg){
+    //     const promiseIndex = this.promises.length;
+    //     this.promises.push(null); // Platzhalter für den Promise
         
-        return new Promise((resolve) => {
-            this.worker.postMessage(msg);
+    //     return new Promise((resolve) => {
+    //         this.worker.postMessage(msg);
             
 
-        });
-    }
+    //     });
+    // }
     
     stop_animations(indices) {
         if(indices=="all"){
@@ -404,6 +404,12 @@ class Animator {
     }
     setFPS(fps) {
         this.worker.postMessage({ method: 'change_framerate', fps_new: fps });
+    }
+    addTrigger(id,target,step,time){
+        this.worker.postMessage({ method: 'addTrigger', id: id,target: target,step: step,time: time });
+    }
+    removeTrigger(id,target,step,time){
+        this.worker.postMessage({ method: 'removeTrigger', id: id,target: target,step: step,time: time });
     }
 }
 export { Prop, Animator, Lerp, Constant }

@@ -12,39 +12,35 @@ var animationProps = {
       //console.log(document.getElementById("b").style.transform) 
     }),
     animator:undefined,
-    target:undefined
+    target_a:undefined
 }
 
 // utility functions to start the animation and update the sequence
 const update=(() => {
-    animationProps.animator.update_lerp([{id: animationProps.target.id,values:  [0.1, 400.1 ,0.1]}])
+    animationProps.animator.update_lerp([{id: animationProps.target_a.id,values:  [0, 100 ,0,200,100,300,200,400,300,0]}])
    })
 const start=(()=>{
-    animationProps.animator.start_animations([animationProps.target.id])
+    animationProps.animator.start_animations([animationProps.target_a.id])
    })
 const stop=(()=>{
-  animationProps.animator.stop_animations([animationProps.target.id])
+  animationProps.animator.stop_animations([animationProps.target_a.id])
   })
-  const reset=(()=>{
-    animationProps.animator.reset_animations([animationProps.target.id])
-    })
-    const init=(()=>{
-      animationProps.animator.init()
-      })
+const reset=(()=>{
+  animationProps.animator.reset_animations([animationProps.target_a.id])
+  })
+const init=(()=>{
+  animationProps.animator.init()
+  })
 // the divs that get animated
 function Example(animator) {
   
     animationProps.animator=animator
-    animationProps.target=animator.Lerp({ 
+    animationProps.target_a=animator.Lerp({ 
       render_callback: animationProps.setc, 
         duration: 10, 
-        steps: [0.1, 400.1, 0.1, 100, 20, 30, 40, 500, 0],
-        steps_max_length:20,
-        loop:true,      
-        callback:{
-        callback:`(({id})=>{setLerp(id,1,Math.random()*255);console.log(id)})`,
-        condition:`((({step,time})=>step==0&&time==1))`
-    } 
+        steps: [0, 400, 0],
+        steps_max_length:10,
+        loop:true
   })
     return (
     <div class="w-full h-full bg-[#ffffff]">
