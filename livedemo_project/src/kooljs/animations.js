@@ -47,12 +47,41 @@ class Constant {
      * @param {number | } value - the AnimationTrigger instance to trigger other animations
      * @returns {void} 
      */
-    constructor(animator, type, value) {
+    constructor(animator, {type, value,render_callback}) {
         //currentValue = currentValue;
-        index = animator.constant_map.get(type).length
+       
+        this.id = animator.constant_count
+        animator.constant_count+=1
+        if(type=="matrix"){
+        animator.constant_map.get(type).set(this.id, value)
+        }
+        else{
+            animator.constant_map.get(type).push(value)
+        }
+        if(render_callback!=undefined){
+            animator.constant_render_callbacks.set(this.id,render_callback)
+        }
+    }
+}
+class Lambda {
+    /**
+     * Constructor for Lerp class.
+     * You can either pass in the target as a react prop or a map prop
+     * the object you pass as prob will get overriden and will either be a map, or a react use state
+     * @param {Animator} animator - the Animator Instance
+     * @param {string} callback - the type of the constant can be number, matrix
+     * @param {string } conditon - the AnimationTrigger instance to trigger other animations
+     * @returns {number} id  - animator.lambda_map.size
+     */
+    constructor(animator, {condition=true,callback}) {
+        //currentValue = currentValue;
+        index = animator.lambda_map.size
         this.id = index
-        this.type = type
-        this.value = value
+        this.animator=animator
+        animator.lambda_map.set(index, {condition:condition,callback:callback})
+    }
+    call(args){
+        this.animator.lambda_call(this.id,args)
     }
 }
 function addTiggers(index,animator,animationTriggers,stepLength,loop,loop_start_time){
@@ -146,7 +175,7 @@ class Lerp {
                 animator.registry_map.get("loop").push(0)
             }
             animator.chain_map.get("lengths").push(steps.length-1) // WE DONT USE STEPS LENGTH HERE! WE UPDATE THE LENGTH VALUE IF THE USER UPDAES THE STEP WHILE THE STEPSLENGTH IS NEW
-            animator.chain_map.get("progress").push(steps.length-2)
+            animator.chain_map.get("progress").push(0)
             if (steps_max_length != undefined) {
                 const n = new Array(steps_max_length - steps.length).fill(0, 0, steps_max_length - steps.length)
                 steps = steps.concat(n)
@@ -164,7 +193,7 @@ class Lerp {
         animator.registry_map.get("delay_delta").push(0)
         animator.registry_map.get("type").push(2)
         animator.registry_map.get("delay").push(delay)
-        animator.registry_map.get("progress").push(duration)
+        animator.registry_map.get("progress").push(0)
         animator.registry_map.get("smoothstep").push(smoothstep)
         animator.animation_objects.set(this.id, {
             index: index,
@@ -211,13 +240,13 @@ class Matrix_Lerp {
         //const length=steps_max_length!=undefined?steps_max_length:steps.length-1
         animator.chain_map_points_length += 1
         animator.chain_map.get("lengths").push(1)
-        animator.chain_map.get("progress").push(steps.length-2)
+        animator.chain_map.get("progress").push(0)
         animator.registry_map.get("duration").push(duration)
         animator.registry_map.get("type").push(3)
         animator.registry_map.get("render_interval").push(render_interval)
         animator.registry_map.get("delay_delta").push(0)
         animator.registry_map.get("delay").push(delay)
-        animator.registry_map.get("progress").push(duration)
+        animator.registry_map.get("progress").push(0)
         animator.registry_map.get("smoothstep").push(smoothstep)
         animator.animation_objects.set(this.id, {
             index: index,
@@ -244,10 +273,12 @@ class Animator {
         this.chain_map = new Map()
         this.matrix_chain_map = new Map()
         this.spring_map = new Map()
+        this.lambda_map = new Map()
         //--> constant <--
         this.constant_map = new Map()
         this.constant_map.set("number", [])
-        this.constant_map.set("matrix", [])
+        this.constant_map.set("matrix", new Map())
+        this.constant_render_callbacks= new Map()
         //--> animation objects (Lerp...) <--
 
         this.registry_map.set('type', []);
@@ -276,6 +307,7 @@ class Animator {
         //      --> UTIL <--
         this.fps = fps
         this.status=false
+        this.constant_count=0
         this.animation_objects = new Map()
         this.indexlist = new Map()
         this.obj = undefined
@@ -309,7 +341,9 @@ class Animator {
                 })
             
             }
-
+            else if (ev.data.message == "render_constant") {
+                this.constant_render_callbacks.get(ev.data.id).callback(ev.data.value)
+            }
             // // else if (ev.data.message == "resolve_promise") {
             // // this.promises[ev.data.promise_index]()
             // }
@@ -333,7 +367,7 @@ class Animator {
     //     this.animation_objects.get(id).chain = new Float32Array(this.chain_map.get("buffer")).set(val)
     // }
     init(autostart = true) {
-        const initF =(()=>this.worker.postMessage({ method: 'init', data: this.registry_map, chain_map: this.chain_map, matrix_chain_map: this.matrix_chain_map, trigger_map:this.trigger_map,constants: this.constant_map, callback_map: this.callback_map, spring_map: this.spring_map }))
+        const initF =(()=>this.worker.postMessage({ method: 'init', data: this.registry_map, chain_map: this.chain_map, matrix_chain_map: this.matrix_chain_map, trigger_map:this.trigger_map,constants: this.constant_map, callback_map: this.callback_map, lambda_map:this.lambda_map, spring_map: this.spring_map }))
         if(this.status==true){
             this.stop_animations("all")
             this.reset_animations("all")
@@ -352,15 +386,24 @@ class Animator {
      */
     update_lerp(data) {
         this.worker.postMessage({ method: 'update', type: 2, data: data })
-    }    
+    }
+    lambda_call(id,args) {
+        this.worker.postMessage({ method: 'lambda_call', id:id, args: args })
+    }     
     update_matrix_lerp(data) {
         this.worker.postMessage({ method: 'update', type: 3, data: data })
+    }
+    Lambda(condition,callback){
+        return new Lambda(this,condition,callback)
     }
     Lerp(args) {
         return new Lerp(this, args)
     }
     Matrix_Lerp(args) {
         return new Matrix_Lerp(this, args)
+    }
+    constant(args){
+        return new Constant(this,args)
     }
     update_constant(data) {
         data.map((x) => {

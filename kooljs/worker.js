@@ -63,6 +63,7 @@ class LerpChain{
     lerp_registry.reset(id)
     lerp_registry.progress[id]=0
     this.progress[id]=0
+    
     }
     soft_reset(id){
         if(lerp_registry.progress[id]==lerp_registry.duration[id]){

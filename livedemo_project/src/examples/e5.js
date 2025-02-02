@@ -1,64 +1,123 @@
-import{addTrigger,removeTrigger,
-get_time,current_step,
-start_animations,stop_animations,
-setLerp,setMatrix,
-get_lerp_value,
-reset_lerp,
-change_framerate} from "../kooljs/worker"
-// this is our placeholder dict for the elements that get animated
-var animationProps = {
-    matrixLerp:undefined,
-    set:((val,id) => {
-     document.getElementById('matrixLerp').style.backgroundColor = `rgba(${val[0]}, ${val[1]},${val[2]}, 1)` 
-    }),
-    animator:undefined,
+
+import {   
+  addTrigger,removeTrigger,
+  get_time,current_step,is_active,
+  start_animations,stop_animations,
+  setLerp,setMatrix,
+  get_lerp_value,
+  soft_reset,hard_reset,
+  set_duration,
+  set_sequence_length,
+  change_framerate,
+  get_constant,get_constant_number,get_constant_row,render_constant,
+  update_constant,
+  set_delta_t,set_step,
+  set_delay,
+  set_delay_delta} from "../kooljs/worker";
+import ExampleDescription from "./utils/utils";
+var red,green,blue,bg_gradient
+function bg(val){
+  red= val[2]
+  green= val[3]
+  blue= val[4]
+  bg_gradient=`linear-gradient(to right, rgb(0,0,0), rgb(${red}, ${green}, ${blue})`
+  return bg_gradient
 }
-// utility functions to start the animation and update the sequence
-const start=(()=>{
-    animationProps.animator.start_animations([animationProps.matrixLerp.id])
-   })
-   const update=(() => {
-    animationProps.animator.update_matrix_lerp([{id: animationProps.matrixLerp.id,values:  [[225,0,0],[0,0,255]]}])
-   })
+function setStyle(id,val){
+  document.getElementById("e5_"+id).style.size = `${(val[0])}%`;
+  document.getElementById("e5_"+id).style.background=bg(val);
+}
 
-   
-// the divs that get animated
+const length = 16       
+const reference_matrix=[[1,0.3,30,30,30],[4,1,100,100,255]] // <- [scale,opacity,r,g,b]
+const animProps={
+  animator:undefined,//                 <- animator        << Animator >> 
+  idle_animation:undefined,//           <- idleAnims       << MatrixLerp >> 
+  boxes: new Array(length),//           <- boxes dict    << div | MatrixLerp >> 
+  indices: new Float32Array(length),//  <- anim id's        << Float32 >> 
+  selected: undefined,//                <- animator.const    << number >>
+  status: undefined,//                  <- animator.const    << number >>
+  reference_matrix: undefined,//        <- animator.const    << Float32 >>
+  stopActive: undefined
+
+}
 function Example(animator) {
-    animationProps.animator=animator
-    // our animation trigger lerp  the getter of the accessor is undefined cause we dont need that here
-    animationProps.matrixLerp=animator.Matrix_Lerp({ 
-      render_callback: animationProps.set,
-      duration: 10,
-      steps: [[0,0,0],[100,200,300]],
-      // loop:true,
-
-      // callback:{
-      //   callback:`(({id,time})=>{console.log(time);setMatrix(id,0,[Math.random()*255,Math.random()*255,Math.random()*255])})`,
-      //   condition:`((({step,time})=>step==0&&time==10))`
-      // }
+    animProps.animator=animator
+    animProps.selected=animator.constant({type:"number",value:0})
+    animProps.reference_matrix=animator.constant({
+      type:"matrix",
+      value:reference_matrix
     })
-    
+    animProps.idle_animation= animator.Matrix_Lerp({ 
+      render_callback:((val)=>setStyle(0,val)),
+      duration: 5, 
+      steps: reference_matrix,
+      loop:false,
+      })
+    for (let i=0;i<length;i++){
+      animProps.boxes[i]=
+        {
+          anim: animator.Lerp({ 
+            render_callback:((val)=>setStyle(i,val)), 
+            duration: 5, 
+            steps: reference_matrix,
+            loop:false,
+            }),
+          div: <div class="w-full h-full flex items-center justify-center bg-black" id={"e5_"+i} key={"e5_"+i}>
+                  <div id={"e5_child"+i} key={"e5_child"+i} class="w-0 h-0 bg-white border-[#78BDB8] border-2 rounded-md text-white flex-col gap-2 items-center justify-center" >
+                    <div class="text-center text-xl"><b>Div No: {i}</b></div>
+                    <div class="text-left w-[80%] text-sm" >
+                      Line: --1--<br/>
+                      Line: --2--<br/>
+                      Line: --3--<br/>
+                      Line: --4--<br/>
+                    </div>
+                  </div>
+              </div>,
+      }
+      animProps.indices[i]=animProps.boxes[i].anim.id
+    }
+    animProps.stopActive = animator.Lambda({
+      callback: `(()=>{
+        [${animProps.indices}].map((i)=>{
+            if(is_active(i)){
+              console.log("stopping" + i)
+              const ref = get_constant_row(${animProps.reference_matrix.id},0)
+              setMatrix(i,0,[get_lerp_value(i)[0],ref[1]])
+              hard_reset(i)
+            }
+        })
+      })`
+    })
     return (
-    <div class="w-full h-full bg-white " key={"matrixLerp"} id={"matrixLerp"}>
-      <div class="z-10 w-1/2 h-1/4 absolute flex pointer-events-none  flex-col items-center" style={{ width:window.innerWidth*0.67}}>
-      <div class=" rounded-b-md   max-w-[45%]  text-black bg-[#5C8F8D]  items-center bg-opacity-45 border-b-2 border-l-2 border-r-2 border-black">
-      <div class=" text-xl ">
-        Example 4: matrices
-      </div>
-      <div class=" text-sm pl-5> text-left text-wrap w-[90%]">
-        This example demonstrates how to create animations using a sequence instead of min/max values.
-        you can change the sequence by calling animator.update(). If you dont specify the max length of the sequence using the sequence_max_lengt argument, the length of the initial array will be used.
-      </div>
-      </div>
-      </div>
-      <div class="w-full h-full items-center justify-center flex">
-        <div class="w-[50%] h-20 flex flex-col">
-        </div>
+    <div class="w-full h-full bg-[#ffffff]">
+      <ExampleDescription header={header} description={exampleDiscription}/>
+      <div class="w-full h-full">
+      <div class="w-full h-full bg-red-300 grid grid-cols-4 gap-1 justify-center items-center">
+        {animProps.boxes.map((e) => e.div)}
       </div>
     </div>
+    </div>
   )}
-
-
+const start=(()=>{
+    animProps.animator.start_animations(animProps.indices)
+})
+const lambdaCall=(()=>{
+  animProps.stopActive.call()
+})
+const stop=(()=>{
+  animProps.animator.stop_animations("all")
+})
+const reset=(()=>{
+  animProps.animator.reset_animations("all")
+})
+const init=(()=>{
+  animProps.animator.init()
+})
+const header="callbacks"
+const exampleDiscription=`This example demonstrates how to create animations using a sequence instead of min/max values.
+you can change the sequence by calling animator.update(). If you dont specify the max length of the sequence using the sequence_max_lengt argument, the length of the initial array will be used.
+`
   // this is just util stuff for the example project
   const mdFile = `\`\`\`javascript
   // this is our placeholder dict for the elements that get animated
@@ -73,15 +132,15 @@ function Example(animator) {
   
   // utility functions to start the animation and update the sequence
   const update=(() => {
-      animationProps.animator.update_lerp([{animObject: animationProps.target,value: [0.0, 100.0, 0.0]}])
+      animator.update_lerp([{animObject: animationProps.target,value: [0.0, 100.0, 0.0]}])
      })
   const start=(()=>{
-      animationProps.animator.start([animationProps.target.id])
+      animator.start([animationProps.target.id])
      })
     
   // the divs that get animated
-  function E3(animator) {
-      animationProps.animator=animator
+  function E2(animator) {
+      animator=animator
       animationProps.target=animator.Lerp({ accessor: [animationProps.c, animationProps.setc], duration: 10, steps: [0.1, 400.1, 0.1, 100, 20, 30, 40, 500, 0],sequence_max_lengt:10 })
     return (
       <div class="w-full h-full flex flex-row">
@@ -104,21 +163,43 @@ const Controls=[
     }
   },
   {
-    name:"Update Sequence",
-    info:" This Event will start the animation with the values lerpPoint values that where set the last time. The initial values are the ones we have used for the initialisation of the Lerpclass: [0.1, 400.1 ,0.1 ,100, 20, 30, 40, 500, 0]",
+    name:"lambda stop",
+    info:"Stops the animation sequence using the function thats running on the worker.",
     button:{
-      name:"update",
-      onClick: update
+      name:"lambda stop",
+      onClick:() => {lambdaCall() }
+    },
+  },
+  {
+    name:"stop animation",
+    info:"Stops the animation sequence.",
+    button:{
+      name:"stop",
+      onClick:() => {stop() }
+    },
+  },
+  {
+    name:"reset animation",
+    info:"Resets the animation sequence.",
+    button:{
+      name:"reset",
+      onClick:() => {reset() }
+    },
+  },
+  {
+    name:"initliaize Animator",
+    info:"initliazes the animator. Note that if you updated the sequence, the original sequece will get copied to the worker, since this is the initial value that is stored in the animator.",
+    button:{
+      name:"initialize Animator",
+      onClick:() => {init() }
     }
-  }
-
+  },   
 ]
-  
 
 const TutorialWidget={
-  name:"Matrix_Lerp_1",
+  name:"simple_Animation_2",
   info: "This Examples shows how to use Lerp animation with a sequence.",
-  gitlink:"https://github.com/ji-podhead/kooljs/blob/main/livedemo_project/src/examples/e2.js",
+  gitlink:"https://github.com/ji-podhead/kooljs/blob/main/livedemo_project/src/examples/e3.js",
   mdfile:mdFile
 }
 

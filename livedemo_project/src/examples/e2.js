@@ -1,10 +1,4 @@
-import{addTrigger,removeTrigger,
-  get_time,current_step,
-  start_animations,stop_animations,
-  setLerp,setMatrix,
-  get_lerp_value,
-  reset_lerp,
-  change_framerate} from "../kooljs/worker"
+import ExampleDescription from "./utils/utils";
 // this is our placeholder dict for the elements that get animated
 var animationProps = {
   setc: ((val) => {
@@ -44,17 +38,7 @@ function Example(animator) {
   })
     return (
     <div class="w-full h-full bg-[#ffffff]">
-      <div class="z-10 w-1/2 h-1/4 absolute flex pointer-events-none  flex flex-col items-center" style={{ width:window.innerWidth*0.67}}>
-      <div class=" rounded-b-md   max-w-[45%]  text-black bg-[#5C8F8D]  items-center bg-opacity-45 border-b-2 border-l-2 border-r-2 border-black">
-      <div class=" text-xl ">
-        Example 2: Animation Squences
-      </div>
-      <div class=" text-sm pl-5 text-left text-wrap w-[90%]">
-        This example demonstrates how to create animations using a sequence instead of min/max values.
-        you can change the sequence by calling animator.update(). If you dont specify the max length of the sequence using the sequence_max_lengt argument, the length of the initial array will be used.
-      </div>
-      </div>
-      </div>
+      <ExampleDescription header={header} description={exampleDiscription}/>
       <div class="w-full h-full items-center justify-center flex flex-col">
         <div class="shrink-1 items-center justify-center w-full h-full font-size-xl flex flex-row">
           <div id="e2_a" class="w-10 h-10 bg-blue-400">a</div>
@@ -64,9 +48,10 @@ function Example(animator) {
     </div>
   )}
 
-
-  // this is just util stuff for the example project
-  const mdFile = `\`\`\`javascript
+const header="Animation Squences"
+const exampleDiscription=`This example demonstrates how to create animations using a sequence instead of min/max values.
+you can change the sequence by calling animator.update(). If you dont specify the max length of the sequence using the sequence_max_lengt argument, the length of the initial array will be used.`
+const mdFile = `\`\`\`javascript
   // this is our placeholder dict for the elements that get animated
   var animationProps = {
     setc: ((val) => {

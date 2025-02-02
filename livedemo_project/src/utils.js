@@ -9,6 +9,7 @@ import { TutorialWidget as TutorialWidget1,Controls as Controls1 } from './examp
 import { TutorialWidget as TutorialWidget2,Controls as Controls2 } from './examples/e2';
 import { TutorialWidget as TutorialWidget3,Controls as Controls3 } from './examples/e3';
 import { TutorialWidget as TutorialWidget4,Controls as Controls4 } from './examples/e4';
+import { TutorialWidget as TutorialWidget5,Controls as Controls5 } from './examples/e5';
 
 const tutorials=[
     {
@@ -28,8 +29,8 @@ const tutorials=[
         widgets:TutorialWidget4
     },
     {
-        controls:Controls4,
-        widgets:TutorialWidget4
+        controls:Controls5,
+        widgets:TutorialWidget5
     }
 
 

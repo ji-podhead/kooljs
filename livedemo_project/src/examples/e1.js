@@ -51,11 +51,11 @@ function Example(animator) {
     return (
     <div class="w-full h-full bg-[#bbe2de]">
       <div class="z-10 w-1/2 h-1/4 absolute flex pointer-events-none  flex flex-col items-center" style={{ width:window.innerWidth*0.67}}>
-      <div class=" rounded-b-md   max-w-[45%]  text-black bg-[#5C8F8D]  items-center bg-opacity-45 border-b-2 border-l-2 border-r-2 border-black">
+      <div class=" rounded-b-md   max-w-[45%]  text-black bg-[#5C8F8D] justify-items-center items-center bg-opacity-45 border-b-2 border-l-2 border-r-2 border-black">
       <div class=" text-xl ">
         Initializing Animator
       </div>
-      <div class=" text-sm pl-5 text-left text-wrap w-[90%]">
+      <div class=" text-sm text-left text-wrap w-[90%]">
         This Example shows how to intitialize the animator in React.
       </div>
       </div>
