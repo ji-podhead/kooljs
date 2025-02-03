@@ -16,18 +16,8 @@ class Prop {
         this.setter(value, id)
     }
     /**
-     * 
      * @param {float} default_value - the default value of the variable
-     * @param {"useState"|"callback"|"map"|"object"|"int"|"other"} type - the type of the variable
-     * @param {function|(float|number)} render_callback - the target setter function of the useState hook or the value/object to be updated
      * @param {function|undefined} pointer - the function to be called with the updated value as argument
-     * examples:
-     * - useState: new Prob(0.0,"useState",<stateful value and function>)
-     * - callback: new Prob(0.0,"callback",(v)=>{console.log(v)})
-     * - int: new Prob(0.0,"int") => int
-     * - map: new Prob(0.0,"map",new Map(),"key")
-     * - object: new Prob(0.0,"object",{},"key")
-     * The pointer is used to update the value of another variable or to call a function with the updated value as argument
      */
     constructor(render_callback, point_to = undefined, default_value = undefined) {
         this.default_value = default_value
@@ -39,25 +29,19 @@ class Prop {
 var index
 class Constant {
     /**
-     * Constructor for Lerp class.
-     * You can either pass in the target as a react prop or a map prop
-     * the object you pass as prob will get overriden and will either be a map, or a react use state
+     * Constant.
      * @param {Animator} animator - the Animator Instance
      * @param {string} type - the type of the constant can be number, matrix
-     * @param {number | } value - the AnimationTrigger instance to trigger other animations
-     * @returns {void} 
+     * @param { number | list } value - all lists will get merged to a map of float32 arrays, where numbers are one giant float32 array 
+     * @param { function } render_callback - a function that gets called when you call render_constant on the worker    
+     * @returns {dict {id:number, value:number|map}} Constant - returns a instance of a Constant consisting of the id and value
      */
     constructor(animator, {type, value,render_callback}) {
-        //currentValue = currentValue;
-       
         this.id = animator.constant_count
+        
         animator.constant_count+=1
-        if(type=="matrix"){
         animator.constant_map.get(type).set(this.id, value)
-        }
-        else{
-            animator.constant_map.get(type).push(value)
-        }
+        this.value=animator.constant_map.get(type).get(this.id)
         if(render_callback!=undefined){
             animator.constant_render_callbacks.set(this.id,render_callback)
         }
@@ -65,9 +49,6 @@ class Constant {
 }
 class Lambda {
     /**
-     * Constructor for Lerp class.
-     * You can either pass in the target as a react prop or a map prop
-     * the object you pass as prob will get overriden and will either be a map, or a react use state
      * @param {Animator} animator - the Animator Instance
      * @param {string} callback - the type of the constant can be number, matrix
      * @param {string } conditon - the AnimationTrigger instance to trigger other animations
@@ -141,21 +122,6 @@ function addCallback(index,animator,callback){
     }
 }
 class Lerp {
-    /**
-     * Constructor for Lerp class.
-     * You can either pass in the target as a react prop or a map prop
-     * the object you pass as prob will get overriden and will either be a map, or a react use state
-     * @param {Animator} animator - the Animator Instance
-     * @param {Prop} prop - the Prob instance that will be used to return the animated value
-     * @param {number} type - 0: lerp; 1: smoothlerp; default: 0
-     * @param {number} duration - the length of the animation in frames
-     * @param {number} render_interval - the amount of fps to render / calculate the values
-     * @param {number} delay - the maximum time to wait before starting the animation
-     * @param {function} callback - the callback function to be called after the animation is complete
-     * @param {Trigger} animationTrigger - the AnimationTrigger instance to trigger other animation
-     * @param {Callback} conditinoal_weight - the Conditional_Weight instance
-    * @returns {[prop_target, index]} - returns an array consisting of the prob target and the index of the typed array where the Lerp value is stored in the worker. You can use the index for conditional weights that get calculated on the worker.
-    */
     constructor(animator, { render_callback, duration = 10, render_interval = 1, smoothstep = 1, delay = 0, animationTriggers, callback, steps = undefined, loop=false, steps_max_length }) {
         //currentValue = currentValue;
         if (animator == undefined) {
@@ -166,7 +132,6 @@ class Lerp {
         this.lerpStart = undefined
         animator.count+=1
         if (steps != undefined) {
-            // last changes are here and steps related
             animator.registry_map.get("lerp_chain_start").push(animator.chain_map_points_length)
             if(loop!=false || animationTriggers!=undefined){
             addTiggers(index,animator,animationTriggers,steps.length,loop,duration )
@@ -174,7 +139,7 @@ class Lerp {
             else{
                 animator.registry_map.get("loop").push(0)
             }
-            animator.chain_map.get("lengths").push(steps.length-1) // WE DONT USE STEPS LENGTH HERE! WE UPDATE THE LENGTH VALUE IF THE USER UPDAES THE STEP WHILE THE STEPSLENGTH IS NEW
+            animator.chain_map.get("lengths").push(steps.length-1)
             animator.chain_map.get("progress").push(0)
             if (steps_max_length != undefined) {
                 const n = new Array(steps_max_length - steps.length).fill(0, 0, steps_max_length - steps.length)
@@ -182,7 +147,6 @@ class Lerp {
             }
             animator.chain_map.set("buffer", animator.chain_map.get("buffer").concat(steps))
             animator.chain_map_points_length += steps.length
-
         }
         else {
             animator.registry_map.get("lerp_chain_start").push(undefined)
@@ -201,8 +165,6 @@ class Lerp {
             prop: new Prop(render_callback)
         })
         animator.animation_objects.get(this.id).prop.id=this.id
-
-        //return [prop.setter,index]
     }
 }
 class lerpDiv {
@@ -276,11 +238,10 @@ class Animator {
         this.lambda_map = new Map()
         //--> constant <--
         this.constant_map = new Map()
-        this.constant_map.set("number", [])
+        this.constant_map.set("number", new Map())
         this.constant_map.set("matrix", new Map())
         this.constant_render_callbacks= new Map()
         //--> animation objects (Lerp...) <--
-
         this.registry_map.set('type', []);
         this.registry_map.set('duration', []);
         this.registry_map.set('render_interval', []);
@@ -302,8 +263,6 @@ class Animator {
         this.spring_map.set("spring_elements", [])
         this.spring_map.set("spring_duration", [])
         this.spring_map.set("spring_tension", [])
-        
-
         //      --> UTIL <--
         this.fps = fps
         this.status=false
@@ -343,6 +302,7 @@ class Animator {
             }
             else if (ev.data.message == "render_constant") {
                 this.constant_render_callbacks.get(ev.data.id).callback(ev.data.value)
+                this.constant_map.get(ev.data.type).set(ev.data.id,ev.data.value)
             }
             // // else if (ev.data.message == "resolve_promise") {
             // // this.promises[ev.data.promise_index]()

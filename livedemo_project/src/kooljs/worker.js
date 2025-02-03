@@ -63,7 +63,12 @@ class LerpChain{
     reset(id){
         lerp_registry.activate(id)
         lerp_registry.delay_delta[id]=0
+        if(lerp_registry.type[id]==2){
         lerp_registry.results.set(id,lerpChain_registry.buffer[lerp_registry.lerp_chain_start[id]])
+        }
+        else{
+            lerp_registry.results.set(id,lerpChain_registry.matrixChains.get(id).get(0))
+        }
         lerp_registry.progress[id]=0
         this.progress[id]=0
     }
@@ -95,18 +100,13 @@ class Constant {
         this.number=undefined
     }
    update(type, id, value){
-        constant_registry[type][id]=value
+        constant_registry[type].set(id,value)
     }
     get(type,index,row){
         if(row!=undefined){
             this.get_row(index,row)
         }
-        else if(type=="number"){
-        return constant_registry[type][index]
-        }
-        else{
-            return constant_registry[type].get(index)
-        }
+        else return constant_registry[type].get(index)
     }
     get_row(index,row){
         return constant_registry["matrix"].get(index).get(row)
@@ -132,7 +132,7 @@ function smoothstep(x) {
     return x * x * (3 - 2 * x);
 }
 //var triggers,triggers_step
-var targets
+var targets,allow_render
 async function animate() {
     finished=[]
     lerp_registry.activelist.map((val, index) => {
@@ -143,7 +143,8 @@ async function animate() {
                 lerp_registry.delay_delta[val] += 1
             }
             else {
-                // if (lerp_registry.progress[val] % lerp_registry.render_interval[val] == 0) {
+                allow_render=lerp_registry.progress[val] % lerp_registry.render_interval[val] 
+                if (allow_render == 0) {
                     lerp_registry.delta_t[val] = lerp_registry.progress[val] / lerp_registry.duration[val];
 
                     switch(lerp_registry.type[val]){
@@ -170,18 +171,20 @@ async function animate() {
                             return console.error("wrong type"+String(val));
                     }
                     const args={id:val,value:lerp_registry.results.get(val),step:lerpChain_registry.progress[val], time:lerp_registry.progress[val] ,step:lerpChain_registry.progress[val]} //time war vorther lerp_registry.delta_t[val]
-                   if(callback_registry.condition.get(val)!=undefined
-                   &&callback_registry.condition.get(val)(args)==true) {
+                   if(callback_registry.condition.has(val)&&(callback_registry.condition.get(val)||callback_registry.condition.get(val)(args)==true)) {
                      callback_registry.callback.get(val)(args)
                    }
                    triggers_step=trigger_registry.get(val)!=undefined?trigger_registry.get(val).get(lerpChain_registry.progress[val]):undefined
+                    }
                    lerp_registry.progress[val] += 1
+                   if (allow_render==0) {
                    if ( triggers_step != undefined) {
                               targets= triggers_step.get(lerp_registry.progress[val]-1)
                               targets&&targets.map((target)=>{
 
                                lerpChain_registry.soft_reset(target)
                                })
+                   }
                    }
             }
         } else {
@@ -282,6 +285,7 @@ async function reset_animations(indices){
 function change_framerate(fps_new) {
     fps = fps_new
 }
+const integers = ["loop","delay","type","progress","duration","render_interval","lerp_chain_start","activelist"]
 function init(lerps, lerpChains, matrixChains, triggers, constants, condi_new, lambdas, springs) {
     trigger_registry=(triggers)
     condi_new.forEach((val,key)=>{
@@ -289,7 +293,6 @@ function init(lerps, lerpChains, matrixChains, triggers, constants, condi_new, l
           callback_registry.condition.set(key,eval(val.condition))
     })
     lambdas.forEach((val,key)=>{
-        console.log(val.callback)
         lambda_registry.callback.set(key,eval(val.callback))
         lambda_registry.condition.set(key,eval(val.condition))
   })
@@ -299,7 +302,7 @@ function init(lerps, lerpChains, matrixChains, triggers, constants, condi_new, l
     })
     lerpChain_registry.matrixChains=matrixChains
     lerps.forEach((array, name) => {
-            if(["loop","delay"].includes(name)==false ){
+            if(integers.includes(name)==false ){
             lerp_registry[name] = new Float32Array(array)
             }
             else{lerp_registry[name] = new Uint8Array(array)}
@@ -307,11 +310,12 @@ function init(lerps, lerpChains, matrixChains, triggers, constants, condi_new, l
     if(constants.get("matrix")!=undefined){
     constants.get("matrix").forEach((val,i)=>{
         constant_registry.matrix.set(i,new Map())
+        
         val.map((m,i2)=>{constant_registry.matrix.get(i).set(i2,new Float32Array(m))})
     })
 }
     if(constants.get("number")!=undefined){
-            constant_registry.number=(new Float32Array(constants.get("number")))
+        constant_registry.number=constants.get("number")
     }
     lerp_registry.type.map((t,i)=>{
         //  TODO hier zur vereinfachung interne get funktionen nehmen
@@ -403,9 +407,9 @@ function update(type,values){
 }
 var lambda
 function lambda_call(id,args){
-    lambda=lambda_registry.get(id)
-    if (lambda.condition ==undefined || lambda.condition(args)){
-        lambda.callback(args)
+    if (lambda_registry.condition.get(id) ==undefined || lambda_registry.condition.get(id)){
+       const c = lambda_registry.callback.get(id)
+       c(args)
     } 
 }
 // ----------------------------------------> EVENTS <--
@@ -429,6 +433,12 @@ onmessage = (event) => {
         case 'start':
             start_loop();
             break;
+        //makes no sense since we would require a promise on the mainthread
+        //this is shitty, cause you have to have a list of promises
+        //however the user can still use get_active on the worker via callbacks, or lambdas
+        // case 'get_active':
+        //     postMessage({ message: "get_active", active:lerp_registry.activelist})
+        //     break;
         case 'stop':
             stop_loop();
             break;
@@ -474,7 +484,9 @@ function get_constant(id,type){return constant_registry.get(type,id)}
 function get_time(id){return lerp_registry.delay_delta(id)}
 function is_active(id){return lerp_registry.activelist.includes(id)}
 function current_step(id){return lerpChain_registry.progress(id)}
-function get_lerp_value(id){return lerp_registry.results.get(id)}
+function get_lerp_value(id){
+    return lerp_registry.results.get(id)
+}
 function soft_reset(id){lerpChain_registry.soft_reset(id)}
 function hard_reset(id){lerpChain_registry.reset(id)}
 function set_delta_t(id,val){lerp_registry.progress=val;lerp_registry.delta_t[id]=lerp_registry.duration[id]/lerp_registry.progress[id]}
@@ -485,10 +497,11 @@ function set_delay_delta(id,val){lerp_registry.delay_delta[id]=val}
 function set_sequence_length(id,val){lerpChain_registry.lengths[id]=val}
 function get_constant_row(id,row){return constant_registry.get_row(id,row)}
 function get_constant_number(id){return constant_registry.get_number(id)}
+function get_active(id){return lerp_registry.activelist}
 
 export {
     addTrigger,removeTrigger,
-    get_time,current_step,is_active,
+    get_time,current_step,is_active,get_active,
     start_animations,stop_animations,
     setLerp,setMatrix,
     get_lerp_value,
@@ -500,7 +513,8 @@ export {
     update_constant,
     set_delta_t,set_step,
     set_delay,
-    set_delay_delta
+    set_delay_delta,
+    lambda_call
 }
 
 // ----------------------------------------> REQUIRES IMPLEMENTATION <--

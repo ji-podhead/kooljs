@@ -1,19 +1,3 @@
-
-import {   
-  addTrigger,removeTrigger,
-  get_time,current_step,is_active,
-  start_animations,stop_animations,
-  setLerp,setMatrix,
-  get_lerp_value,
-  soft_reset,hard_reset,
-  set_duration,
-  set_sequence_length,
-  change_framerate,
-  get_constant,get_constant_number,get_constant_row,render_constant,
-  update_constant,
-  set_delta_t,set_step,
-  set_delay,
-  set_delay_delta} from "../kooljs/worker";
 import ExampleDescription from "./utils/utils";
 var red,green,blue,bg_gradient
 function bg(val){
@@ -24,10 +8,10 @@ function bg(val){
   return bg_gradient
 }
 function setStyle(id,val){
-  document.getElementById("e5_"+id).style.size = `${(val[0])}%`;
+  //console.log(val)
+  document.getElementById("e5_"+id).style.width = `${(val[0]*10)}%`;
   document.getElementById("e5_"+id).style.background=bg(val);
 }
-
 const length = 16       
 const reference_matrix=[[1,0.3,30,30,30],[4,1,100,100,255]] // <- [scale,opacity,r,g,b]
 const animProps={
@@ -38,8 +22,9 @@ const animProps={
   selected: undefined,//                <- animator.const    << number >>
   status: undefined,//                  <- animator.const    << number >>
   reference_matrix: undefined,//        <- animator.const    << Float32 >>
-  stopActive: undefined
-
+  stopActive: undefined,
+  startRandom: undefined,
+  replace_indices:undefined
 }
 function Example(animator) {
     animProps.animator=animator
@@ -48,47 +33,87 @@ function Example(animator) {
       type:"matrix",
       value:reference_matrix
     })
-    animProps.idle_animation= animator.Matrix_Lerp({ 
-      render_callback:((val)=>setStyle(0,val)),
-      duration: 5, 
-      steps: reference_matrix,
-      loop:false,
-      })
+    animProps.replace_indices = animator.Lambda({
+      callback: `(({index,ref_step})=>{
+              const ref = get_constant_row(${animProps.reference_matrix.id},ref_step)
+              //console.log(ref)
+              //console.log("index " + index)
+              const val = get_lerp_value(index)
+              //console.log(val)
+              setMatrix(index,0,val) // setting step 0 values to the current instance values
+              setMatrix(index,1,ref) // setting target values to original idle state
+              hard_reset(index)
+      })`
+    })
     for (let i=0;i<length;i++){
       animProps.boxes[i]=
         {
-          anim: animator.Lerp({ 
+          anim: animator.Matrix_Lerp({ 
             render_callback:((val)=>setStyle(i,val)), 
-            duration: 5, 
+            duration: 10, 
             steps: reference_matrix,
             loop:false,
             }),
           div: <div class="w-full h-full flex items-center justify-center bg-black" id={"e5_"+i} key={"e5_"+i}>
                   <div id={"e5_child"+i} key={"e5_child"+i} class="w-0 h-0 bg-white border-[#78BDB8] border-2 rounded-md text-white flex-col gap-2 items-center justify-center" >
                     <div class="text-center text-xl"><b>Div No: {i}</b></div>
-                    <div class="text-left w-[80%] text-sm" >
-                      Line: --1--<br/>
-                      Line: --2--<br/>
-                      Line: --3--<br/>
-                      Line: --4--<br/>
+                    <div class="text-left w-[80%] h-[10%] text-sm" >
+                      Line: --1--
                     </div>
                   </div>
               </div>,
       }
       animProps.indices[i]=animProps.boxes[i].anim.id
     }
+    animProps.indices=animator.constant({
+      type:"matrix",
+      value:[animProps.indices]
+    })
     animProps.stopActive = animator.Lambda({
       callback: `(()=>{
-        [${animProps.indices}].map((i)=>{
-            if(is_active(i)){
-              console.log("stopping" + i)
-              const ref = get_constant_row(${animProps.reference_matrix.id},0)
-              setMatrix(i,0,[get_lerp_value(i)[0],ref[1]])
-              hard_reset(i)
-            }
+        get_constant_row(${animProps.indices.id},0).map((i)=>{
+              lambda_call(${animProps.replace_indices.id},{index:i,ref_step:0})
         })
       })`
     })
+    animProps.idle_animation= animator.Matrix_Lerp({ 
+      render_callback:(()=>{}),
+      duration: 100,
+      render_interval:20, 
+      steps: reference_matrix,
+      loop:true,
+      callback:{
+        callback:`(({time})=>{
+          console.log("----------timeline animation----------")
+          console.log("time " + time)
+          if(time==0){
+            const current=get_constant_number(${animProps.selected.id})
+            console.log("current_selection " + current)
+            if(is_active(current)){
+              lambda_call(${animProps.replace_indices.id},{index:current,ref_step:0})
+              start_animations([current])  
+            }
+            const indices = get_constant_row(${animProps.indices.id},0)
+            const random_index=indices[Math.floor(Math.random()*indices.length)]
+            console.log("new random selection is " + random_index)
+            update_constant(${animProps.selected.id},"number",random_index)  
+            lambda_call(${animProps.replace_indices.id},{index:random_index,ref_step:1})
+            console.log("updated values")
+            start_animations([random_index])
+            console.log("started animation with index " + random_index)
+          }
+          else if(time==80){
+            const random_index = get_constant_number(${animProps.selected.id})
+            console.log("random selection is " + random_index)
+            lambda_call(${animProps.replace_indices.id},{index:random_index,ref_step:0})
+            console.log("updated values")
+            console.log("started animation with index " + random_index)
+            start_animations([random_index])
+          }
+            console.log("--------------------------------")
+        })`
+      }
+      })
     return (
     <div class="w-full h-full bg-[#ffffff]">
       <ExampleDescription header={header} description={exampleDiscription}/>
@@ -100,9 +125,13 @@ function Example(animator) {
     </div>
   )}
 const start=(()=>{
-    animProps.animator.start_animations(animProps.indices)
+    console.log(animProps.indices.value[0])
+    animProps.animator.start_animations(animProps.indices.value[0])
 })
-const lambdaCall=(()=>{
+const start_idle=(()=>{
+  animProps.animator.start_animations([animProps.idle_animation.id])
+})
+const lambda_stop=(()=>{
   animProps.stopActive.call()
 })
 const stop=(()=>{
@@ -167,7 +196,15 @@ const Controls=[
     info:"Stops the animation sequence using the function thats running on the worker.",
     button:{
       name:"lambda stop",
-      onClick:() => {lambdaCall() }
+      onClick:() => {lambda_stop() }
+    },
+  },
+  {
+    name:"idle start",
+    info:"Stops the animation sequence using the function thats running on the worker.",
+    button:{
+      name:"idle start",
+      onClick:() => {start_idle()}
     },
   },
   {
