@@ -42,9 +42,12 @@ function Widgets({setsel,animator}) {
                 <div class="rounded-md border-4 bg-[#bac9d0] border-slate-400 w-[95%] gap-y-5  flex flex-col  items-center justify-center">
                 <button id={`w_${i}`}   
                     onClick={(() => {
+                        requestAnimationFrame(() => {  
                         animator.stop()
+                        animator.stop_animations("all")
+                          
                             setsel(i)
-                        
+                        })
                     })} 
                     onMouseOver={(()=>{changeBackground(`w_${i}`,"#C0E58B")})}
                     onMouseOut={(()=>{changeBackground(`w_${i}`,"white")})}
@@ -85,17 +88,18 @@ function AnimationControl({ args }) {
         if (args != undefined && args.sel >= 0 ) {
             //console.log(TutorialComponents[args.sel])
             return tutorials[args.sel].controls.map((t) => (
-                <div class="rounded-md border-4 bg-[#bac9d0] items-center border-slate-400 w-[90%] gap-y-5  flex flex-col">
+                <div class="rounded-md border-4 bg-[#bac9d0] items-center border-slate-400 w-[90%] gap-y-2  flex flex-col">
                     <div class="text-xl">
-                        {t.name}
+                        
                     </div>
                     <button id={t.name}   onClick={(() => t.button.onClick())} onMouseOver={(()=>{
                         changeBackground(t.name,"#C0E58B")})} onMouseOut={(()=>{changeBackground(t.name,"white")})} class="bg-white border-4 border-black w-[50%] rounded-md h-[30%]">
                         {t.button.name}
                     </button>
-                    <div className="h-full w-[90%] text-sm text-left">
+                    <div className="h-full w-[85%] text-sm text-left">
                         {t.info}
                     </div>
+                    <div/>
                 </div>
             ))
         }

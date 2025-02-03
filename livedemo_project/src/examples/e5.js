@@ -1,106 +1,132 @@
 import ExampleDescription from "./utils/utils";
-var red,green,blue,bg_gradient
+
+const length = 16       //          [opacity, w,  h, fontsize,      r,g,b]
+const reference_matrix=[[-100,0,0,0,0,0,0],[100,    80, 40,   13,    100,130,255]] 
+const animProps={
+  animator:undefined,//                 <- animator               << Animator >> 
+  idle_animation:undefined,//           <- idleAnims              << Lerp >> 
+  boxes: new Array(length),//           <- boxes dict             << div | MatrixLerp >> 
+  indices: new Float32Array(length),//  <- anim id's              << Float32 >> 
+  selected: undefined,//                <- animator.const         << number >>
+  status: undefined,//                  <- animator.const         << number >>
+  reference_matrix: undefined,//        <- animator.const         << Float32 >>
+  stop_active: undefined,//             <- resetting animation    << Animator.Lambda >>
+  start_random: undefined,//            <- start anim             << Animator.Lambda >>
+  replace_indices:undefined,//          <- edit values            << Animator.Lambda >>
+  stop_idle:undefined,//                <- stops idle+active      << Animator.Lambda >>
+  set_start_duration: undefined//       <- smooth start/end       << Animator.Lambda >>
+}
 function bg(val){
-  red= val[2]
-  green= val[3]
-  blue= val[4]
-  bg_gradient=`linear-gradient(to right, rgb(0,0,0), rgb(${red}, ${green}, ${blue})`
-  return bg_gradient
+  return `linear-gradient(to right, rgb(0,0,0), rgb(${val[4]}, ${val[5]}, ${val[6]})`
 }
 function setStyle(id,val){
   //console.log(val)
-  document.getElementById("e5_"+id).style.width = `${(val[0]*10)}%`;
-  document.getElementById("e5_"+id).style.background=bg(val);
-}
-const length = 16       
-const reference_matrix=[[1,0.3,30,30,30],[4,1,100,100,255]] // <- [scale,opacity,r,g,b]
-const animProps={
-  animator:undefined,//                 <- animator        << Animator >> 
-  idle_animation:undefined,//           <- idleAnims       << MatrixLerp >> 
-  boxes: new Array(length),//           <- boxes dict    << div | MatrixLerp >> 
-  indices: new Float32Array(length),//  <- anim id's        << Float32 >> 
-  selected: undefined,//                <- animator.const    << number >>
-  status: undefined,//                  <- animator.const    << number >>
-  reference_matrix: undefined,//        <- animator.const    << Float32 >>
-  stopActive: undefined,
-  startRandom: undefined,
-  replace_indices:undefined
+  document.getElementById("e5_child"+id).style.opacity = `${val[0]}%`;
+  document.getElementById("e5_child"+id).style.width = `${val[1]}%`;
+  document.getElementById("e5_child"+id).style.height = `${val[2]}%`;
+  document.getElementById("e5_child"+id).style.fontSize = `${val[3]*2}px`;
+  document.getElementById("e5_child_small"+id).style.fontSize = `${val[3]}px`;
+  document.getElementById("e5_"+id).style.background = bg(val);
 }
 function Example(animator) {
     animProps.animator=animator
+    for (let i=0;i<length;i++){
+      animProps.boxes[i]={
+        anim: animator.Matrix_Lerp({ 
+          render_callback:((val)=>setStyle(i,val)), 
+          duration: 10, 
+          steps: reference_matrix,
+          loop:false,
+          }),
+        div:  <div 
+                onMouseEnter={()=>{
+                  start_selected(animProps.indices.value[0][i])
+                }}
+                class="min-w-full min-h-full flex items-center rounded-md justify-center bg-black" 
+                id={"e5_"+i} key={"e5_"+i}
+                >
+                <div id={"e5_child"+i} key={"e5_child"+i} class="w-0 h-0 truncate opacity-0 bg-white border-[#21d9cd] border-2 rounded-md flex-col gap-2 items-center justify-center" >
+                  <div class="text-center  "><b>Div No: {i}</b></div>
+                  <div id={"e5_child_small"+i} class="text-left w-[80%] h-[10%] pl-2" >
+                    Line: --{1+Math.floor(i/4)}--
+                  </div>
+                </div>
+              </div>
+        }
+      animProps.indices[i]=animProps.boxes[i].anim.id
+    }
+    // a variable that represents our selected div on the worker
     animProps.selected=animator.constant({type:"number",value:0})
+    // a constant that represents our reference matrix on the worker
     animProps.reference_matrix=animator.constant({
       type:"matrix",
       value:reference_matrix
     })
+    // sets target lerp value to the required index of our reference matrix
     animProps.replace_indices = animator.Lambda({
       callback: `(({index,ref_step})=>{
-              const ref = get_constant_row(${animProps.reference_matrix.id},ref_step)
-              //console.log(ref)
-              //console.log("index " + index)
-              const val = get_lerp_value(index)
-              //console.log(val)
-              setMatrix(index,0,val) // setting step 0 values to the current instance values
-              setMatrix(index,1,ref) // setting target values to original idle state
+              setMatrix(index,0,get_lerp_value(index)) 
+              setMatrix(index,1,get_constant_row(${animProps.reference_matrix.id},ref_step)) 
               hard_reset(index)
       })`
     })
-    for (let i=0;i<length;i++){
-      animProps.boxes[i]=
-        {
-          anim: animator.Matrix_Lerp({ 
-            render_callback:((val)=>setStyle(i,val)), 
-            duration: 10, 
-            steps: reference_matrix,
-            loop:false,
-            }),
-          div: <div class="w-full h-full flex items-center justify-center bg-black" id={"e5_"+i} key={"e5_"+i}>
-                  <div id={"e5_child"+i} key={"e5_child"+i} class="w-0 h-0 bg-white border-[#78BDB8] border-2 rounded-md text-white flex-col gap-2 items-center justify-center" >
-                    <div class="text-center text-xl"><b>Div No: {i}</b></div>
-                    <div class="text-left w-[80%] h-[10%] text-sm" >
-                      Line: --1--
-                    </div>
-                  </div>
-              </div>,
-      }
-      animProps.indices[i]=animProps.boxes[i].anim.id
-    }
-    animProps.indices=animator.constant({
+    // a constant that represents the indices of animated divs in our worker-registry 
+    animProps.indices=animator.constant({ 
       type:"matrix",
       value:[animProps.indices]
     })
-    animProps.stopActive = animator.Lambda({
+    // inverts all divs if their value is not the start value
+    animProps.stop_active = animator.Lambda({
       callback: `(()=>{
         get_constant_row(${animProps.indices.id},0).map((i)=>{
+          if(get_constant_number(${animProps.selected.id})!=i ){
+            if( get_constant_row(${animProps.reference_matrix.id},0)!=get_lerp_value(i))
+            {
               lambda_call(${animProps.replace_indices.id},{index:i,ref_step:0})
+              set_duration(i, get_time(i)<3?3:get_time(i))
+              soft_reset(i)
+            }
+          }
         })
       })`
     })
-    animProps.idle_animation= animator.Matrix_Lerp({ 
+    // set duration to 10 if progress < 5
+    animProps.set_start_duration = animator.Lambda({
+      callback: `(({id})=>{
+        set_duration(id,Math.floor(10-get_time(id)))
+      })`
+    })
+    animProps.start_random = animator.Lambda({
+      callback: `(()=>{
+        const indices = get_constant_row(${animProps.indices.id},0)
+        const random_index=indices[Math.floor(Math.random()*indices.length)]
+        console.log("new random selection is " + random_index)
+        update_constant(${animProps.selected.id},"number",random_index)  
+        lambda_call(${animProps.replace_indices.id},{index:random_index,ref_step:1})
+        console.log("updated values")
+        lambda_call(${animProps.set_start_duration.id},{id:random_index})
+        soft_reset(random_index)
+        console.log("started animation with index " + random_index)
+      })`
+    })
+    // our idle animation that is stopped/started once a user-mouse-event interacts with the grid
+    // we use the renderinterval and duration to create some sort of animation-timeline
+    // this way we only fire 20 function calls on the worker during one animation ciclus
+    animProps.idle_animation= animator.Lerp({ 
       render_callback:(()=>{}),
       duration: 100,
       render_interval:20, 
-      steps: reference_matrix,
+      steps: [[0],[1]],
       loop:true,
       callback:{
         callback:`(({time})=>{
           console.log("----------timeline animation----------")
           console.log("time " + time)
+            
           if(time==0){
-            const current=get_constant_number(${animProps.selected.id})
-            console.log("current_selection " + current)
-            if(is_active(current)){
-              lambda_call(${animProps.replace_indices.id},{index:current,ref_step:0})
-              start_animations([current])  
-            }
-            const indices = get_constant_row(${animProps.indices.id},0)
-            const random_index=indices[Math.floor(Math.random()*indices.length)]
-            console.log("new random selection is " + random_index)
-            update_constant(${animProps.selected.id},"number",random_index)  
-            lambda_call(${animProps.replace_indices.id},{index:random_index,ref_step:1})
-            console.log("updated values")
-            start_animations([random_index])
-            console.log("started animation with index " + random_index)
+                  update_constant(${animProps.selected.id},"number",-1)        
+                  lambda_call(${animProps.stop_active.id})
+                  lambda_call(${animProps.start_random.id})
           }
           else if(time==80){
             const random_index = get_constant_number(${animProps.selected.id})
@@ -108,40 +134,55 @@ function Example(animator) {
             lambda_call(${animProps.replace_indices.id},{index:random_index,ref_step:0})
             console.log("updated values")
             console.log("started animation with index " + random_index)
-            start_animations([random_index])
+            soft_reset(random_index)
           }
             console.log("--------------------------------")
         })`
       }
       })
+      // a function we can call to stop the idle animation
+      animProps.stop_idle = animator.Lambda({
+        callback: `(()=>{
+            stop_animations([${animProps.idle_animation.id}])  
+            update_constant(${animProps.selected.id},"number",-1)        
+            lambda_call(${animProps.stop_active.id})
+        })`
+      })    
     return (
-    <div class="w-full h-full bg-[#ffffff]">
+    <div class="w-full h-full bg-slate-700" 
+    onMouseEnter={start_idle}
+    onMouseLeave={start_idle}
+      >
       <ExampleDescription header={header} description={exampleDiscription}/>
-      <div class="w-full h-full">
-      <div class="w-full h-full bg-red-300 grid grid-cols-4 gap-1 justify-center items-center">
+      <div class="w-full h-full flex items-center justify-center">
+      <div onMouseEnter={stop_idle} 
+        class="w-[95%] h-[95%] bg-[#21d9cd] border-4 border-[#21d9cd] grid grid-cols-4 gap-1 rounded-md justify-center justify-items-center items-center">
         {animProps.boxes.map((e) => e.div)}
       </div>
     </div>
     </div>
   )}
-const start=(()=>{
-    console.log(animProps.indices.value[0])
-    animProps.animator.start_animations(animProps.indices.value[0])
+
+const start_selected=((id)=>{
+  requestAnimationFrame(() => {
+  animProps.stop_idle.call()
+  animProps.animator.update_constant([{type:"number",id: animProps.selected.id, value: id}])
+  animProps.replace_indices.call({index:id,ref_step:1})
+  animProps.set_start_duration.call({id:id})
+  animProps.animator.start_animations([id])
+  })
+})
+const stop_idle=(()=>{
+    animProps.stop_idle.call()
 })
 const start_idle=(()=>{
   animProps.animator.start_animations([animProps.idle_animation.id])
 })
-const lambda_stop=(()=>{
-  animProps.stopActive.call()
+const start=(()=>{
+  animProps.animator.start()
 })
 const stop=(()=>{
-  animProps.animator.stop_animations("all")
-})
-const reset=(()=>{
-  animProps.animator.reset_animations("all")
-})
-const init=(()=>{
-  animProps.animator.init()
+  animProps.animator.stop()
 })
 const header="callbacks"
 const exampleDiscription=`This example demonstrates how to create animations using a sequence instead of min/max values.
@@ -183,54 +224,39 @@ you can change the sequence by calling animator.update(). If you dont specify th
     )}
   \`\`\``
 const Controls=[
+ 
   {
-    name:"Start Animation",
-    info:" This Event will start the animation with the values lerpPoint values that where set the last time. The initial values are the ones we have used for the initialisation of the Lerpclass: [0.1, 400.1 ,0.1 ,100, 20, 30, 40, 500, 0]",
+    name:"idle start",
+    info:"Stops the animation sequence using the function thats running on the worker.",
+    button:{
+      name:"idle start",
+      onClick:start_idle
+    },
+  },
+  {
+    name:"stop idle",
+    info:"Stops the animation sequence using the function thats running on the worker.",
+    button:{
+      name:"stop idle",
+      onClick: stop_idle
+    },
+  },
+  {
+    name:"Start",
+    info:"This event will continues to play any animation, that was running before calling stop().",
     button:{
       name:"start",
       onClick: start
     }
   },
   {
-    name:"lambda stop",
-    info:"Stops the animation sequence using the function thats running on the worker.",
-    button:{
-      name:"lambda stop",
-      onClick:() => {lambda_stop() }
-    },
-  },
-  {
-    name:"idle start",
-    info:"Stops the animation sequence using the function thats running on the worker.",
-    button:{
-      name:"idle start",
-      onClick:() => {start_idle()}
-    },
-  },
-  {
-    name:"stop animation",
-    info:"Stops the animation sequence.",
+    name:"Stop",
+    info:"This event will pause the animation-loop, but any running animations wont reset when you call start() again.",
     button:{
       name:"stop",
-      onClick:() => {stop() }
+      onClick: stop
     },
   },
-  {
-    name:"reset animation",
-    info:"Resets the animation sequence.",
-    button:{
-      name:"reset",
-      onClick:() => {reset() }
-    },
-  },
-  {
-    name:"initliaize Animator",
-    info:"initliazes the animator. Note that if you updated the sequence, the original sequece will get copied to the worker, since this is the initial value that is stored in the animator.",
-    button:{
-      name:"initialize Animator",
-      onClick:() => {init() }
-    }
-  },   
 ]
 
 const TutorialWidget={

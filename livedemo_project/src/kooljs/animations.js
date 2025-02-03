@@ -367,7 +367,7 @@ class Animator {
     }
     update_constant(data) {
         data.map((x) => {
-            this.worker.postMessage({ method: 'update_constant', type: x.constant.type, id: x.constant.id, value: x.value });
+            this.worker.postMessage({ method: 'update_constant', type: x.type, id: x.id, value: x.value });
         })
     }
     start_animations(indices) {
