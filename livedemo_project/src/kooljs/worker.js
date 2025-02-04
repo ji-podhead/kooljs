@@ -200,42 +200,29 @@ var startTime
 async function animateLoop() {
     startTime = performance.now();
     finished = []
-    async function restart(){
-        await sleep(Math.max(0, fps - performance.now() - startTime)).then(()=>{
-            animateLoop()
-        })
-    }
+    controller=true
     if (lerp_registry.activelist.length > 0) {
         await animate().then(finished=>{
             render()
             if (finished.length > 0) {
-            fin(finished).then((state)=>{
-                if(state==true){
-                    restart()
+                lerp_registry.activelist = lerp_registry.activelist.filter((active) => !finished.includes(active));
+                if (lerp_registry.activelist["length"] == 0) {
+                    controller =null
+                    return
                 }
-            })
             }
-            else if(lerp_registry.activelist.length>0){
-                restart()
-            }
-        }) 
+        
+    })
+   await sleep(Math.max(0, fps - (performance.now() - startTime))).then(()=>{
+        if (controller!=null)  animateLoop()
+    })  
     }
 }
-// ----------------------------------------> WORKER UTILS <--
-async function fin(finished) {
-    // postMessage({
-    //     message: "finish",
-    //     results: lerp_registry.results,
-    //     result_indices: lerp_registry.activelist
-    // });
-    lerp_registry.activelist = lerp_registry.activelist.filter((active) => !finished.includes(active));
-    if (lerp_registry.activelist["length"] == 0) {
-        return false
-    }
-    else{
-        return true
-    }
-}
+// postMessage({
+//     message: "finish",
+//     results: lerp_registry.results,
+//     result_indices: lerp_registry.activelist
+// });
 function start_loop() {
     if(controller==null){
         animateLoop()
