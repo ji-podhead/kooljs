@@ -205,10 +205,13 @@ async function animate() {
 //t = callback_registry.callback.get(val)?.(val, t) ?? undefined; //  Null-Coalescing-Operator -- if callback not undefined then use and process the value t for callback
 // const eslapsed = performance.now() - startTime;
 // const waitTime = Math.max(0, fps - elapsed);
-var startTime 
+var startTime,timeoutId
 async function animateLoop() {
       loop_resolver = new AbortController()
       signal = loop_resolver.signal;
+      loop_resolver.signal.addEventListener('abort', () => {
+        clearTimeout(timeoutId);
+      });
       while (signal.aborted == false) {
         startTime = performance.now();
         finished = [];
@@ -220,12 +223,10 @@ async function animateLoop() {
           }
           if (lerp_registry.activelist["length"] > 0) {
             await new Promise((resolve,reject) => {
-              const timeoutId = setTimeout(() => {
+              timeoutId = setTimeout(() => {
                 resolve();
               }, Math.max(0, fps - (performance.now() - startTime)));
-              loop_resolver.signal.addEventListener('abort', () => {
-                clearTimeout(timeoutId);
-              });
+              
             });
           }
         else {
