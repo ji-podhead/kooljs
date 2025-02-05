@@ -38,12 +38,12 @@ const tutorials=[
 async function sleep(milliseconds) {
     return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
-async function next(setsel,animator,index){
+function next(setsel,animator,index){
     animator.stop()
-    animator.stop_animations("all")
-    await sleep(500).then(()=>{
-        setsel(index)
-    })
+    requestAnimationFrame(() => {
+                    setsel(index)
+        })
+    
 }
 function Widgets({setsel,animator}) {
     const Elements = (() => tutorials.map((w,i) => {

@@ -12,8 +12,16 @@ var fps = 10.33
 var signal,loop_resolver = null
 var triggers_step
 var status=true
-async function sleep(milliseconds) {
-    return new Promise(resolve => setTimeout(resolve, milliseconds))
+async function sleep(milliseconds,signal) {
+    return new Promise((resolve,reject) => {
+        const t=setTimeout(resolve, milliseconds)
+        signal.addEventListener('abort', () => {
+            clearTimeout(t)
+        });    
+        
+    })
+    
+    
 }
 // ----------------------------------------> CLASS DEFINITIONS <--
 class Lerp {
@@ -198,38 +206,34 @@ async function animate() {
 // const eslapsed = performance.now() - startTime;
 // const waitTime = Math.max(0, fps - elapsed);
 var startTime 
-function animateLoop() {
-    if(status==true){
-     
-      startTime = performance.now();
-      
-      finished = []
-      if (lerp_registry.activelist.length > 0) {
-        animate().then(finished=>{
-          render()
+async function animateLoop() {
+      loop_resolver = new AbortController()
+      signal = loop_resolver.signal;
+      while (signal.aborted == false) {
+        startTime = performance.now();
+        finished = [];
+        if (lerp_registry.activelist.length > 0) {
+          animate()
+          render();
           if (finished.length > 0) {
             lerp_registry.activelist = lerp_registry.activelist.filter((active) => !finished.includes(active));
-            if (lerp_registry.activelist["length"] == 0) {
-              loop_resolver =null
-            }
           }
-          sleep(Math.max(0, fps - (performance.now() - startTime))).then(()=>{
-            if(status==true){
-            animateLoop()
-        }else{
-            loop_resolver("stopping")
-            loop_resolver = null
-            lerp_registry.activelist=[]  
-                     }
-
-        })
-        
-        })
+          if (lerp_registry.activelist["length"] > 0) {
+            await new Promise((resolve,reject) => {
+              const timeoutId = setTimeout(() => {
+                resolve();
+              }, Math.max(0, fps - (performance.now() - startTime)));
+              loop_resolver.signal.addEventListener('abort', () => {
+                clearTimeout(timeoutId);
+              });
+            });
+          }
+        else {
+           return stop_loop()
+           
+          }
+        }
       }
-  }else if(loop_resolver!=null){
-        loop_resolver("stopping")
-        loop_resolver = null
-  }
   }
 // postMessage({
 //     message: "finish",
@@ -238,24 +242,14 @@ function animateLoop() {
 // });
 function start_loop() {
     status=true
-    if(loop_resolver==null){
-        
-        new Promise((resolve, reject) => {
-            loop_resolver=reject
             animateLoop()
-            resolve()
-    }).catch((error) => {
-        //console.warn("Error in animateLoop:", error);
-        loop_resolver = null;
-        
-    });
-    }
 }
 async function stop_loop() {
     status=false
-  if(loop_resolver!=null){
-        loop_resolver("stopping")
-    }    
+    if(loop_resolver!=null){
+        loop_resolver.abort()
+    }
+    
 }
 function start_animations(indices){
     indices.map((id)=>{

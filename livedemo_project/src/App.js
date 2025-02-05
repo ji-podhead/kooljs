@@ -11,9 +11,10 @@ import {  Example as E5} from './examples/e5';
 import { Widgets, AnimationControl, Header, CodeBlocks } from "./utils"
 import { Util } from './kooljs/util_component';
 const Animated_Components = []
+const animator = new Animator(50)
 function App() {
-  const animator = new Animator(50)
-  const [fps, setFps] = useState(24)
+  
+    const [fps, setFps] = useState(24)
   const [play, setPlay] = useState(false)
   const [selector, setSelector] = useState(-1)
   useEffect(() => {
