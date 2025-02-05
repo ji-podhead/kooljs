@@ -34,7 +34,6 @@ function Example(animator) {
         duration: 10, 
         steps: [0, 400, 0],
         steps_max_length:10,
-        loop:true
   })
     return (
     <div class="w-full h-full bg-[#ffffff]">

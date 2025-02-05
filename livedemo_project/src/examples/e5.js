@@ -39,19 +39,19 @@ function Example(animator) {
           loop:false,
           }),
         div:  <div 
-                onMouseEnter={()=>{
-                  start_selected(animProps.indices.value[0][i])
-                }}
-                class="min-w-full min-h-full flex items-center rounded-md justify-center bg-black" 
-                id={"e5_"+i} key={"e5_"+i}
-                >
-                <div id={"e5_child"+i} key={"e5_child"+i} class="w-0 h-0 truncate opacity-0 bg-white border-[#21d9cd] border-2 rounded-md flex-col gap-2 items-center justify-center" >
-                  <div class="text-center  "><b>Div No: {i}</b></div>
-                  <div id={"e5_child_small"+i} class="text-left w-[80%] h-[10%] pl-2" >
-                    Line: --{1+Math.floor(i/4)}--
-                  </div>
+              onMouseEnter={()=>{
+                start_selected(animProps.indices.value[0][i])
+              }}
+              class="min-w-full min-h-full flex items-center rounded-md justify-center bg-black" 
+              id={"e5_"+i} key={"e5_"+i}
+              >
+              <div id={"e5_child"+i} key={"e5_child"+i} class="w-0 h-0 truncate opacity-0 bg-white border-[#21d9cd] border-2 rounded-md flex-col gap-2 items-center justify-center" >
+                <div class="text-center  "><b>Div No: {i}</b></div>
+                <div id={"e5_child_small"+i} class="text-left w-[80%] h-[10%] pl-2" >
+                  Line: --{1+Math.floor(i/4)}--
                 </div>
               </div>
+            </div>
         }
       animProps.indices[i]=animProps.boxes[i].anim.id
     }
@@ -182,7 +182,7 @@ const start=(()=>{
   animProps.animator.start()
 })
 const stop=(()=>{
-  animProps.animator.stop()
+  animProps.animator.stop_animations("all")
 })
 const header="callbacks"
 const exampleDiscription=`This example demonstrates how to create animations using a sequence instead of min/max values.

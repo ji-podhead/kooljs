@@ -285,7 +285,7 @@ class Animator {
                         try{
                         this.animation_objects.get(value).prop.updater(ev.data.results.get(value), ev.data.result_indices[index])
                         }catch(err){
-                           console.log(`could not set value of animation ${ev.data.result_indices[index]} -` + err)
+                           //console.log(`could not set value of animation ${ev.data.result_indices[index]} -` + err)
                             try{
                             this.stop_animations([ev.data.result_indices[index]])
                             }

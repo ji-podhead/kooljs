@@ -9,8 +9,9 @@
 // 2. The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.  
 var finished = []
 var fps = 10.33
-var signal,controller = null
+var signal,loop_resolver = null
 var triggers_step
+var status=true
 async function sleep(milliseconds) {
     return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
@@ -194,44 +195,67 @@ async function animate() {
     return finished
 }
 //t = callback_registry.callback.get(val)?.(val, t) ?? undefined; //  Null-Coalescing-Operator -- if callback not undefined then use and process the value t for callback
-// const elapsed = performance.now() - startTime;
+// const eslapsed = performance.now() - startTime;
 // const waitTime = Math.max(0, fps - elapsed);
 var startTime 
-async function animateLoop() {
-    startTime = performance.now();
-    finished = []
-    controller=true
-    if (lerp_registry.activelist.length > 0) {
-        await animate().then(finished=>{
-            render()
-            if (finished.length > 0) {
-                lerp_registry.activelist = lerp_registry.activelist.filter((active) => !finished.includes(active));
-                if (lerp_registry.activelist["length"] == 0) {
-                    controller =null
-                    return
-                }
+function animateLoop() {
+    if(status==true){
+     
+      startTime = performance.now();
+      
+      finished = []
+      if (lerp_registry.activelist.length > 0) {
+        animate().then(finished=>{
+          render()
+          if (finished.length > 0) {
+            lerp_registry.activelist = lerp_registry.activelist.filter((active) => !finished.includes(active));
+            if (lerp_registry.activelist["length"] == 0) {
+              loop_resolver =null
             }
+          }
+          sleep(Math.max(0, fps - (performance.now() - startTime))).then(()=>{
+            if(status==true){
+            animateLoop()
+        }else{
+            loop_resolver("stopping")
+            loop_resolver = null
+            lerp_registry.activelist=[]  
+                     }
+
+        })
         
-    })
-   await sleep(Math.max(0, fps - (performance.now() - startTime))).then(()=>{
-        if (controller!=null)  animateLoop()
-    })  
-    }
-}
+        })
+      }
+  }else if(loop_resolver!=null){
+        loop_resolver("stopping")
+        loop_resolver = null
+  }
+  }
 // postMessage({
 //     message: "finish",
 //     results: lerp_registry.results,
 //     result_indices: lerp_registry.activelist
 // });
 function start_loop() {
-    if(controller==null){
-        animateLoop()
+    status=true
+    if(loop_resolver==null){
+        
+        new Promise((resolve, reject) => {
+            loop_resolver=reject
+            animateLoop()
+            resolve()
+    }).catch((error) => {
+        //console.warn("Error in animateLoop:", error);
+        loop_resolver = null;
+        
+    });
     }
 }
-function stop_loop() {
-        controller = null
-    //lerp_registry.activelist=[]
-    // lerp_registry.last_value=[]
+async function stop_loop() {
+    status=false
+  if(loop_resolver!=null){
+        loop_resolver("stopping")
+    }    
 }
 function start_animations(indices){
     indices.map((id)=>{
@@ -242,6 +266,7 @@ function start_animations(indices){
 function stop_animations(indices){
     if(indices==="all"){
         lerp_registry.activelist=[]
+        stop_loop()
     }
     else{
         indices.map((id)=>{
@@ -261,7 +286,7 @@ async function reset_animations(indices){
     indices.map((x)=>{
         lerpChain_registry.reset(x);
         lerp_registry.activate(x)
-        if(lerp_registry.activelist.includes(x)==false || controller==null){
+        if(lerp_registry.activelist.includes(x)==false || loop_resolver==null){
             stopped.push(x)
             switch(lerp_registry.type[x]){
                 case(2):
@@ -404,10 +429,14 @@ function lambda_call(id,args){
 }
 // ----------------------------------------> EVENTS <--
 async function render() {
-    postMessage({ message: "render", results: lerp_registry.results, result_indices: lerp_registry.activelist })
+    if(status==true)  postMessage({ message: "render", results: lerp_registry.results, result_indices: lerp_registry.activelist })
 }
 async function render_constant(id,type) {
     postMessage({ message: "render_constant", id:id, type: type, value:  get_constant(id,type)})
+}
+function returnPromise(promise) {
+    postMessage({ message: "stopping", promise:promise }) ;
+
 }
 onmessage = (event) => {
     switch (event.data.method) {
@@ -430,7 +459,7 @@ onmessage = (event) => {
         //     postMessage({ message: "get_active", active:lerp_registry.activelist})
         //     break;
         case 'stop':
-            stop_loop();
+            stop_loop()
             break;
         case 'change_framerate':
             change_framerate(event.data.fps_new);
@@ -442,7 +471,11 @@ onmessage = (event) => {
             start_animations(event.data.indices);
             break;
         case 'stop_animations':
-            stop_animations(event.data.indices);
+            if(status==true) {
+                status=false
+                stop_animations(event.data.indices);
+            }
+            
             break;
         case 'reset_animations':
             reset_animations(event.data.indices);
@@ -489,8 +522,12 @@ function set_sequence_length(id,val){lerpChain_registry.lengths[id]=val}
 function get_constant_row(id,row){return constant_registry.get_row(id,row)}
 function get_constant_number(id){return constant_registry.get_number(id)}
 function get_active(id){return lerp_registry.activelist}
+function get_status(){
+    return status
+}
 
 export {
+    get_status,
     addTrigger,removeTrigger,
     get_time,set_delta_t,
     current_step,set_step,

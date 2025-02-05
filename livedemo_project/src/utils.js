@@ -35,20 +35,24 @@ const tutorials=[
 
 
 ]
+async function sleep(milliseconds) {
+    return new Promise(resolve => setTimeout(resolve, milliseconds))
+}
+async function next(setsel,animator,index){
+    animator.stop()
+    animator.stop_animations("all")
+    await sleep(500).then(()=>{
+        setsel(index)
+    })
+}
 function Widgets({setsel,animator}) {
     const Elements = (() => tutorials.map((w,i) => {
         return (
             <div class="w-full  pt-5 pl-2 ">
                 <div class="rounded-md border-4 bg-[#bac9d0] border-slate-400 w-[95%] gap-y-5  flex flex-col  items-center justify-center">
                 <button id={`w_${i}`}   
-                    onClick={(() => {
-                        requestAnimationFrame(() => {  
-                        animator.stop()
-                        animator.stop_animations("all")
-                          
-                            setsel(i)
-                        })
-                    })} 
+                
+                    onClick={()=>next(setsel,animator,i)}
                     onMouseOver={(()=>{changeBackground(`w_${i}`,"#C0E58B")})}
                     onMouseOut={(()=>{changeBackground(`w_${i}`,"white")})}
                     class="bg-white border-2 border-black w-[95%] rounded-md h-[30%]"
