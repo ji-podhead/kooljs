@@ -10,7 +10,7 @@ kooljs is a multithreaded animation tool for the web.
 - avoid prop drilling for values that are only used for animations by storing and updating them on the worker
 
 
-## LiveDemo v0.1.5
+## LiveDemo v0.1.7
 - check out the [LiveDemo](https://ji-podhead.github.io/kooljs/)
 - I will add adding additional Examples over time
 
