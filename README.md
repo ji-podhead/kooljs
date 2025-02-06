@@ -71,10 +71,14 @@ the callback field should be a string that includes valid code like this:
 ### Constants
 Constants are either matrices or numbers that get stored on the worker.
 They are called Constants since they are not getting animated in the render loop.
-However you can update them from both the mainthread (Animator.update_constant) and the worker (using lambdas or Lerp callbacks).
-Constants serve as a way to update multiple animation values on the worker instead of calling animator.update() for every related animation from the mainthread, which requires to serialize the values. But they can also get used as Middleware to update values on the mainthread. 
 
-- when updating Constants, they can also trigger animations by using render triggers (v0.1.7)
+However you can update them from both the mainthread (Animator.update_constant) and the worker (using lambdas or Lerp callbacks).
+
+Constants serve as a way to update multiple animation values on the worker instead of calling animator.update() for every related animation from the mainthread, which requires to serialize the values. 
+
+But they can also get used as Middleware to update values on the mainthread. 
+
+- when updating Constants, they can also trigger animations by using `render_triggers`, or call lambdas by using `render_lamba_calls`
 
 ### Lambdas
 Lambdas lets you use youre custom logic on the worker.
