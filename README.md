@@ -1,14 +1,13 @@
 # kooljs 
-- kooljs is a multithreaded animation tool.
-- its one task per animator instance
-- this project is still in development 
+kooljs is a multithreaded animation tool for the web.
 
 ## what can it do?
-- compute animations on a worker thread
-- add addtional logic like lambda functions that run on the worker
-- trigger animations at a certain frame of another animation, or via custom renderevents on the worker
-- use arrays for animated sequences
-  - you can update those values and even  use different sizes if you set the max_length parameter
+- compute lerp animations on a worker thread
+- custom logic (lambdas) that run on the worker
+- timelines to orchestrate animations
+- MatrixLerps to animate multiple values at once
+- stores and accesses the values requied for animations efficiently on the worker using TypedArray and Map Datatypes
+- avoid prop drilling for values that are only used for animations by storing and updating them on the worker
 
 
 ## LiveDemo v0.1.5
@@ -18,27 +17,43 @@
 ## Components
 ### Animator
 The animator serves as our Middleware to communicate with the worker:
+- its one task/worker thread per animator instance
 - creates the animated objects
 - creates the registry on the worker
 - update values
 - start/stop animations
   
-### Lerp & Matrix lerp
-This are the animation objects that get animated in a render loop on the worker
 
+
+### Components that are updated in the render loop
+Those are Components we iterate over for a certain amount of time in the render loop on the worker.
+- ***Lerp***
+  - uses a series of numbers to lerp through as the input of `steps`
+  - use the `render_callback` to pass the computed values to a callback on the main thread 
+  - you can either call document.get in the callback directly to apply the styling using the animated value, or you can store the values (eg usecallback) to store and process them
+- ***MatrixLerp***
+  - The same as `Lerp`, but it requires a list of subarrays (Matrices) instead a list of numbers as the input of `steps`
+  - MatrixLerp lets you animate multipe values, but they only require a single `render_callback` call to pass them to the mainthread at once
+    - this can be handy if you dont want to create multiple animations for a single div and therefore `prevents overhead` 
+- ***Timeline***
+  -  Timeline act like a Lerp-Animation that does not fire a callback after a each animation-frame.
+  -  They can be used to trigger and control other timelines, lerps, matrixLerps, lambdas or constants on the worker.
+    
 #### Arguments
-| arg | description | default |
-| --- | --- | --- |
-| render_callback | a function that gets called on the mainthread after the render loop | none |
-| duration | the max amount of computations pro step |10 |
-| render_interval | computations pro step =  render_interval // duration | 1 |
-| smoothstep |  the amount of smooth step/easing that is applied| 1 |
-| delay | the amount of steps to wait before starting the animation| 0 |
-| animationTriggers | a list of animationtrigger objects | undefined |
-| callback | a callback object that gets called on the worker | undefined |
-| steps | a list of values to lerp through |undefined |
-| loop| if this animation will get reseted after a lifecycle | false |
-| steps_max_length | the max length of steps for this animation. Matrix Animations don't use this property | steps.length |
+|***L***-Lerp|***M***-MatrixLerp|***T***-Timeline|
+
+| arg | description | default | Components |
+| --- | --- | --- |  --- |
+| render_callback | a function that gets called on the mainthread after the render loop | none | L,M |
+| duration | the max amount of computations pro step |10 | All |
+| steps | a list of values to lerp through |undefined | All |
+| steps_max_length | the max length of steps for this animation. | steps.length |  L |
+| loop | if this animation will get reseted after a lifecycle | false |  All |
+| render_interval | computations pro step =  render_interval // duration | 1 |  All |
+| smoothstep |  the amount of smooth step/easing that is applied| 1 |  L,M |
+| delay | the amount of steps to wait before starting the animation| 0 |  All |
+| animationTriggers | a list of animationtrigger objects | undefined |  All |
+| callback | a callback object that gets called on the worker | undefined |  All |
 
 ### Constants
 Constants are either matrices or numbers that get stored on the worker.
@@ -47,6 +62,86 @@ However you can update them from both the mainthread (Animator.update_constant) 
 Constants serve as a way to update multiple animation values on the worker instead of calling animator.update() for every related animation from the mainthread, which requires to serialize the values. But they can also get used as Middleware to update values on the mainthread. 
 
 - when updating Constants, they can also trigger animations by using render triggers (v0.1.7)
+
+### Lambdas
+Lambdas lets you use youre custom logic on the worker.
+- you can fire callbacks eventbased (eg onMouseOver) without having to start a animation and its `callback` function
+- you can also call them using the `callback` argument of the animated components on the worker directly
+- just like with the `callback` of the animated components, they require a string as input that gets evaluated on the worker
+
+### worker utility functions
+There are a bunch of mehtods you can use in your custom `callback` logic (Lambdas, MatrixLerp, Lerp) to manipulate, start, or stop animations.
+Some of them will just set, or return a value from the registry.
+
+| Method | Description |
+| --- | --- |
+|    addTrigger | triggers another animation at a certain step and delta_t value |
+|    removeTrigger | removes a trigger |
+|    get_time | gets the delta_t value of an animation |
+|    set_delta_t | sets the delta_t value of an animation |
+|    current_step | returns the current step of an animation |
+|    set_step | sets the current step of an animation |
+|    is_active | returns true if an animations is currently running |
+|    get_active | get all avtive animation indices |
+|    start_animations | a list of animation indices to start |
+|    stop_animations |  a list of animation indices to stop  |
+|    setLerp | set a Lerp target value for a certain step of an animation |
+|    setMatrix | set the matrix lerp target value for a certain step of an animation |
+|    get_lerp_value | returnt the lerp result vlaue of an animation |
+|    soft_reset | starts and resets an animation if its finished, or not playing |
+|    hard_reset | starts and resets the animation  without checking if its finished |
+|    get_duration | get the duration of an animation |
+|    set_duration | set the duraiton of an animation |
+|    set_sequence_length | set the lengths of steps that get lerped through. Keep in mind that this needs to be within the range of either `max_step_length` (lerp), or the length of the sequence of the `steps` argument. |
+|    change_framerate | set the fps |
+|    get_constant | returns a constant (matrix, or number) |
+|    get_constant_number |  returns a constant (number) |
+|    get_constant_row | returns a row of a matrix constant |
+|    render_constant | messages the mainthread and sends the updated constant value |
+|    update_constant |  set a constant value |
+|    set_delay |  set the delay of an animaiton |
+|    get_delay | get the delay of an animation |
+|    get_delay_delta | get the delay_delta (delay progress) of an animation |
+|    set_delay_delta | set the delay_delta (delay progress) of an animation  |
+|    lambda_call | perform a lambda call |
+
+### Examples
+
+#### Timeline
+- in this example we are using lambdas to edit edit the registry on the worker to alter the animations during certain events.<br/>
+> the full example can be found [here](https://github.com/ji-podhead/kooljs/blob/main/livedemo_project/src/examples/e5.js) 
+```js
+    animProps.idle_animation= animator.Timeline({ 
+      duration: 100,
+      render_interval:20, 
+      steps: [[0],[1]],
+      loop:true,
+      callback:{
+        callback:`(({time})=>{
+          console.log("----------timeline animation----------")
+          console.log("time " + time)
+          if(time==0){
+                  update_constant(${animProps.selected.id},"number",-1)
+                  // those are some additional lambdas we defined earlier         
+                  lambda_call(${animProps.stop_active.id}) 
+                  lambda_call(${animProps.start_random.id}) 
+          }
+          else if(time==80){
+            const random_index = get_constant_number(${animProps.selected.id})
+            console.log("random selection is " + random_index)
+            // those are some additional lambdas we defined earlier 
+            lambda_call(${animProps.replace_indices.id},{index:random_index,ref_step:0})
+            console.log("updated values")
+            console.log("started animation with index " + random_index)
+            soft_reset(random_index)
+          }
+            console.log("--------------------------------")
+        })`
+      }
+      })
+```
+ 
+
 
         
 ### contrbuting examples
