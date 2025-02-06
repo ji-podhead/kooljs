@@ -14,6 +14,41 @@
 ## LiveDemo v0.1.5
 - check out the [LiveDemo](https://ji-podhead.github.io/kooljs/)
 - I will add adding additional Examples over time
+
+## Components
+### Animator
+The animator serves as our Middleware to communicate with the worker:
+- creates the animated objects
+- creates the registry on the worker
+- update values
+- start/stop animations
+  
+### Lerp & Matrix lerp
+This are the animation objects that get animated in a render loop on the worker
+
+#### Arguments
+| arg | description | default |
+| --- | --- | --- |
+| render_callback | a function that gets called on the mainthread after the render loop | none |
+| duration | the max amount of computations pro step |10 |
+| render_interval | computations pro step =  render_interval // duration | 1 |
+| smoothstep |  the amount of smooth step/easing that is applied| 1 |
+| delay | the amount of steps to wait before starting the animation| 0 |
+| animationTriggers | a list of animationtrigger objects | undefined |
+| callback | a callback object that gets called on the worker | undefined |
+| steps | a list of values to lerp through |undefined |
+| loop| if this animation will get reseted after a lifecycle | false |
+| steps_max_length | the max length of steps for this animation. Matrix Animations don't use this property | steps.length |
+
+### Constants
+Constants are either matrices or numbers that get stored on the worker.
+They are called Constants since they are not getting animated in the render loop.
+However you can update them from both the mainthread (Animator.update_constant) and the worker (using lambdas or Lerp callbacks).
+Constants serve as a way to update multiple animation values on the worker instead of calling animator.update() for every related animation from the mainthread, which requires to serialize the values. But they can also get used as Middleware to update values on the mainthread. 
+
+- when updating Constants, they can also trigger animations by using render triggers (v0.1.7)
+
+        
 ### contrbuting examples
 Feel free to contribute your own examples or open a feature request.
 - I deployed to gh-pages branch `using bun deploy`
