@@ -72,39 +72,41 @@ Lambdas lets you use youre custom logic on the worker.
 ### worker utility functions
 There are a bunch of mehtods you can use in your custom `callback` logic (Lambdas, MatrixLerp, Lerp) to manipulate, start, or stop animations.
 Some of them will just set, or return a value from the registry.
+### worker utility functions
+There are a bunch of mehtods you can use in your custom `callback` logic (Lambdas, MatrixLerp, Lerp) to manipulate, start, or stop animations.
+Some of them will just set, or return a value from the registry.
 
-| Method | Description |
-| --- | --- |
-|    addTrigger | triggers another animation at a certain step and delta_t value |
-|    removeTrigger | removes a trigger |
-|    get_time | gets the delta_t value of an animation |
-|    set_delta_t | sets the delta_t value of an animation |
-|    current_step | returns the current step of an animation |
-|    set_step | sets the current step of an animation |
-|    is_active | returns true if an animations is currently running |
-|    get_active | get all avtive animation indices |
-|    start_animations | a list of animation indices to start |
-|    stop_animations |  a list of animation indices to stop  |
-|    setLerp | set a Lerp target value for a certain step of an animation |
-|    setMatrix | set the matrix lerp target value for a certain step of an animation |
-|    get_lerp_value | returnt the lerp result vlaue of an animation |
-|    soft_reset | starts and resets an animation if its finished, or not playing |
-|    hard_reset | starts and resets the animation  without checking if its finished |
-|    get_duration | get the duration of an animation |
-|    set_duration | set the duraiton of an animation |
-|    set_sequence_length | set the lengths of steps that get lerped through. Keep in mind that this needs to be within the range of either `max_step_length` (lerp), or the length of the sequence of the `steps` argument. |
-|    change_framerate | set the fps |
-|    get_constant | returns a constant (matrix, or number) |
-|    get_constant_number |  returns a constant (number) |
-|    get_constant_row | returns a row of a matrix constant |
-|    render_constant | messages the mainthread and sends the updated constant value |
-|    update_constant |  set a constant value |
-|    set_delay |  set the delay of an animaiton |
-|    get_delay | get the delay of an animation |
-|    get_delay_delta | get the delay_delta (delay progress) of an animation |
-|    set_delay_delta | set the delay_delta (delay progress) of an animation  |
-|    lambda_call | perform a lambda call |
-
+| Method | Description | Arguments | 
+| --- | --- | --- | 
+| addTrigger | triggers another animation at a certain step and delta_t value | id, target, step, time | 
+| removeTrigger | removes a trigger | id, target, step, time | 
+| get_time | gets the delta_t value of an animation | id | 
+| set_delta_t | sets the delta_t value of an animation | id, val | 
+| current_step | returns the current step of an animation | id | 
+| set_step | sets the current step of an animation | id, val | 
+| is_active | returns true if an animations is currently running | id | 
+| get_active | get all avtive animation indices | . | 
+| start_animations | a list of animation indices to start | indices | 
+| stop_animations | a list of animation indices to stop | indices | 
+| setLerp | set a Lerp target value for a certain step of an animation | index, step, value | 
+| setMatrix | set the matrix lerp target value for a certain step of an animation | index, step, value | 
+| get_lerp_value | returnt the lerp result vlaue of an animation | id | 
+| soft_reset | starts and resets an animation if its finished, or not playing | id | 
+| hard_reset | starts and resets the animation without checking if its finished | id | 
+| get_duration | get the duration of an animation | id | 
+| set_duration | set the duraiton of an animation | id, val | 
+| set_sequence_length | set the lengths of steps that get lerped through | id, val | 
+| change_framerate | set the fps | fps_new | 
+| get_constant | returns a constant (matrix, or number) | id, type | 
+| get_constant_number | returns a constant (number) | id | 
+| get_constant_row | returns a row of a matrix constant | id, row | 
+| render_constant | messages the mainthread and sends the updated constant value | id, type| 
+| update_constant | set a constant value | id, type, value | 
+| set_delay | set the delay of an animaiton | id, val | 
+| get_delay | get the delay of an animation | id | 
+| get_delay_delta | get the delay_delta (delay progress) of an animation | id | 
+| set_delay_delta | set the delay_delta (delay progress) of an animation | id, val | 
+| lambda_call | perform a lambda call | id, args |
 ### Examples
 
 #### Timeline
