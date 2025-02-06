@@ -69,9 +69,7 @@ Lambdas lets you use youre custom logic on the worker.
 - you can also call them using the `callback` argument of the animated components on the worker directly
 - just like with the `callback` of the animated components, they require a string as input that gets evaluated on the worker
 
-### worker utility functions
-There are a bunch of mehtods you can use in your custom `callback` logic (Lambdas, MatrixLerp, Lerp) to manipulate, start, or stop animations.
-Some of them will just set, or return a value from the registry.
+
 ### worker utility functions
 There are a bunch of mehtods you can use in your custom `callback` logic (Lambdas, MatrixLerp, Lerp) to manipulate, start, or stop animations.
 Some of them will just set, or return a value from the registry.
