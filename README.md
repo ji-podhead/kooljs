@@ -55,6 +55,19 @@ Those are Components we iterate over for a certain amount of time in the render 
 | animationTriggers | a list of animationtrigger objects | undefined |  All |
 | callback | a callback object that gets called on the worker | undefined |  All |
 
+#### callback
+should be a list of dicts with this structure
+```js
+{
+condition: true || string,
+callback: string
+}
+```
+the callback field should be a string that includes valid code like this:
+```js
+`({id}=> console.log(id))`
+```
+
 ### Constants
 Constants are either matrices or numbers that get stored on the worker.
 They are called Constants since they are not getting animated in the render loop.
