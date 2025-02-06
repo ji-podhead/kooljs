@@ -167,12 +167,13 @@ class Lerp {
         animator.animation_objects.get(this.id).prop.id=this.id
     }
 }
-class lerpDiv {
-
-}
-class Spring {
-    constructor(animator, elements, duration, spring_tension, spring_whatever) {
-        this.elements = elements
+class Timeline{
+    constructor(animator, { render_callback, duration = 10, render_interval = 1, delay = 0, animationTriggers, callback,loop=false,steps_max_length }) {
+        
+        animator.registry_map.get("smoothstep").push(0)
+        const timeline_object= new Lerp(animator, { render_callback, duration, render_interval, smoothstep: 0, delay, animationTriggers, callback, loop, steps_max_length })
+        animator.registry_map.get("type")[timeline_object.id]=4
+        return timeline_object
     }
 }
 class Matrix_Lerp {
@@ -251,6 +252,7 @@ class Animator {
         this.registry_map.set('smoothstep', []);
         this.registry_map.set('lerp_chain_start', []);
         this.registry_map.set('loop', []);
+        this.registry_map.set('timelines', []);
         // --> chains <--
         this.chain_map_points = []
         this.chain_map_points_length = 0
@@ -276,10 +278,8 @@ class Animator {
         //      --> WORKER MESSAGES <--
         this.worker.onmessage = ev => {
             if (ev.data.message == "render") {
-               
                 requestAnimationFrame(() => {
                     if(this.status!=false){
-                        
                     ev.data.result_indices.map((value, index) => {
                         // console.log(`index: ${value} val: ${ev.data.results[index]}`)
                         try{
@@ -292,53 +292,29 @@ class Animator {
                             catch(err){
                                 this.stop_animations("all")
                                 console.error("stopping all animations. There was am Error while stopping animations: "+ err);
-                                
                         }
                     }
                     })
                 }
                 })
-            
             }
             else if (ev.data.message == "render_constant") {
                 this.constant_render_callbacks.get(ev.data.id).callback(ev.data.value)
                 this.constant_map.get(ev.data.type).set(ev.data.id,ev.data.value)
             }
-            // // else if (ev.data.message == "resolve_promise") {
-            // // this.promises[ev.data.promise_index]()
-            // }
-
-            // if (ev.data.message == "finished") {
-            //     console.log('finished event:', ev);
-            //     // eslint-disable-next-line array-callback-return
-            //     ev.data.map((index) => {
-            //         this.obj = this.animation_objects.get(this.indexlist[index])
-            //         if (this.obj.callback) {
-            //             this.obj.callback()
-            //         }
-            //     })
-            // };
         }
     }
-    //TODO
-    //bei  update nachfragen ob resettet werden soll
-    // eventuelle im worker einen promise für den loop returnen damit man dazwischen die werte ändern kann
-    // update_chain(id, val) {
-    //     this.animation_objects.get(id).chain = new Float32Array(this.chain_map.get("buffer")).set(val)
-    // }
     init(autostart = true) {
         const initF =(()=>this.worker.postMessage({ method: 'init', data: this.registry_map, chain_map: this.chain_map, matrix_chain_map: this.matrix_chain_map, trigger_map:this.trigger_map,constants: this.constant_map, callback_map: this.callback_map, lambda_map:this.lambda_map, spring_map: this.spring_map }))
         if(this.status==true){
             this.stop_animations("all")
             this.reset_animations("all")
-            
             initF()
     }
     else{
         initF()
         this.setFPS(this.fps)
     }
-        
     }
     /**
      * Updates the animations with new data
@@ -362,6 +338,10 @@ class Animator {
     Matrix_Lerp(args) {
         return new Matrix_Lerp(this, args)
     }
+    Timeline(args){
+        return new Timeline(this, args)
+    }
+    
     constant(args){
         return new Constant(this,args)
     }
@@ -374,17 +354,7 @@ class Animator {
         this.status=true
         this.worker.postMessage({ method: 'start_animations', indices: indices });
     }
-    //deprecated
-    // waitForPromise(msg){
-    //     const promiseIndex = this.promises.length;
-    //     this.promises.push(null); // Platzhalter für den Promise
-        
-    //     return new Promise((resolve) => {
-    //         this.worker.postMessage(msg);
-            
 
-    //     });
-    // }
     
     stop_animations(indices) {
         if(indices=="all"){
@@ -416,3 +386,36 @@ class Animator {
     }
 }
 export { Prop, Animator, Lerp, Constant }
+
+
+            // if (ev.data.message == "finished") {
+            //     console.log('finished event:', ev);
+            //     // eslint-disable-next-line array-callback-return
+            //     ev.data.map((index) => {
+            //         this.obj = this.animation_objects.get(this.indexlist[index])
+            //         if (this.obj.callback) {
+            //             this.obj.callback()
+            //         }
+            //     })
+            // };
+
+    //deprecated
+    // waitForPromise(msg){
+    //     const promiseIndex = this.promises.length;
+    //     this.promises.push(null); // Platzhalter für den Promise
+        
+    //     return new Promise((resolve) => {
+    //         this.worker.postMessage(msg);
+            
+
+    //     });
+    // }
+
+class lerpDiv {
+
+}
+class Spring {
+    constructor(animator, elements, duration, spring_tension, spring_whatever) {
+        this.elements = elements
+    }
+}

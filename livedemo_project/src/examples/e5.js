@@ -112,8 +112,7 @@ function Example(animator) {
     // our idle animation that is stopped/started once a user-mouse-event interacts with the grid
     // we use the renderinterval and duration to create some sort of animation-timeline
     // this way we only fire 20 function calls on the worker during one animation ciclus
-    animProps.idle_animation= animator.Lerp({ 
-      render_callback:(()=>{}),
+    animProps.idle_animation= animator.Timeline({ 
       duration: 100,
       render_interval:20, 
       steps: [[0],[1]],

@@ -11,17 +11,13 @@ var finished = []
 var fps = 10.33
 var signal,loop_resolver = null
 var triggers_step
-var status=true
 async function sleep(milliseconds,signal) {
     return new Promise((resolve,reject) => {
         const t=setTimeout(resolve, milliseconds)
         signal.addEventListener('abort', () => {
             clearTimeout(t)
         });    
-        
     })
-    
-    
 }
 // ----------------------------------------> CLASS DEFINITIONS <--
 class Lerp {
@@ -76,7 +72,7 @@ class LerpChain{
         if(lerp_registry.type[id]==2){
             lerp_registry.results.set(id,lerpChain_registry.buffer[lerp_registry.lerp_chain_start[id]])
         }
-        else{
+        else if(lerp_registry.type[id]==3){
             lerp_registry.results.set(id,lerpChain_registry.matrixChains.get(id).get(0))
         }
         lerp_registry.delay_delta[id]=0
@@ -175,7 +171,7 @@ async function animate() {
                             }
                             break;
                         default:
-                            return console.error("wrong type"+String(val));
+                            break
                     }
                    args={id:val,value:lerp_registry.results.get(val),step:lerpChain_registry.progress[val], time:lerp_registry.progress[val] ,step:lerpChain_registry.progress[val]} //time war vorther lerp_registry.delta_t[val]
                    if(callback_registry.condition.has(val)&&(callback_registry.condition.get(val)||callback_registry.condition.get(val)(args)==true)) {
@@ -202,17 +198,13 @@ async function animate() {
     })
     return finished
 }
-//t = callback_registry.callback.get(val)?.(val, t) ?? undefined; //  Null-Coalescing-Operator -- if callback not undefined then use and process the value t for callback
-// const eslapsed = performance.now() - startTime;
-// const waitTime = Math.max(0, fps - elapsed);
 var startTime,timeoutId
 async function animateLoop() {
       loop_resolver = new AbortController()
-      signal = loop_resolver.signal;
       loop_resolver.signal.addEventListener('abort', () => {
         clearTimeout(timeoutId);
       });
-      while (signal.aborted == false) {
+      while (loop_resolver.signal.aborted == false) {
         startTime = performance.now();
         finished = [];
         if (lerp_registry.activelist.length > 0) {
@@ -236,21 +228,17 @@ async function animateLoop() {
         }
       }
   }
-// postMessage({
-//     message: "finish",
-//     results: lerp_registry.results,
-//     result_indices: lerp_registry.activelist
-// });
+
 function start_loop() {
-    status=true
+    if(loop_resolver==null){
             animateLoop()
+    }    
 }
 async function stop_loop() {
-    status=false
     if(loop_resolver!=null){
         loop_resolver.abort()
+        loop_resolver=null
     }
-    
 }
 function start_animations(indices){
     indices.map((id)=>{
@@ -333,7 +321,7 @@ function init(lerps, lerpChains, matrixChains, triggers, constants, condi_new, l
         if(t==2){
             lerp_registry.results.set(i,lerpChain_registry.buffer[lerp_registry.lerp_chain_start[i]])
         }
-        else{
+        else if(t==3){
             lerp_registry.results.set(i,new Float32Array(lerpChain_registry.matrixChains.get(i).get(0)))
         }
     })
@@ -424,14 +412,15 @@ function lambda_call(id,args){
 }
 // ----------------------------------------> EVENTS <--
 async function render() {
-    if(status==true)  postMessage({ message: "render", results: lerp_registry.results, result_indices: lerp_registry.activelist })
+    postMessage({ message: "render", results: lerp_registry.results, result_indices: lerp_registry.activelist.filter((x)=>{
+     if(  lerp_registry.type[x]!=4){
+        return true
+     } 
+    })
+    })  
 }
 async function render_constant(id,type) {
     postMessage({ message: "render_constant", id:id, type: type, value:  get_constant(id,type)})
-}
-function returnPromise(promise) {
-    postMessage({ message: "stopping", promise:promise }) ;
-
 }
 onmessage = (event) => {
     switch (event.data.method) {
@@ -466,11 +455,7 @@ onmessage = (event) => {
             start_animations(event.data.indices);
             break;
         case 'stop_animations':
-            if(status==true) {
-                status=false
                 stop_animations(event.data.indices);
-            }
-            
             break;
         case 'reset_animations':
             reset_animations(event.data.indices);
@@ -486,6 +471,7 @@ onmessage = (event) => {
             break
     }
 };
+// ----------------------------------------> User API <--
 function setLerp(index,step,value){
     //console.log(lerpChain_registry.buffer[lerp_registry.lerp_chain_start[index]+step])
     lerpChain_registry.buffer[lerp_registry.lerp_chain_start[index]+step]=value
@@ -518,7 +504,7 @@ function get_constant_row(id,row){return constant_registry.get_row(id,row)}
 function get_constant_number(id){return constant_registry.get_number(id)}
 function get_active(id){return lerp_registry.activelist}
 function get_status(){
-    return status
+    return loop_resolver!=null
 }
 
 export {
@@ -566,6 +552,14 @@ function convex_hull(){
 function spring(){
 
 }
+//t = callback_registry.callback.get(val)?.(val, t) ?? undefined; //  Null-Coalescing-Operator -- if callback not undefined then use and process the value t for callback
+// const eslapsed = performance.now() - startTime;
+// const waitTime = Math.max(0, fps - elapsed);
+// postMessage({
+//     message: "finish",
+//     results: lerp_registry.results,
+//     result_indices: lerp_registry.activelist
+// });
 // function triggers() {
 //     postMessage({ message: "trigger", results: lerp_registry.results, result_indices: lerp_registry.activelist })
 // }
