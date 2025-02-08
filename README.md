@@ -10,7 +10,7 @@ kooljs is a multithreaded animation tool for the web.
 - avoid prop drilling for values that are only used for animations by storing and updating them on the worker
 
 
-## LiveDemo v0.1.5
+## LiveDemo v0.1.7
 - check out the [LiveDemo](https://ji-podhead.github.io/kooljs/)
 - I will add adding additional Examples over time
 
@@ -55,13 +55,30 @@ Those are Components we iterate over for a certain amount of time in the render 
 | animationTriggers | a list of animationtrigger objects | undefined |  All |
 | callback | a callback object that gets called on the worker | undefined |  All |
 
+#### callback
+should be a list of dicts with this structure
+```js
+{
+condition: true || string,
+callback: string
+}
+```
+the callback field should be a string that includes valid code like this:
+```js
+`({id}=> console.log(id))`
+```
+
 ### Constants
 Constants are either matrices or numbers that get stored on the worker.
 They are called Constants since they are not getting animated in the render loop.
-However you can update them from both the mainthread (Animator.update_constant) and the worker (using lambdas or Lerp callbacks).
-Constants serve as a way to update multiple animation values on the worker instead of calling animator.update() for every related animation from the mainthread, which requires to serialize the values. But they can also get used as Middleware to update values on the mainthread. 
 
-- when updating Constants, they can also trigger animations by using render triggers (v0.1.7)
+However you can update them from both the mainthread (Animator.update_constant) and the worker (using lambdas or Lerp callbacks).
+
+Constants serve as a way to update multiple animation values on the worker instead of calling animator.update() for every related animation from the mainthread, which requires to serialize the values. 
+
+But they can also get used as Middleware to update values on the mainthread. 
+
+- when updating Constants, they can also trigger animations by using `render_triggers`, or call lambdas by using `render_lamba_calls`
 
 ### Lambdas
 Lambdas lets you use youre custom logic on the worker.
