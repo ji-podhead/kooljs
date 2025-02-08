@@ -80,7 +80,7 @@ Some of them will just set, or return a value from the registry.
 | removeTrigger | removes a trigger | id, target, step, time | 
 | get_time | gets the delta_t value of an animation | id | 
 | set_delta_t | sets the delta_t value of an animation | id, val | 
-| current_step | returns the current step of an animation | id | 
+| get_step | returns the current step of an animation | id | 
 | set_step | sets the current step of an animation | id, val | 
 | is_active | returns true if an animations is currently running | id | 
 | get_active | get all avtive animation indices | . | 

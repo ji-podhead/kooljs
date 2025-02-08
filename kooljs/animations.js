@@ -7,46 +7,94 @@
 //    b) Provide a direct link to the original project repository (https://github.com/ji-podhead/kooljs).  
 
 // 2. The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. 
+import { parse } from "@babel/parser"
+const worker_functions=
+[ 
+  "get_status",
+  "addTrigger",
+  "removeTrigger",
+  "get_time",
+  "set_delta_t",
+  "get_step",
+  "set_step",
+  "is_active",
+  "get_active",
+  "start_animations",
+  "stop_animations",
+  "setLerp",
+  "setMatrix",
+  "get_lerp_value",
+  "soft_reset",
+  "hard_reset",
+  "get_duration",
+  "set_duration",
+  "set_sequence_length",
+  "change_framerate",
+  "get_constant",
+  "get_constant_number",
+  "get_constant_row",
+  "render_constant",
+  "update_constant",
+  "set_delay,get_delay",
+  "get_delay_delta",
+  "set_delay_delta",
+  "lambda_call"
+]
+const import_strings=worker_functions.map(x=>`(0,_kooljs_worker__WEBPACK_IMPORTED_MODULE_1__.${x})`)
+
 const types = ["callback", "function", "number", "Linear", "Lerp", "constant"]
 const animation_types = ["constant", "linear", "lerp"]
 const animationProps = {}
 
 class Prop {
-    update_callback(value, id) {
+    update_callback(value, id) {w
         this.setter(value, id)
     }
     /**
-     * @param {float} default_value - the default value of the variable
-     * @param {function|undefined} pointer - the function to be called with the updated value as argument
+     * Creates a new Prop instance.
+     * @param {function} render_callback - the setter function that will get called with the updated value
+     * @param {number|undefined} default_value - the default value of the animation property
      */
-    constructor(render_callback, point_to = undefined, default_value = undefined) {
+    constructor(render_callback, default_value = undefined) {
         this.default_value = default_value
-        this.point_to = point_to;
         this.setter = render_callback
         this.updater = this.update_callback
     }
 }
 var index
 class Constant {
+
     /**
-     * Constant.
+     * Creates a new Constant instance.
      * @param {Animator} animator - the Animator Instance
-     * @param {string} type - the type of the constant can be number, matrix
-     * @param { number | list } value - all lists will get merged to a map of float32 arrays, where numbers are one giant float32 array 
-     * @param { function } render_callback - a function that gets called when you call render_constant on the worker    
+     * @param {object} options - options for the constant
+     * @param {string} options.type - the type of the constant can be number, matrix
+     * @param { number | list } options.value - all lists will get merged to a map of float32 arrays, where numbers are one giant float32 array 
+     * @param { function | list } [options.render_callbacks] - a function or list of functions that gets called when the constant value gets updated
+     * @param { function | list } [options.render_triggers] - a function or list of functions that gets called when the constant value gets updated
      * @returns {dict {id:number, value:number|map}} Constant - returns a instance of a Constant consisting of the id and value
+     * - RenderCallbacks:
+     *  {
+     *  id: number,
+     *  args: string
+     *  }
+     * - RenderTriggers: list(callback_id's)
+     *  
      */
-    constructor(animator, {type, value,render_callback}) {
+    constructor(animator, {type, value,render_callbacks,render_triggers}) {
         this.id = animator.constant_count
-        
         animator.constant_count+=1
         animator.constant_map.get(type).set(this.id, value)
         this.value=animator.constant_map.get(type).get(this.id)
-        if(render_callback!=undefined){
-            animator.constant_render_callbacks.set(this.id,render_callback)
+        if(render_callbacks!=undefined){
+            animator.constant_map.get("render_callbacks").set(this.id,render_callbacks)
         }
+        if(render_triggers!=undefined){
+            animator.constant_map.get("render_triggers").set(this.id, render_triggers)
+        }   
     }
 }
+
 class Lambda {
     /**
      * @param {Animator} animator - the Animator Instance
@@ -58,8 +106,82 @@ class Lambda {
         //currentValue = currentValue;
         index = animator.lambda_map.size
         this.id = index
-        this.animator=animator
+        //(0,_kooljs_worker_utils__WEBPACK_IMPORTED_MODULE_1__.setMatrix)
+        //'(0,_kooljs_worker__WEBPACK_IMPORTED_MODULE_1__.setMatrix)'
+
+        callback=(callback.toString())
+        for (let i = 0; i < import_strings.length; i++) {
+            callback = callback.replace(import_strings[i], worker_functions[i]);
+          } 
+        const replaced_callback = callback.replace(new RegExp(import_strings.join('|'), 'g'), (match) => {
+            const index = import_strings.indexOf(match);
+            return worker_functions[index];
+          });
+          
+        //  console.log(replaced_callback);
+        console.log(replaced_callback)
+
+        // const ast = parse(callback.toString(), {
+        //     sourceType: 'script',
+        //     plugins: ['jsx'],
+        //   })
+        //   const getMatrixCalls = [];
+        // console.log( ast)
+        // function traverse(node) {
+        //     console.log("----------------")
+        //     console.log(node.name)
+        //     console.log(node.type);
+        //     console.log(node)
+
+        //   if(node.callee){
+        //     console.log(node.callee.name)
+        //   }
+        //     if (node.type === 'CallExpression') {
+        //       if (node.callee.name === 'getMatrix') {
+        //         const args = node.arguments;
+        //         const argString = args.map((arg) => arg.value).join(', ');
+        //         getMatrixCalls.push(`getMatrix(${argString})`);
+        //       }
+        //     }
+        //     if (node.body) {
+        //       node.body.map((child) => {
+        //         traverse(child);
+        //       });
+        //     }
+          
+        //     if (node.expression) {
+        //       traverse(node.expression);
+        //     }
+          
+        //     if (node.arguments) {
+        //       node.arguments.forEach((arg) => {
+        //         traverse(arg);
+        //       });
+        //     }
+          
+        //     if (node.expressions) {
+        //       node.expressions.forEach((expr) => {
+        //         traverse(expr);
+        //       });
+        //     }
+        //   }
+        //   traverse(ast.program.body[0].expression.body);
+
+        // ast.program.body[0].expression.body.body.forEach((statement) => {
+        //     console.log(statement)
+        //     if (statement.type === 'ExpressionStatement' && statement.expression.type === 'CallExpression') {
+        //     const callee = statement.expression.callee;
+        //     if (callee.type === 'Identifier' && callee.name === 'getMatrix') {
+        //     const args = statement.expression.arguments;
+        //     const argString = args.map((arg) => arg.value).join(', ');
+        //     getMatrixCalls.push(`getMatrix(${argString})`);
+        //     }
+        // }
+        // });
+
+        console.log(JSON.parse(callback))
         animator.lambda_map.set(index, {condition:condition,callback:callback})
+        
     }
     call(args){
         this.animator.lambda_call(this.id,args)
@@ -122,11 +244,23 @@ function addCallback(index,animator,callback){
     }
 }
 class Lerp {
-    constructor(animator, { render_callback, duration = 10, render_interval = 1, smoothstep = 1, delay = 0, animationTriggers, callback, steps = undefined, loop=false, steps_max_length }) {
+    /**
+     * Creates a new Lerp object.
+     * @param {Animator} animator - the animator object
+     * @param {Object} options - options for the Lerp object
+     * @param {function} options.render_callback - the callback function for when the animation is rendered
+     * @param {number} [options.duration=10] - the duration of the animation in seconds
+     * @param {number} [options.render_interval=1] - the interval in which the animation is rendered in seconds
+     * @param {number} [options.smoothstep=1] - the smoothstep value for the animation
+     * @param {number} [options.delay=0] - the delay before the animation starts
+     * @param {Array} [options.animationTriggers] - the animation triggers
+     * @param {function} [options.callback] - the callback function for when the animation is finished
+     * @param {Array} [options.steps] - the steps of the animation
+     * @param {boolean} [options.loop=false] - whether or not the animation should loop
+     * @param {number} [options.steps_max_length] - the maximum length of the steps array
+     */
+    constructor(animator, { render_callback, duration = 10, render_interval = 1, smoothstep = 1, delay = 0, animationTriggers, callback, steps = undefined, loop=false, steps_max_length,type=2 }) {
         //currentValue = currentValue;
-        if (animator == undefined) {
-            return
-        }
         index = animator.animation_objects.size
         this.id = index
         this.lerpStart = undefined
@@ -155,32 +289,60 @@ class Lerp {
         animator.registry_map.get("duration").push(duration)
         animator.registry_map.get("render_interval").push(render_interval)
         animator.registry_map.get("delay_delta").push(0)
-        animator.registry_map.get("type").push(2)
+        animator.registry_map.get("type").push(type)
         animator.registry_map.get("delay").push(delay)
         animator.registry_map.get("progress").push(0)
         animator.registry_map.get("smoothstep").push(smoothstep)
         animator.animation_objects.set(this.id, {
             index: index,
-            callback: callback,
             prop: new Prop(render_callback)
         })
         animator.animation_objects.get(this.id).prop.id=this.id
     }
 }
-class lerpDiv {
+class Timeline{
 
-}
-class Spring {
-    constructor(animator, elements, duration, spring_tension, spring_whatever) {
-        this.elements = elements
+/**
+ * Creates a new Timeline object.
+ * A Timeline is a type of animation similar to Lerp, but it does not fire a callback after each animation frame.
+ * It is used to trigger and control other animations such as timelines, lerps, and matrixLerps.
+ * @param {Animator} animator - The animator instance.
+ * @param {Object} options - Options for the Timeline object.
+ * @param {Function} options.render_callback - The function called when the animation renders.
+ * @param {Number} [options.duration=10] - The duration of the animation.
+ * @param {Number} [options.render_interval=1] - The interval at which the animation should render.
+ * @param {Number} [options.delay=0] - The delay before the animation starts.
+ * @param {Object} [options.animationTriggers] - Animation triggers.
+ * @param {Function} [options.callback] - The function called when the animation is finished.
+ * @param {Boolean} [options.loop=false] - Whether the animation should loop.
+ * @param {Number} [options.steps_max_length] - The max length of steps for this animation.
+ * @returns {Lerp} The created Timeline object as a Lerp instance.
+ */
+
+    constructor(animator, { render_callback, duration = 10, render_interval = 1, delay = 0, animationTriggers, callback,loop=false,steps_max_length }) {
+        return new Matrix_Lerp(animator, { type:4,render_callback, duration, render_interval, smoothstep: 0, delay, animationTriggers, callback, loop, steps_max_length })
     }
 }
 class Matrix_Lerp {
-    constructor(animator, { render_callback, duration = 10, render_interval = 1, smoothstep = 1, delay = 0, animationTriggers, callback, steps = undefined, loop=false, steps_max_length }) {
+
+    /**
+     * Creates a new MatrixLerp object.
+     * @param {Animator} animator - the animator object
+     * @param {Object} options - options for the MatrixLerp object
+     * @param {function} options.render_callback - the callback function for when the animation is rendered
+     * @param {number} [options.duration=10] - the duration of the animation in seconds
+     * @param {number} [options.render_interval=1] - the interval in which the animation is rendered in seconds
+     * @param {number} [options.smoothstep=1] - the smoothstep value for the animation
+     * @param {number} [options.delay=0] - the delay before the animation starts
+     * @param {Array} [options.animationTriggers] - the animation triggers
+     * @param {function} [options.callback] - the callback function for when the animation is finished
+     * @param {Array} [options.steps] - the steps of the animation
+     * @param {boolean} [options.loop=false] - whether or not the animation should loop
+     * @param {number} [options.steps_max_length] - the maximum length of the steps array
+     */
+    constructor(animator, { type=3, render_callback, duration = 10, render_interval = 1, smoothstep = 1, delay = 0, animationTriggers, callback, steps = undefined, loop=false, steps_max_length }) {
         //currentValue = currentValue;
-        if (animator == undefined) {
-            return
-        }
+
         index = animator.animation_objects.size
         this.id = index
         animator.count+=1
@@ -204,7 +366,7 @@ class Matrix_Lerp {
         animator.chain_map.get("lengths").push(1)
         animator.chain_map.get("progress").push(0)
         animator.registry_map.get("duration").push(duration)
-        animator.registry_map.get("type").push(3)
+        animator.registry_map.get("type").push(type)
         animator.registry_map.get("render_interval").push(render_interval)
         animator.registry_map.get("delay_delta").push(0)
         animator.registry_map.get("delay").push(delay)
@@ -212,7 +374,6 @@ class Matrix_Lerp {
         animator.registry_map.get("smoothstep").push(smoothstep)
         animator.animation_objects.set(this.id, {
             index: index,
-            callback: callback,
             prop: new Prop(render_callback)
         })
         animator.animation_objects.get(this.id).prop.id=this.id
@@ -226,7 +387,7 @@ class Animator {
      * @class
      * @author JI-Podhead
      */
-    constructor(fps) {
+    constructor(fps=45) {
         this.count=0
         //      --> REGRISTRIES <-- 
         this.registry_map = new Map()
@@ -240,7 +401,9 @@ class Animator {
         this.constant_map = new Map()
         this.constant_map.set("number", new Map())
         this.constant_map.set("matrix", new Map())
-        this.constant_render_callbacks= new Map()
+        this.constant_map.set("render_callbacks",new Map())
+        this.constant_map.set("render_triggers",new Map())
+        
         //--> animation objects (Lerp...) <--
         this.registry_map.set('type', []);
         this.registry_map.set('duration', []);
@@ -251,6 +414,7 @@ class Animator {
         this.registry_map.set('smoothstep', []);
         this.registry_map.set('lerp_chain_start', []);
         this.registry_map.set('loop', []);
+        this.registry_map.set('timelines', []);
         // --> chains <--
         this.chain_map_points = []
         this.chain_map_points_length = 0
@@ -265,7 +429,6 @@ class Animator {
         this.spring_map.set("spring_tension", [])
         //      --> UTIL <--
         this.fps = fps
-        this.status=false
         this.constant_count=0
         this.animation_objects = new Map()
         this.indexlist = new Map()
@@ -276,10 +439,7 @@ class Animator {
         //      --> WORKER MESSAGES <--
         this.worker.onmessage = ev => {
             if (ev.data.message == "render") {
-               
                 requestAnimationFrame(() => {
-                    if(this.status!=false){
-                        
                     ev.data.result_indices.map((value, index) => {
                         // console.log(`index: ${value} val: ${ev.data.results[index]}`)
                         try{
@@ -292,21 +452,224 @@ class Animator {
                             catch(err){
                                 this.stop_animations("all")
                                 console.error("stopping all animations. There was am Error while stopping animations: "+ err);
-                                
                         }
                     }
                     })
-                }
                 })
-            
             }
             else if (ev.data.message == "render_constant") {
                 this.constant_render_callbacks.get(ev.data.id).callback(ev.data.value)
                 this.constant_map.get(ev.data.type).set(ev.data.id,ev.data.value)
             }
-            // // else if (ev.data.message == "resolve_promise") {
-            // // this.promises[ev.data.promise_index]()
-            // }
+        }
+    }
+    /**
+     * Initializes the animator and sends all data to the worker. If autostart is true, it also starts the animation.
+     * If the animator is already running, it will first stop the animation, reset the animations and then
+     * sends the data to the worker.
+     */
+    init() {
+        const initF =(()=>this.worker.postMessage({ method: 'init', fps: this.fps,data: this.registry_map, chain_map: this.chain_map, matrix_chain_map: this.matrix_chain_map, trigger_map:this.trigger_map,constants: this.constant_map,  callback_map: this.callback_map, lambda_map:this.lambda_map, spring_map: this.spring_map }))
+            this.stop_animations("all")
+            this.reset_animations("all")
+            initF()
+    }
+    /**
+     * Updates the values of the lerp animations. The data is an array of objects with the following properties:
+     * - id: The id of the lerp animation that should be updated.
+     * - values: The new values of the lerp animation.
+     * @param {Array<Object>} data - An array of objects with the properties id and values.
+     */
+    update_lerp(data) {
+        this.worker.postMessage({ method: 'update', type: 2, data: data })
+    }
+
+    /**
+     * Calls a lambda function with the given id and arguments. The lambda function must be added to the animator via the Lambda class, or Animator.Lambda().
+     * @param {number} id - The id of the lambda function that should be called.
+     * @param {*} args - The arguments to pass to the lambda function.
+     */
+    lambda_call(id,args) {
+        this.worker.postMessage({ method: 'lambda_call', id:id, args: args })
+    }     
+/**
+ * Updates the matrix lerp animations with new data.
+ * Sends a message to the worker to update animations of type 3.
+ * @param {Array<Object>} data - An array of objects with the properties id and values for the matrix lerp animation.
+ */
+
+    update_matrix_lerp(data) {
+        this.worker.postMessage({ method: 'update', type: 3, data: data })
+    }
+    /**
+     * Creates a new lambda animation with the given condition and callback.
+     * The callback is a function that is called when the condition is true.
+     * The callback is called with the value of the lerp animation that triggered the condition.
+     * @param {function(number):boolean} condition - A function that takes one argument, the value of the lerp animation and returns true if the condition is met.
+     * @param {function(number)} callback - A function that takes one argument, the value of the lerp animation that triggered the condition.
+     * @return {Lambda} The lambda animation that was created.
+     */
+    Lambda(condition,callback){
+        return new Lambda(this,condition,callback)
+    }
+
+    set_lambda(id,callback,condition=true){
+        this.worker.postMessage({ method: 'set_lambda', id: id, callback: callback,condition:condition })
+
+    }
+
+    /**
+     * Creates a new Lerp object.
+     * A Lerp is a linear interpolation animation which takes a value and linearly interpolates between it and a target value.
+     * @param {Object} args - Options for the animation.
+     * @param {Function} args.render_callback - The function that will be called when the animation renders.
+     * @param {Number} [args.duration=10] - The duration of the animation.
+     * @param {Number} [args.render_interval=1] - The interval at which the animation should render.
+     * @param {Number} [args.delay=0] - The delay before the animation starts.
+     * @param {Object} [args.animationTriggers] - Animation triggers.
+     * @param {Function} [args.callback] - The function that will be called when the animation is finished.
+     * @param {Number} [args.steps] - The steps to be animated.
+     * @param {Boolean} [args.loop=false] - Whether the animation should loop.
+     * @param {Number} [args.steps_max_length] - The maximum number of steps the animation should have.
+     * @returns {Lerp} The created Lerp object.
+     */
+    Lerp(args) {
+        return new Lerp(this, args)
+    }
+        /**
+     * Create a Matrix_Lerp object.
+     * A Matrix_Lerp is a special type of Lerp animation, which has the same properties as a Lerp animation,
+     * but instead of animating a number, it animates a matrix.
+     * @param {Object} options - Options for the animation.
+     * @param {Function} options.render_callback - The function that will be called when the animation renders.
+     * @param {Number} [options.duration=10] - The duration of the animation.
+     * @param {Number} [options.render_interval=1] - The interval at which the animation should render.
+     * @param {Number} [options.delay=0] - The delay before the animation starts.
+     * @param {Object} [options.animationTriggers] - Animation triggers.
+     * @param {Function} [options.callback] - The function that will be called when the animation is finished.
+     * @param {Array} [options.steps] - The steps to be animated.
+     * @param {Boolean} [options.loop=false] - Whether the animation should loop.
+     * @param {Number} [options.steps_max_length] - The maximum number of steps the animation should have.
+     * @returns {Matrix_Lerp} The created Matrix_Lerp object.
+     */
+    Matrix_Lerp(args) {
+        return new Matrix_Lerp(this, args)
+    }
+
+    /**
+     * Creates a new Timeline object.
+     * A Timeline acts like a Lerp-Animation that does not fire a callback after each animation-frame.
+     * It can be used to trigger and control other timelines, lerps, matrixLerps, lambdas, or constants on the worker.
+     * @param {Object} args - Options for the Timeline.
+     * @param {Function} [args.render_callback] - The function that gets called on the main thread after the render loop.
+     * @param {Number} [args.duration=10] - The maximum amount of computations per step.
+     * @param {Number} [args.render_interval=1] - The interval at which the animation should render.
+     * @param {Number} [args.delay=0] - The amount of steps to wait before starting the animation.
+     * @param {Object} [args.animationTriggers] - A list of animation trigger objects.
+     * @param {Function} [args.callback] - The function that will be called when the animation is finished.
+     * @param {Boolean} [args.loop=false] - Whether the animation should loop.
+     * @param {Number} [args.steps_max_length] - The maximum length of steps for this animation.
+     * @returns {Timeline} The created Timeline object.
+     */
+    Timeline(args){
+        return new Timeline(this, args)
+    }
+     /**
+     * Constant.
+     * @param {string} type - the type of the constant can be number, matrix
+     * @param { number | list } value - all lists will get merged to a map of float32 arrays, where numbers are one giant float32 array 
+     * @param { function } render_callback - a function that gets called when you call render_constant on the worker    
+     * @returns {dict {id:number, value:number|map}} Constant - returns a instance of a Constant consisting of the id and value
+     */
+    constant(args){
+        return new Constant(this,args)
+    }
+    /**
+     * Update multiple constants at once.
+     * @param {Array} data - an array of objects containing the following properties:
+     *  - type: the type of the constant (string)
+     *  - id: the id of the constant to update (number)
+     *  - value: the new value of the constant (number or list)
+     */
+    update_constant(data) {
+        data.map((x) => {
+            this.worker.postMessage({ method: 'update_constant', type: x.type, id: x.id, value: x.value });
+        })
+    }
+    /**
+     * Start animations.
+     * @param {number | number[]} indices - the index or indices of the animations to start.
+     */
+    start_animations(indices) {
+        this.worker.postMessage({ method: 'start_animations', indices: indices });
+    }
+
+    
+    /**
+     * Stop animations.
+     * @param {number | number[]} indices - the index or indices of the animations to stop. If set to "all", stops all animations.
+     */
+    stop_animations(indices) {
+        this.worker.postMessage({ method: 'stop_animations', indices: indices });
+    }
+    
+    /**
+     * Reset animations.
+     * @param {number | number[]} indices - the index or indices of the animations to reset. If set to "all", resets all animations.
+     */
+
+    reset_animations(indices) {
+        this.worker.postMessage({ method: 'reset_animations', indices: indices });
+    }
+    get_size(){
+        return this.animation_objects.size
+    }
+    get_constant_size(type){
+        return this.constant_map.get(type).size
+    }
+    /**
+     * Stop the animation thread. This will pause all animations.
+     */
+    stop() {
+        this.worker.postMessage({ method: 'stop' });
+    }
+    /**
+     * Start the animation thread. This will continue any animation that was running before
+     * calling stop().
+     */
+    start() {
+        this.worker.postMessage({ method: 'start' });
+    }
+    /**
+     * Changes the framerate of the animation thread.
+     * @param {number} fps - the new framerate in frames per second
+     */
+    setFPS(fps) {
+        this.worker.postMessage({ method: 'change_framerate', fps_new: fps });
+    }
+    /**
+     * Add a trigger to the animation with the given id.
+     * @param {number} id - the id of the animation to add the trigger to
+     * @param {number} target - the target id of the trigger
+     * @param {number} step - the step at which the trigger should trigger
+     * @param {number} time - the time at which the trigger should trigger
+     */
+    addTrigger(id,target,step,time){
+        this.worker.postMessage({ method: 'addTrigger', id: id,target: target,step: step,time: time });
+    }
+    /**
+     * Removes a trigger from the animation with the given id.
+     * @param {number} id - the id of the animation to remove the trigger from
+     * @param {number} target - the target id of the trigger to remove
+     * @param {number} step - the step at which the trigger to remove should trigger
+     * @param {number} time - the time at which the trigger to remove should trigger
+     */
+    removeTrigger(id,target,step,time){
+        this.worker.postMessage({ method: 'removeTrigger', id: id,target: target,step: step,time: time });
+    }
+}
+export { Prop, Animator, Lerp, Constant }
+
 
             // if (ev.data.message == "finished") {
             //     console.log('finished event:', ev);
@@ -318,62 +681,7 @@ class Animator {
             //         }
             //     })
             // };
-        }
-    }
-    //TODO
-    //bei  update nachfragen ob resettet werden soll
-    // eventuelle im worker einen promise für den loop returnen damit man dazwischen die werte ändern kann
-    // update_chain(id, val) {
-    //     this.animation_objects.get(id).chain = new Float32Array(this.chain_map.get("buffer")).set(val)
-    // }
-    init(autostart = true) {
-        const initF =(()=>this.worker.postMessage({ method: 'init', data: this.registry_map, chain_map: this.chain_map, matrix_chain_map: this.matrix_chain_map, trigger_map:this.trigger_map,constants: this.constant_map, callback_map: this.callback_map, lambda_map:this.lambda_map, spring_map: this.spring_map }))
-        if(this.status==true){
-            this.stop_animations("all")
-            this.reset_animations("all")
-            
-            initF()
-    }
-    else{
-        initF()
-        this.setFPS(this.fps)
-    }
-        
-    }
-    /**
-     * Updates the animations with new data
-     * @param {Object} data - the data to update
-     */
-    update_lerp(data) {
-        this.worker.postMessage({ method: 'update', type: 2, data: data })
-    }
-    lambda_call(id,args) {
-        this.worker.postMessage({ method: 'lambda_call', id:id, args: args })
-    }     
-    update_matrix_lerp(data) {
-        this.worker.postMessage({ method: 'update', type: 3, data: data })
-    }
-    Lambda(condition,callback){
-        return new Lambda(this,condition,callback)
-    }
-    Lerp(args) {
-        return new Lerp(this, args)
-    }
-    Matrix_Lerp(args) {
-        return new Matrix_Lerp(this, args)
-    }
-    constant(args){
-        return new Constant(this,args)
-    }
-    update_constant(data) {
-        data.map((x) => {
-            this.worker.postMessage({ method: 'update_constant', type: x.type, id: x.id, value: x.value });
-        })
-    }
-    start_animations(indices) {
-        this.status=true
-        this.worker.postMessage({ method: 'start_animations', indices: indices });
-    }
+
     //deprecated
     // waitForPromise(msg){
     //     const promiseIndex = this.promises.length;
@@ -385,34 +693,12 @@ class Animator {
 
     //     });
     // }
-    
-    stop_animations(indices) {
-        if(indices=="all"){
-            this.status=false
-        }
-        this.worker.postMessage({ method: 'stop_animations', indices: indices });
-    }
-    
-    reset_animations(indices) {
-        this.worker.postMessage({ method: 'reset_animations', indices: indices });
-    }
-    
-    stop() {
-        this.status=false
-        this.worker.postMessage({ method: 'stop' });
-    }
-    start() {
-        this.status=true
-        this.worker.postMessage({ method: 'start' });
-    }
-    setFPS(fps) {
-        this.worker.postMessage({ method: 'change_framerate', fps_new: fps });
-    }
-    addTrigger(id,target,step,time){
-        this.worker.postMessage({ method: 'addTrigger', id: id,target: target,step: step,time: time });
-    }
-    removeTrigger(id,target,step,time){
-        this.worker.postMessage({ method: 'removeTrigger', id: id,target: target,step: step,time: time });
+
+class lerpDiv {
+
+}
+class Spring {
+    constructor(animator, elements, duration, spring_tension, spring_whatever) {
+        this.elements = elements
     }
 }
-export { Prop, Animator, Lerp, Constant }

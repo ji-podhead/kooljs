@@ -7,6 +7,7 @@ import {  Example as E2 } from './examples/e2';
 import {  Example as E3} from './examples/e3';
 import {  Example as E4} from './examples/e4';
 import {  Example as E5} from './examples/e5';
+import {  Example as E6} from './examples/e6';
 
 import { Widgets, AnimationControl, Header, CodeBlocks } from "./utils"
 import { Util } from './kooljs/util_component';
@@ -24,6 +25,7 @@ function App() {
       Animated_Components.push(E3(animator))
       Animated_Components.push(E4(animator))
       Animated_Components.push(E5(animator))
+      Animated_Components.push(E6(animator))
       resolve();
     }).then(() => {
       animator.init(true);

@@ -9,10 +9,15 @@
 // 2. The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.  
 var finished = []
 var fps = 10.33
-var signal,controller = null
+var signal,loop_resolver = null
 var triggers_step
-async function sleep(milliseconds) {
-    return new Promise(resolve => setTimeout(resolve, milliseconds))
+async function sleep(milliseconds,signal) {
+    return new Promise((resolve,reject) => {
+        const t=setTimeout(resolve, milliseconds)
+        signal.addEventListener('abort', () => {
+            clearTimeout(t)
+        });    
+    })
 }
 // ----------------------------------------> CLASS DEFINITIONS <--
 class Lerp {
@@ -67,7 +72,7 @@ class LerpChain{
         if(lerp_registry.type[id]==2){
             lerp_registry.results.set(id,lerpChain_registry.buffer[lerp_registry.lerp_chain_start[id]])
         }
-        else{
+        else if(lerp_registry.type[id]==3){
             lerp_registry.results.set(id,lerpChain_registry.matrixChains.get(id).get(0))
         }
         lerp_registry.delay_delta[id]=0
@@ -96,10 +101,17 @@ class Constant {
     constructor(matrices,numbers){
         this.matrix=new Map()
         this.number=undefined
+        this.render_triggers=new Map()
+        this.render_callbacks=new Map()
     }
    update(type, id, value){
         constant_registry[type].set(id,value)
-    }
+        if(this.render_callbacks.has(id))  this.render_callbacks.get(id).map((l) => {
+            console.log(l)
+            lambda_registry.callback.get(l.id)(l.args)
+        })
+        if(this.render_triggers.has(id)) start_animations(this.render_triggers.get(id))
+     }
     get(type,index,row){
         if(row!=undefined){
             this.get_row(index,row)
@@ -155,7 +167,7 @@ async function animate() {
                             ))
                             break
                         case(3):
-                            for (let i=0;i< lerpChain_registry.matrixChains.get(val).get(lerpChain_registry.progress[val]).length;i++)
+                             for (let i=0;i< lerpChain_registry.matrixChains.get(val).get(lerpChain_registry.progress[val]).length;i++)
                             {
                                 lerp_registry.results.get(val)[i]= smoothLerp(
                                     lerpChain_registry.matrixChains.get(val).get(lerpChain_registry.progress[val])[i],
@@ -166,7 +178,7 @@ async function animate() {
                             }
                             break;
                         default:
-                            return console.error("wrong type"+String(val));
+                            break
                     }
                    args={id:val,value:lerp_registry.results.get(val),step:lerpChain_registry.progress[val], time:lerp_registry.progress[val] ,step:lerpChain_registry.progress[val]} //time war vorther lerp_registry.delta_t[val]
                    if(callback_registry.condition.has(val)&&(callback_registry.condition.get(val)||callback_registry.condition.get(val)(args)==true)) {
@@ -193,58 +205,47 @@ async function animate() {
     })
     return finished
 }
-//t = callback_registry.callback.get(val)?.(val, t) ?? undefined; //  Null-Coalescing-Operator -- if callback not undefined then use and process the value t for callback
-// const elapsed = performance.now() - startTime;
-// const waitTime = Math.max(0, fps - elapsed);
-var startTime 
+var startTime,timeoutId
 async function animateLoop() {
-    startTime = performance.now();
-    finished = []
-    async function restart(){
-        await sleep(Math.max(0, fps - performance.now() - startTime)).then(()=>{
-            animateLoop()
-        })
-    }
-    if (lerp_registry.activelist.length > 0) {
-        await animate().then(finished=>{
-            render()
-            if (finished.length > 0) {
-            fin(finished).then((state)=>{
-                if(state==true){
-                    restart()
-                }
-            })
-            }
-            else if(lerp_registry.activelist.length>0){
-                restart()
-            }
-        }) 
-    }
-}
-// ----------------------------------------> WORKER UTILS <--
-async function fin(finished) {
-    // postMessage({
-    //     message: "finish",
-    //     results: lerp_registry.results,
-    //     result_indices: lerp_registry.activelist
-    // });
-    lerp_registry.activelist = lerp_registry.activelist.filter((active) => !finished.includes(active));
-    if (lerp_registry.activelist["length"] == 0) {
-        return false
-    }
-    else{
-        return true
-    }
-}
+      loop_resolver = new AbortController()
+      loop_resolver.signal.addEventListener('abort', () => {
+        clearTimeout(timeoutId);
+      });
+      while (loop_resolver.signal.aborted == false) {
+        startTime = performance.now();
+        finished = [];
+        if (lerp_registry.activelist.length > 0) {
+          animate()
+          render();
+          if (finished.length > 0) {
+            lerp_registry.activelist = lerp_registry.activelist.filter((active) => !finished.includes(active));
+          }
+          if (lerp_registry.activelist["length"] > 0) {
+            await new Promise((resolve,reject) => {
+              timeoutId = setTimeout(() => {
+                resolve();
+              }, Math.max(0, fps - (performance.now() - startTime)));
+              
+            });
+          }
+        else {
+           return stop_loop()
+           
+          }
+        }
+      }
+  }
+
 function start_loop() {
-    if(controller==null){
-        animateLoop()
-    }
+    if(loop_resolver==null){
+            animateLoop()
+    }    
 }
-function stop_loop() {
-        controller = null
-    //lerp_registry.activelist=[]
-    // lerp_registry.last_value=[]
+async function stop_loop() {
+    if(loop_resolver!=null){
+        loop_resolver.abort()
+        loop_resolver=null
+    }
 }
 function start_animations(indices){
     indices.map((id)=>{
@@ -255,6 +256,7 @@ function start_animations(indices){
 function stop_animations(indices){
     if(indices==="all"){
         lerp_registry.activelist=[]
+        stop_loop()
     }
     else{
         indices.map((id)=>{
@@ -274,7 +276,7 @@ async function reset_animations(indices){
     indices.map((x)=>{
         lerpChain_registry.reset(x);
         lerp_registry.activate(x)
-        if(lerp_registry.activelist.includes(x)==false || controller==null){
+        if(lerp_registry.activelist.includes(x)==false || loop_resolver==null){
             stopped.push(x)
             switch(lerp_registry.type[x]){
                 case(2):
@@ -291,7 +293,8 @@ async function reset_animations(indices){
 }
 function change_framerate(fps_new) { fps = fps_new }
 const integers = ["loop","delay","type","progress","duration","render_interval","lerp_chain_start","activelist"]
-function init(lerps, lerpChains, matrixChains, triggers, constants, condi_new, lambdas, springs) {
+function init(new_fps, lerps, lerpChains, matrixChains, triggers, constants, condi_new, lambdas, springs) {
+    fps=new_fps
     triggers.forEach((trigger,key)=>trigger_registry.set(key,trigger))
     condi_new.forEach((val,key)=>{
           callback_registry.callback.set(key,eval(val.callback))
@@ -321,12 +324,15 @@ function init(lerps, lerpChains, matrixChains, triggers, constants, condi_new, l
     if(constants.get("number")!=undefined){
         constant_registry.number=constants.get("number")
     }
+    constant_registry.render_triggers=constants.get("render_triggers")
+    constant_registry.render_callbacks=constants.get("render_callbacks")
     lerp_registry.type.map((t,i)=>{
         //  TODO hier zur vereinfachung interne get funktionen nehmen
         if(t==2){
             lerp_registry.results.set(i,lerpChain_registry.buffer[lerp_registry.lerp_chain_start[i]])
         }
-        else{
+        else if(t==3){
+            console.log(i)
             lerp_registry.results.set(i,new Float32Array(lerpChain_registry.matrixChains.get(i).get(0)))
         }
     })
@@ -417,7 +423,8 @@ function lambda_call(id,args){
 }
 // ----------------------------------------> EVENTS <--
 async function render() {
-    postMessage({ message: "render", results: lerp_registry.results, result_indices: lerp_registry.activelist })
+    const active=lerp_registry.activelist.filter((x)=>lerp_registry.type[x]!=4)
+    postMessage({ message: "render", results: lerp_registry.results, result_indices: active }) 
 }
 async function render_constant(id,type) {
     postMessage({ message: "render_constant", id:id, type: type, value:  get_constant(id,type)})
@@ -425,7 +432,7 @@ async function render_constant(id,type) {
 onmessage = (event) => {
     switch (event.data.method) {
         case 'init':
-            init(event.data.data, event.data.chain_map, event.data.matrix_chain_map, event.data.trigger_map, event.data.constants, event.data.callback_map, event.data.lambda_map,event.data.spring_map,);
+            init(event.data.fps,event.data.data, event.data.chain_map, event.data.matrix_chain_map, event.data.trigger_map, event.data.constants, event.data.callback_map, event.data.lambda_map,event.data.spring_map,);
             break;
         case "update":
             update(event.data.type,event.data.data)
@@ -436,6 +443,10 @@ onmessage = (event) => {
         case 'start':
             start_loop();
             break;
+        case 'set_lambda':
+             lambda_registry.callback.set(event.data.id,eval(event.data.callback))
+             lambda_registry.condition.set(event.data.id,eval(event.data.condition))
+            break;
         //makes no sense since we would require a promise on the mainthread
         //this is shitty, cause you have to have a list of promises
         //however the user can still use get_active on the worker via callbacks, or lambdas
@@ -443,7 +454,7 @@ onmessage = (event) => {
         //     postMessage({ message: "get_active", active:lerp_registry.activelist})
         //     break;
         case 'stop':
-            stop_loop();
+            stop_loop()
             break;
         case 'change_framerate':
             change_framerate(event.data.fps_new);
@@ -455,7 +466,7 @@ onmessage = (event) => {
             start_animations(event.data.indices);
             break;
         case 'stop_animations':
-            stop_animations(event.data.indices);
+                stop_animations(event.data.indices);
             break;
         case 'reset_animations':
             reset_animations(event.data.indices);
@@ -471,10 +482,24 @@ onmessage = (event) => {
             break
     }
 };
+// ----------------------------------------> User API <--
+
+/**
+ * Sets a Lerp target value for a certain step of an animation.
+ * @param {number} index - the index of the animation
+ * @param {number} step - the step for which the value should be set
+ * @param {number} value - the value to set
+ */
 function setLerp(index,step,value){
     //console.log(lerpChain_registry.buffer[lerp_registry.lerp_chain_start[index]+step])
     lerpChain_registry.buffer[lerp_registry.lerp_chain_start[index]+step]=value
 }
+/**
+ * Sets the matrix lerp target value for a certain step of an animation.
+ * @param {number} index - the index of the animation
+ * @param {number} step - the step for which the value should be set
+ * @param {number[]} value - the matrix to set. The matrix is a 1 dimensional array of floats with a length that is a multiple of 4 (e.g. [r1, g1, b1, a1, r2, g2, b2, a2])
+ */
 function setMatrix(index,step,value){
    // console.log(lerpChain_registry.matrixChains.get(index).get(step))
     value.map((x,i) => {
@@ -482,28 +507,136 @@ function setMatrix(index,step,value){
     })
    // lerpChain_registry.matrixChains.get(index).get(step)
 }
+/**
+ * Updates a constant value.
+ * @param {number} id - the id of the constant to update
+ * @param {string} type - the type of the constant (number or matrix)
+ * @param {number | number[]} value - the new value of the constant
+ */
 function update_constant(id,type,value){constant_registry.update(type,id,value)}
+/**
+ * Gets a constant value.
+ * @param {number} id - the id of the constant
+ * @param {string} type - the type of the constant (number or matrix)
+ * @returns {number | number[]} value - the value of the constant
+ */
 function get_constant(id,type){return constant_registry.get(type,id)}
+/**
+ * Gets the current progress of the animation.
+ * @param {number} id - The identifier for the animation.
+ * @returns {number} - The current progress value of the animation.
+ */
 function get_time(id){return lerp_registry.progress[id]}
+/**
+ * Checks if an animation is currently running.
+ * @param {number} id - The identifier for the animation.
+ * @returns {boolean} - true if the animation is currently running, false otherwise.
+ */
 function is_active(id){return lerp_registry.activelist.includes(id)}
+/**
+ * Gets the current step of the animation.
+ * @param {number} id - The identifier for the animation.
+ * @returns {number} - The current step value of the animation.
+ */
 function current_step(id){return lerpChain_registry.progress(id)}
+/**
+ * Gets the lerp result value of an animation.
+ * @param {number} id - The identifier for the animation.
+ * @returns {number} - The lerp result value of the animation.
+ */
 function get_lerp_value(id){return lerp_registry.results.get(id)}
+/**
+ * Starts and resets an animation if its finished, or not playing.
+ * @param {number} id - The identifier for the animation.
+ */
 function soft_reset(id){lerpChain_registry.soft_reset(id)}
+/**
+ * Starts and resets an animation.
+ * @param {number} id - The identifier for the animation.
+ */
 function hard_reset(id){lerpChain_registry.reset(id)}
+/**
+ * Sets the current progress of an animation and updates the delta t value accordingly.
+ * @param {number} id - The identifier for the animation.
+ * @param {number} val - The new progress value for the animation.
+ */
 function set_delta_t(id,val){lerp_registry.progress=val;lerp_registry.delta_t[id]=lerp_registry.duration[id]/lerp_registry.progress[id]}
+/**
+ * Sets the current step of an animation.
+ * If the provided step value exceeds the maximum length of the animation, it will be set to the maximum length.
+ * @param {number} id - The identifier for the animation.
+ * @param {number} val - The desired step value for the animation.
+ */
+
 function set_step(id,val){lerpChain_registry.progress[id]=val>lerpChain_registry.lengths[id]?lerpChain_registry.lengths[id]:val}
+/**
+ * Gets the duration of an animation.
+ * @param {number} id - The identifier for the animation.
+ * @returns {number} - The duration of the animation.
+ */
 function get_duration(id){return lerp_registry.duration[id]}
+/**
+ * Sets the duration of an animation.
+ * @param {number} id - The identifier for the animation.
+ * @param {number} val - The desired duration value for the animation.
+ */
 function set_duration(id,val){lerp_registry.duration[id]=val}
+/**
+ * Retrieves the delay of an animation.
+ * @param {number} id - The identifier for the animation.
+ * @returns {number} - The delay value of the animation.
+ */
+
 function get_delay(id){return lerp_registry.delay[id]}
+/**
+ * Sets the delay of an animation.
+ * @param {number} id - The identifier for the animation.
+ * @param {number} val - The desired delay value for the animation.
+ */
 function set_delay(id,val){lerp_registry.delay[id]=val}
 function get_delay_delta(id){return lerp_registry.delay_delta[id]}
+/**
+ * Sets the current delay progress value for an animation.
+ * @param {number} id - The identifier for the animation.
+ * @param {number} val - The desired delay progress value for the animation.
+ */
 function set_delay_delta(id,val){lerp_registry.delay_delta[id]=val}
+/**
+ * Sets the sequence length of an animation.
+ * @param {number} id - The identifier for the animation.
+ * @param {number} val - The desired sequence length for the animation.
+ */
 function set_sequence_length(id,val){lerpChain_registry.lengths[id]=val}
+/**
+ * Retrieves a specific row from a matrix constant.
+ * @param {number} id - The identifier for the matrix constant.
+ * @param {number} row - The index of the row to retrieve from the matrix constant.
+ * @returns {Array} - The specified row from the matrix constant.
+ */
 function get_constant_row(id,row){return constant_registry.get_row(id,row)}
-function get_constant_number(id){return constant_registry.get_number(id)}
-function get_active(id){return lerp_registry.activelist}
 
+/**
+ * Retrieves a constant number value by its identifier.
+ * @param {number} id - The identifier for the constant number.
+ * @returns {number} - The constant number value associated with the given identifier.
+ */
+function get_constant_number(id){return constant_registry.get_number(id)}
+/**
+ * Retrieves an array of all active animation identifiers.
+ * @returns {Array<number>} - An array of active animation identifiers.
+ */
+function get_active(id){return lerp_registry.activelis}
+/**
+ * Retrieves a boolean indicating whether the animation loop is currently running.
+ * @returns {boolean} - true if the animation loop is currently running, false otherwise.
+ */
+function get_status(){return loop_resolver!=null}
+function test(){
+    console.log("test")
+}
 export {
+    test,
+    get_status,
     addTrigger,removeTrigger,
     get_time,set_delta_t,
     current_step,set_step,
@@ -547,6 +680,14 @@ function convex_hull(){
 function spring(){
 
 }
+//t = callback_registry.callback.get(val)?.(val, t) ?? undefined; //  Null-Coalescing-Operator -- if callback not undefined then use and process the value t for callback
+// const eslapsed = performance.now() - startTime;
+// const waitTime = Math.max(0, fps - elapsed);
+// postMessage({
+//     message: "finish",
+//     results: lerp_registry.results,
+//     result_indices: lerp_registry.activelist
+// });
 // function triggers() {
 //     postMessage({ message: "trigger", results: lerp_registry.results, result_indices: lerp_registry.activelist })
 // }

@@ -1,64 +1,94 @@
-import{addTrigger,removeTrigger,
-get_time,current_step,
-start_animations,stop_animations,
-setLerp,setMatrix,
-get_lerp_value,
-reset_lerp,
-change_framerate} from "../kooljs/worker"
-// this is our placeholder dict for the elements that get animated
-var animationProps = {
-    matrixLerp:undefined,
-    set:((val,id) => {
-     document.getElementById('matrixLerp').style.backgroundColor = `rgba(${val[0]}, ${val[1]},${val[2]}, 1)` 
-    }),
-    animator:undefined,
+import ExampleDescription from "./utils/utils";
+import   {
+  get_status,
+  addTrigger,removeTrigger,
+  get_time,set_delta_t,
+  get_step,set_step,
+  is_active,get_active,
+  start_animations,stop_animations,
+  setLerp,setMatrix,
+  get_lerp_value,
+  soft_reset,hard_reset,
+  get_duration,set_duration,
+  set_sequence_length,
+  change_framerate,
+  get_constant,get_constant_number,get_constant_row,render_constant,
+  update_constant,
+  set_delay,get_delay,
+  get_delay_delta,set_delay_delta,
+  lambda_call
+} from 'kooljs/worker'
+const animProps={
+  animator:undefined,//                      <- animator               << Animator >> 
+  start_animation:undefined,//               <- random values + start  << Animator.Lambda >>
+  size_animation:undefined,//                <- single number lerp     << Lerp >>
+  size_constant:undefined,//                 <- xy                     << Constant-Matrix >>
+  color_animation:undefined,//               <- xyz                    << MatrixLerp >> 
 }
-// utility functions to start the animation and update the sequence
-const start=(()=>{
-    animationProps.animator.start_animations([animationProps.matrixLerp.id])
-   })
-   const update=(() => {
-    animationProps.animator.update_matrix_lerp([{id: animationProps.matrixLerp.id,values:  [[225,0,0],[0,0,255]]}])
-   })
-
-   
-// the divs that get animated
+function bg(val){
+  return `linear-gradient(to right, rgb(0,0,0), rgb(${val[0]}, ${val[1]}, ${val[2]})`
+}
+function setStyle(val){
+  console.log(val)
+  document.getElementById("inner").style.width = `${Math.floor(val[0])}%`;
+  document.getElementById("inner").style.height = `${Math.floor(val[1])}%`;
+}
 function Example(animator) {
-    animationProps.animator=animator
-    // our animation trigger lerp  the getter of the accessor is undefined cause we dont need that here
-    animationProps.matrixLerp=animator.Matrix_Lerp({ 
-      render_callback: animationProps.set,
-      duration: 10,
-      steps: [[0,0,0],[100,200,300]],
-      // loop:true,
-
-      // callback:{
-      //   callback:`(({id,time})=>{console.log(time);setMatrix(id,0,[Math.random()*255,Math.random()*255,Math.random()*255])})`,
-      //   condition:`((({step,time})=>step==0&&time==10))`
-      // }
+    animProps.animator=animator
+    animProps.color_animation=animator.Matrix_Lerp({
+      render_callback:((val)=>document.getElementById("main").style.background = (bg(val))),
+      steps:[[0,0,0],[50,50,255]],
+      duration:10
     })
-    
+    animProps.size_animation=animator.Matrix_Lerp({ 
+        render_callback:((val)=>setStyle(val)),
+        duration: 10, 
+        steps: [[0,0],[100,100]],
+        
+    })
+    const size_constant_id=animator.get_constant_size("matrix")
+    animProps.start_animation = animator.Lambda({
+      callback:  (()=>{
+        setMatrix(`${animProps.color_animation.id}`,1, [Math.random()*50, Math.random()*50, Math.random()*255]);
+        const random_size=get_constant_row(size_constant_id,0);
+        console.log(random_size);
+        setMatrix(`${animProps.size_animation.id}`,1, random_size);
+        start_animations([`${animProps.size_animation.id}`])
+        }),
+      animProps:animProps
+    }) 
+    animProps.size_constant=animator.constant({
+      type:"matrix",
+      value:[[0,0,0],[50,50,255]],
+      render_triggers:[animProps.color_animation.id],
+      render_callbacks:[{id:animProps.start_animation.id,args: undefined }]
+    })
     return (
-    <div class="w-full h-full bg-white " key={"matrixLerp"} id={"matrixLerp"}>
-      <div class="z-10 w-1/2 h-1/4 absolute flex pointer-events-none  flex-col items-center" style={{ width:window.innerWidth*0.67}}>
-      <div class=" rounded-b-md   max-w-[45%]  text-black bg-[#5C8F8D]  items-center bg-opacity-45 border-b-2 border-l-2 border-r-2 border-black">
-      <div class=" text-xl ">
-        Example 4: matrices
+    <div class="w-full h-full bg-slate-700">
+      <ExampleDescription header={header} description={exampleDiscription}/>
+      <div class="w-full h-full flex items-center justify-center">
+      <div id={"main"} key={"main"} class="w-[95%] h-[95%] bg-[#21d9cd] border-4 border-[#21d9cd] flex rounded-md justify-center justify-items-center items-center">
+      <div id={"inner"} key={"inner"} class="w-10 h-10 bg-white">
+          inner
       </div>
-      <div class=" text-sm pl-5> text-left text-wrap w-[90%]">
-        This example demonstrates how to create animations using a sequence instead of min/max values.
-        you can change the sequence by calling animator.update(). If you dont specify the max length of the sequence using the sequence_max_lengt argument, the length of the initial array will be used.
-      </div>
-      </div>
-      </div>
-      <div class="w-full h-full items-center justify-center flex">
-        <div class="w-[50%] h-20 flex flex-col">
-        </div>
       </div>
     </div>
+    </div>
   )}
-
-
+const set_size=(()=>{
+    //animProps.animator.start_animations([animProps.size_animation.id])
+    animProps.animator.update_constant([{type:"matrix",id:animProps.size_constant.id,value:[(30+Math.random()*70),30+Math.random()*70]}])
+})
+const start=(()=>{
+  animProps.animator.start()
+})
+const stop=(()=>{
+  animProps.animator.stop()
+})
+const header="callbacks"
+const exampleDiscription=`This example demonstrates how to create animations using a sequence instead of min/max values.
+you can change the sequence by calling animator.update(). If you dont specify the max length of the sequence using the sequence_max_lengt argument, the length of the initial array will be used.
+`
   // this is just util stuff for the example project
   const mdFile = `\`\`\`javascript
   // this is our placeholder dict for the elements that get animated
@@ -73,15 +103,15 @@ function Example(animator) {
   
   // utility functions to start the animation and update the sequence
   const update=(() => {
-      animationProps.animator.update_lerp([{animObject: animationProps.target,value: [0.0, 100.0, 0.0]}])
+      animator.update_lerp([{animObject: animationProps.target,value: [0.0, 100.0, 0.0]}])
      })
   const start=(()=>{
-      animationProps.animator.start([animationProps.target.id])
+      animator.start([animationProps.target.id])
      })
     
   // the divs that get animated
-  function E3(animator) {
-      animationProps.animator=animator
+  function E2(animator) {
+      animator=animator
       animationProps.target=animator.Lerp({ accessor: [animationProps.c, animationProps.setc], duration: 10, steps: [0.1, 400.1, 0.1, 100, 20, 30, 40, 500, 0],sequence_max_lengt:10 })
     return (
       <div class="w-full h-full flex flex-row">
@@ -96,29 +126,35 @@ function Example(animator) {
   \`\`\``
 const Controls=[
   {
-    name:"Start Animation",
-    info:" This Event will start the animation with the values lerpPoint values that where set the last time. The initial values are the ones we have used for the initialisation of the Lerpclass: [0.1, 400.1 ,0.1 ,100, 20, 30, 40, 500, 0]",
+    name:"set random size",
+    info:"Stops the animation sequence using the function thats running on the worker.",
+    button:{
+      name:"set random size",
+      onClick: set_size
+    },
+  },
+  {
+    name:"Start",
+    info:"This event will continues to play any animation, that was running before calling stop().",
     button:{
       name:"start",
       onClick: start
     }
   },
   {
-    name:"Update Sequence",
-    info:" This Event will start the animation with the values lerpPoint values that where set the last time. The initial values are the ones we have used for the initialisation of the Lerpclass: [0.1, 400.1 ,0.1 ,100, 20, 30, 40, 500, 0]",
+    name:"Stop",
+    info:"This event will pause the animation-loop, but any running animations wont reset when you call start() again.",
     button:{
-      name:"update",
-      onClick: update
-    }
-  }
-
+      name:"stop",
+      onClick: stop
+    },
+  },
 ]
-  
 
 const TutorialWidget={
-  name:"Matrix_Lerp_1",
+  name:"simple_Animation_2",
   info: "This Examples shows how to use Lerp animation with a sequence.",
-  gitlink:"https://github.com/ji-podhead/kooljs/blob/main/livedemo_project/src/examples/e2.js",
+  gitlink:"https://github.com/ji-podhead/kooljs/blob/main/livedemo_project/src/examples/e3.js",
   mdfile:mdFile
 }
 

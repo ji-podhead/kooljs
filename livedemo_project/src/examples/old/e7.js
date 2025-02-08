@@ -1,4 +1,4 @@
-import { Prop, Animator, Lerp, Callback, Constant, Trigger } from "../kooljs/animations"
+import { Prop, Animator, Lerp, Callback, Constant, Trigger } from "../../kooljs/animations"
 import { useState, useEffect, useMemo, useCallback } from 'react';
 var animationProps={
   a:1,

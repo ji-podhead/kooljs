@@ -101,10 +101,17 @@ class Constant {
     constructor(matrices,numbers){
         this.matrix=new Map()
         this.number=undefined
+        this.render_triggers=new Map()
+        this.render_callbacks=new Map()
     }
    update(type, id, value){
         constant_registry[type].set(id,value)
-    }
+        if(this.render_callbacks.has(id))  this.render_callbacks.get(id).map((l) => {
+            console.log(l)
+            lambda_registry.callback.get(l.id)(l.args)
+        })
+        if(this.render_triggers.has(id)) start_animations(this.render_triggers.get(id))
+     }
     get(type,index,row){
         if(row!=undefined){
             this.get_row(index,row)
@@ -160,7 +167,7 @@ async function animate() {
                             ))
                             break
                         case(3):
-                            for (let i=0;i< lerpChain_registry.matrixChains.get(val).get(lerpChain_registry.progress[val]).length;i++)
+                             for (let i=0;i< lerpChain_registry.matrixChains.get(val).get(lerpChain_registry.progress[val]).length;i++)
                             {
                                 lerp_registry.results.get(val)[i]= smoothLerp(
                                     lerpChain_registry.matrixChains.get(val).get(lerpChain_registry.progress[val])[i],
@@ -286,7 +293,8 @@ async function reset_animations(indices){
 }
 function change_framerate(fps_new) { fps = fps_new }
 const integers = ["loop","delay","type","progress","duration","render_interval","lerp_chain_start","activelist"]
-function init(lerps, lerpChains, matrixChains, triggers, constants, condi_new, lambdas, springs) {
+function init(new_fps, lerps, lerpChains, matrixChains, triggers, constants, condi_new, lambdas, springs) {
+    fps=new_fps
     triggers.forEach((trigger,key)=>trigger_registry.set(key,trigger))
     condi_new.forEach((val,key)=>{
           callback_registry.callback.set(key,eval(val.callback))
@@ -316,12 +324,15 @@ function init(lerps, lerpChains, matrixChains, triggers, constants, condi_new, l
     if(constants.get("number")!=undefined){
         constant_registry.number=constants.get("number")
     }
+    constant_registry.render_triggers=constants.get("render_triggers")
+    constant_registry.render_callbacks=constants.get("render_callbacks")
     lerp_registry.type.map((t,i)=>{
         //  TODO hier zur vereinfachung interne get funktionen nehmen
         if(t==2){
             lerp_registry.results.set(i,lerpChain_registry.buffer[lerp_registry.lerp_chain_start[i]])
         }
         else if(t==3){
+            console.log(i)
             lerp_registry.results.set(i,new Float32Array(lerpChain_registry.matrixChains.get(i).get(0)))
         }
     })
@@ -412,12 +423,8 @@ function lambda_call(id,args){
 }
 // ----------------------------------------> EVENTS <--
 async function render() {
-    postMessage({ message: "render", results: lerp_registry.results, result_indices: lerp_registry.activelist.filter((x)=>{
-     if(  lerp_registry.type[x]!=4){
-        return true
-     } 
-    })
-    })  
+    const active=lerp_registry.activelist.filter((x)=>lerp_registry.type[x]!=4)
+    postMessage({ message: "render", results: lerp_registry.results, result_indices: active }) 
 }
 async function render_constant(id,type) {
     postMessage({ message: "render_constant", id:id, type: type, value:  get_constant(id,type)})
@@ -425,7 +432,7 @@ async function render_constant(id,type) {
 onmessage = (event) => {
     switch (event.data.method) {
         case 'init':
-            init(event.data.data, event.data.chain_map, event.data.matrix_chain_map, event.data.trigger_map, event.data.constants, event.data.callback_map, event.data.lambda_map,event.data.spring_map,);
+            init(event.data.fps,event.data.data, event.data.chain_map, event.data.matrix_chain_map, event.data.trigger_map, event.data.constants, event.data.callback_map, event.data.lambda_map,event.data.spring_map,);
             break;
         case "update":
             update(event.data.type,event.data.data)
@@ -435,6 +442,10 @@ onmessage = (event) => {
             break;
         case 'start':
             start_loop();
+            break;
+        case 'set_lambda':
+             lambda_registry.callback.set(event.data.id,eval(event.data.callback))
+             lambda_registry.condition.set(event.data.id,eval(event.data.condition))
             break;
         //makes no sense since we would require a promise on the mainthread
         //this is shitty, cause you have to have a list of promises
