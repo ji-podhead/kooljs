@@ -1,7 +1,7 @@
 
 import './App.css';
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Animator } from "kooljs/animations"
+import { Animator } from "kooljs/animator"
 import {  Example as E1 } from './examples/e1';
 import {  Example as E2 } from './examples/e2';
 import {  Example as E3} from './examples/e3';

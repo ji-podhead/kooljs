@@ -1,4 +1,8 @@
+
 # kooljs 
+
+ ![NPM Version](https://img.shields.io/npm/v/kooljs)  ![Static Badge](https://img.shields.io/badge/LiveDemo-0.2.0-brightgreen) 
+
 kooljs is a multithreaded animation tool for the web.
 
 ## what can it do?
@@ -11,7 +15,10 @@ kooljs is a multithreaded animation tool for the web.
 - stores and accesses the values on the worker using TypedArray and Map Datatypes
 - avoid prop drilling for values that are only used for animations by storing and updating them on the worker
 
-
+## install 
+```js
+npm i kooljs
+```
 ## LiveDemo v0.2.0
 - check out the [LiveDemo](https://ji-podhead.github.io/kooljs/)
 - I will add adding additional Examples over time

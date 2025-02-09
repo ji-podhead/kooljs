@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
-import { Animator } from "../kooljs/animations";
-
+import { Animator } from "kooljs/";
+Animator()
 
 // this is our placeholder dict for the elements that get animated
 var animationProps = {
