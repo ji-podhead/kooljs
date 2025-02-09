@@ -1,13 +1,11 @@
 // Copyright (c) 2025 Ji-Podhead and Project Contributors
-
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, subject to the following conditions:
-
 // 1. All commercial uses of the Software must:  
 //    a) Include visible attribution to all contributors (listed in CONTRIBUTORS.md).  
 //    b) Provide a direct link to the original project repository (https://github.com/ji-podhead/kooljs).  
-
 // 2. The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. 
-import { parse } from "@babel/parser"
+// import { parse } from "@babel/parser"
+// import * as recast from "recast";
 const worker_functions=
 [ 
   "get_status",
@@ -40,14 +38,8 @@ const worker_functions=
   "set_delay_delta",
   "lambda_call"
 ]
-const import_strings=worker_functions.map(x=>`(0,_kooljs_worker__WEBPACK_IMPORTED_MODULE_1__.${x})`)
-
-const types = ["callback", "function", "number", "Linear", "Lerp", "constant"]
-const animation_types = ["constant", "linear", "lerp"]
-const animationProps = {}
-
 class Prop {
-    update_callback(value, id) {w
+    update_callback(value, id) {
         this.setter(value, id)
     }
     /**
@@ -63,7 +55,6 @@ class Prop {
 }
 var index
 class Constant {
-
     /**
      * Creates a new Constant instance.
      * @param {Animator} animator - the Animator Instance
@@ -94,94 +85,53 @@ class Constant {
         }   
     }
 }
-
-class Lambda {
-    /**
-     * @param {Animator} animator - the Animator Instance
-     * @param {string} callback - the type of the constant can be number, matrix
-     * @param {string } conditon - the AnimationTrigger instance to trigger other animations
-     * @returns {number} id  - animator.lambda_map.size
-     */
-    constructor(animator, {condition=true,callback}) {
-        //currentValue = currentValue;
-        index = animator.lambda_map.size
-        this.id = index
-        //(0,_kooljs_worker_utils__WEBPACK_IMPORTED_MODULE_1__.setMatrix)
-        //'(0,_kooljs_worker__WEBPACK_IMPORTED_MODULE_1__.setMatrix)'
-
+var lambda_index
+function addCallback(animator,callback, animProps){
+    console.log(typeof(callback))
+   lambda_index =animator.callback_map.size  
+    if(typeof(callback)=="function"){
         callback=(callback.toString())
-        for (let i = 0; i < import_strings.length; i++) {
-            callback = callback.replace(import_strings[i], worker_functions[i]);
-          } 
-        const replaced_callback = callback.replace(new RegExp(import_strings.join('|'), 'g'), (match) => {
-            const index = import_strings.indexOf(match);
-            return worker_functions[index];
-          });
-          
-        //  console.log(replaced_callback);
-        console.log(replaced_callback)
-
-        // const ast = parse(callback.toString(), {
-        //     sourceType: 'script',
-        //     plugins: ['jsx'],
-        //   })
-        //   const getMatrixCalls = [];
-        // console.log( ast)
-        // function traverse(node) {
-        //     console.log("----------------")
-        //     console.log(node.name)
-        //     console.log(node.type);
-        //     console.log(node)
-
-        //   if(node.callee){
-        //     console.log(node.callee.name)
-        //   }
-        //     if (node.type === 'CallExpression') {
-        //       if (node.callee.name === 'getMatrix') {
-        //         const args = node.arguments;
-        //         const argString = args.map((arg) => arg.value).join(', ');
-        //         getMatrixCalls.push(`getMatrix(${argString})`);
-        //       }
-        //     }
-        //     if (node.body) {
-        //       node.body.map((child) => {
-        //         traverse(child);
-        //       });
-        //     }
-          
-        //     if (node.expression) {
-        //       traverse(node.expression);
-        //     }
-          
-        //     if (node.arguments) {
-        //       node.arguments.forEach((arg) => {
-        //         traverse(arg);
-        //       });
-        //     }
-          
-        //     if (node.expressions) {
-        //       node.expressions.forEach((expr) => {
-        //         traverse(expr);
-        //       });
-        //     }
-        //   }
-        //   traverse(ast.program.body[0].expression.body);
-
-        // ast.program.body[0].expression.body.body.forEach((statement) => {
-        //     console.log(statement)
-        //     if (statement.type === 'ExpressionStatement' && statement.expression.type === 'CallExpression') {
-        //     const callee = statement.expression.callee;
-        //     if (callee.type === 'Identifier' && callee.name === 'getMatrix') {
-        //     const args = statement.expression.arguments;
-        //     const argString = args.map((arg) => arg.value).join(', ');
-        //     getMatrixCalls.push(`getMatrix(${argString})`);
-        //     }
-        // }
-        // });
-
-        console.log(JSON.parse(callback))
-        animator.lambda_map.set(index, {condition:condition,callback:callback})
+        callback = worker_functions.reduce((str, func) => {  
+            return str.replace(new RegExp(`\\(0,kooljs_worker__WEBPACK_IMPORTED_MODULE_1__.${func}\\)`, 'g'), func);
+        }, callback);
+        var val
+        callback = callback.replace(/`\$\{([^}]+)\}`/g, (match, group) => {
+            group=group.split(".")
+            group.map((x,i)=>{
+                if(i>0){
+                    val=val[x]
+                }
+                else{
+                    val=animProps
+                }
+            })
+            if (val!=undefined&&group.length>1) {
+            return val
+            }
+            return match;
+        });
+        console.log((callback))
+    }
+    
+    else if(typeof(callback)!="string"){ 
+         return console.log("callback is not a string and animProps is undefined")
+    }
+    animator.callback_map.set(lambda_index,callback)
+    return lambda_index                             
+}
+class Lambda {
+/**
+ * @param {Animator} animator - the Animator Instance
+ * @param {string | function  } callback - the type of the constant can be number, matrix
+ * @param {dict |  undefined} animProps - used to pass your animation properties. 
+ *      * ***Only needed if you pass a function as a callback.*** 
+ *      * The used props need to have this structure: &#96;${prop}&#96;
+ * @returns {number} id  - animator.lambda_map.size
+ */
+    constructor(animator, {callback,animProps}) {
         
+       this.id= addCallback(animator,callback,animProps)
+       this.animator=animator
     }
     call(args){
         this.animator.lambda_call(this.id,args)
@@ -237,12 +187,7 @@ function addTiggers(index,animator,animationTriggers,stepLength,loop,loop_start_
     animator.trigger_map.set(index,stepMap)
     }
 }
-function addCallback(index,animator,callback){
-    if (callback != undefined&&callback.callback!=undefined) {
-        callback.condition=callback.condition==undefined?true:callback.condition
-        animator.callback_map.set(index,callback)
-    }
-}
+
 class Lerp {
     /**
      * Creates a new Lerp object.
@@ -254,7 +199,8 @@ class Lerp {
      * @param {number} [options.smoothstep=1] - the smoothstep value for the animation
      * @param {number} [options.delay=0] - the delay before the animation starts
      * @param {Array} [options.animationTriggers] - the animation triggers
-     * @param {function} [options.callback] - the callback function for when the animation is finished
+     * @param {function|string} [options.callback.callback] - the callback function for when the animation is finished
+     * @param {dict | undefined} [options.callback.animProps] - the props used for the callback, when callback is not a string
      * @param {Array} [options.steps] - the steps of the animation
      * @param {boolean} [options.loop=false] - whether or not the animation should loop
      * @param {number} [options.steps_max_length] - the maximum length of the steps array
@@ -265,10 +211,12 @@ class Lerp {
         this.id = index
         this.lerpStart = undefined
         animator.count+=1
-        if (steps != undefined) {
-            animator.registry_map.get("lerp_chain_start").push(animator.chain_map_points_length)
-            if(loop!=false || animationTriggers!=undefined){
-            addTiggers(index,animator,animationTriggers,steps.length,loop,duration )
+        animator.registry_map.get("lerp_chain_start").push(animator.chain_map_points_length)
+        const step_length=steps!=undefined?steps.length:steps_max_length!=undefined?steps_max_length:0
+        if (step_length!=0) {
+            
+            if((loop == true || animationTriggers!=undefined)){
+                addTiggers(index,animator,animationTriggers,step_length,loop,duration )
             }
             else{
                 animator.registry_map.get("loop").push(0)
@@ -283,9 +231,8 @@ class Lerp {
             animator.chain_map_points_length += steps.length
         }
         else {
-            animator.registry_map.get("lerp_chain_start").push(undefined)
+           return console.error("Lerp needs a steps array, or a steps_max_length")
         }
-        addCallback(index,animator,callback)
         animator.registry_map.get("duration").push(duration)
         animator.registry_map.get("render_interval").push(render_interval)
         animator.registry_map.get("delay_delta").push(0)
@@ -295,8 +242,12 @@ class Lerp {
         animator.registry_map.get("smoothstep").push(smoothstep)
         animator.animation_objects.set(this.id, {
             index: index,
-            prop: new Prop(render_callback)
+            prop: new Prop(render_callback),
+            callback_id: callback!=undefined?addCallback(animator,callback.callback,callback.animProps):undefined
         })
+        if(animator.animation_objects.get(this.id).callback_id!=undefined){
+            animator.lerp_callbacks.set(this.id,matrix_lerp_id)
+        }
         animator.animation_objects.get(this.id).prop.id=this.id
     }
 }
@@ -313,16 +264,22 @@ class Timeline{
  * @param {Number} [options.render_interval=1] - The interval at which the animation should render.
  * @param {Number} [options.delay=0] - The delay before the animation starts.
  * @param {Object} [options.animationTriggers] - Animation triggers.
- * @param {Function} [options.callback] - The function called when the animation is finished.
+ * @param {function|string} [options.callback.callback] - the callback function for when the animation is finished
+ * @param {dict | undefined} [options.callback.animProps] - the props used for the callback, when callback is not a string
  * @param {Boolean} [options.loop=false] - Whether the animation should loop.
- * @param {Number} [options.steps_max_length] - The max length of steps for this animation.
+ * @param {Number} [options.length] - The amount of steps in the timeline. length of 1 equals steps.length=2. ***This is a required parameter if steps is not defined***.
  * @returns {Lerp} The created Timeline object as a Lerp instance.
  */
-
-    constructor(animator, { render_callback, duration = 10, render_interval = 1, delay = 0, animationTriggers, callback,loop=false,steps_max_length }) {
-        return new Matrix_Lerp(animator, { type:4,render_callback, duration, render_interval, smoothstep: 0, delay, animationTriggers, callback, loop, steps_max_length })
+    constructor(animator, {steps,length,render_callback, duration, render_interval, delay, animationTriggers, callback,loop }) {
+       length=length!=undefined?length+=1:undefined
+        if(length==undefined && steps==undefined){
+            return console.error("step_length is undefined and no steps given")
+        }
+        
+        return new Matrix_Lerp(animator, { type:4,render_callback:render_callback, duration:duration, render_interval:render_interval, smoothstep: 0, delay:delay, animationTriggers:animationTriggers, callback:callback, loop:loop, steps_max_length:length })
     }
 }
+var matrix_lerp_id
 class Matrix_Lerp {
 
     /**
@@ -335,7 +292,8 @@ class Matrix_Lerp {
      * @param {number} [options.smoothstep=1] - the smoothstep value for the animation
      * @param {number} [options.delay=0] - the delay before the animation starts
      * @param {Array} [options.animationTriggers] - the animation triggers
-     * @param {function} [options.callback] - the callback function for when the animation is finished
+     * @param {function|string} [options.callback.callback] - the callback function for when the animation is finished
+     * @param {dict | undefined} [options.callback.animProps] - the props used for the callback, when callback is not a string
      * @param {Array} [options.steps] - the steps of the animation
      * @param {boolean} [options.loop=false] - whether or not the animation should loop
      * @param {number} [options.steps_max_length] - the maximum length of the steps array
@@ -352,14 +310,14 @@ class Matrix_Lerp {
             steps.map((step,index)=>{
                 matrix_map.set(index,new Float32Array(step))
             })
-            if(loop!=false || animationTriggers!=undefined){
-                addTiggers(index,animator,animationTriggers,steps.length,loop,duration )
-                }
-                else{
-                    animator.registry_map.get("loop").push(0)
-                }
         }
-        addCallback(index,animator,callback)
+             const step_length=steps!=undefined?steps.length:steps_max_length!=undefined?steps_max_length:0
+            if(step_length!=0&&(loop == true || animationTriggers!=undefined)){
+                addTiggers(index,animator,animationTriggers,step_length,loop,duration )
+            }
+            else{
+                animator.registry_map.get("loop").push(0)
+            }
         animator.matrix_chain_map.set(index, matrix_map)
         //const length=steps_max_length!=undefined?steps_max_length:steps.length-1
         animator.chain_map_points_length += 1
@@ -372,10 +330,15 @@ class Matrix_Lerp {
         animator.registry_map.get("delay").push(delay)
         animator.registry_map.get("progress").push(0)
         animator.registry_map.get("smoothstep").push(smoothstep)
+        matrix_lerp_id=callback!=undefined?addCallback(animator,callback.callback,callback.animProps):undefined
         animator.animation_objects.set(this.id, {
             index: index,
-            prop: new Prop(render_callback)
+            prop: new Prop(render_callback),
+            callback_id: matrix_lerp_id
         })
+        if(animator.animation_objects.get(this.id).callback_id!=undefined){
+            animator.lerp_callbacks.set(this.id,matrix_lerp_id)
+        }
         animator.animation_objects.get(this.id).prop.id=this.id
     }
 }
@@ -392,11 +355,11 @@ class Animator {
         //      --> REGRISTRIES <-- 
         this.registry_map = new Map()
         this.callback_map = new Map()
+        this.lerp_callbacks= new Map()
         this.trigger_map= new Map()
         this.chain_map = new Map()
         this.matrix_chain_map = new Map()
         this.spring_map = new Map()
-        this.lambda_map = new Map()
         //--> constant <--
         this.constant_map = new Map()
         this.constant_map.set("number", new Map())
@@ -421,8 +384,7 @@ class Animator {
         this.chain_map.set('buffer', []);
         this.chain_map.set('progress', []);
         this.chain_map.set('lengths', []);
-        // --> Matrix chains <--
-        this.matrix_chain_map= new Map()
+
         //      --> Spring <--
         this.spring_map.set("spring_elements", [])
         this.spring_map.set("spring_duration", [])
@@ -469,10 +431,21 @@ class Animator {
      * sends the data to the worker.
      */
     init() {
-        const initF =(()=>this.worker.postMessage({ method: 'init', fps: this.fps,data: this.registry_map, chain_map: this.chain_map, matrix_chain_map: this.matrix_chain_map, trigger_map:this.trigger_map,constants: this.constant_map,  callback_map: this.callback_map, lambda_map:this.lambda_map, spring_map: this.spring_map }))
-            this.stop_animations("all")
-            this.reset_animations("all")
-            initF()
+        const initF =(()=>this.worker.postMessage({
+            method: 'init', 
+            fps: this.fps,
+            data: this.registry_map, 
+            chain_map: this.chain_map, 
+            matrix_chain_map: this.matrix_chain_map, 
+            trigger_map:this.trigger_map,
+            constants: this.constant_map,  
+            callback_map: this.callback_map,
+            lerp_callbacks: this.lerp_callbacks,   
+            spring_map: this.spring_map 
+        }))
+        this.stop_animations("all")
+        this.reset_animations("all")
+        initF()
     }
     /**
      * Updates the values of the lerp animations. The data is an array of objects with the following properties:
@@ -483,7 +456,6 @@ class Animator {
     update_lerp(data) {
         this.worker.postMessage({ method: 'update', type: 2, data: data })
     }
-
     /**
      * Calls a lambda function with the given id and arguments. The lambda function must be added to the animator via the Lambda class, or Animator.Lambda().
      * @param {number} id - The id of the lambda function that should be called.
@@ -520,37 +492,12 @@ class Animator {
 
     /**
      * Creates a new Lerp object.
-     * A Lerp is a linear interpolation animation which takes a value and linearly interpolates between it and a target value.
-     * @param {Object} args - Options for the animation.
-     * @param {Function} args.render_callback - The function that will be called when the animation renders.
-     * @param {Number} [args.duration=10] - The duration of the animation.
-     * @param {Number} [args.render_interval=1] - The interval at which the animation should render.
-     * @param {Number} [args.delay=0] - The delay before the animation starts.
-     * @param {Object} [args.animationTriggers] - Animation triggers.
-     * @param {Function} [args.callback] - The function that will be called when the animation is finished.
-     * @param {Number} [args.steps] - The steps to be animated.
-     * @param {Boolean} [args.loop=false] - Whether the animation should loop.
-     * @param {Number} [args.steps_max_length] - The maximum number of steps the animation should have.
-     * @returns {Lerp} The created Lerp object.
      */
     Lerp(args) {
         return new Lerp(this, args)
     }
         /**
      * Create a Matrix_Lerp object.
-     * A Matrix_Lerp is a special type of Lerp animation, which has the same properties as a Lerp animation,
-     * but instead of animating a number, it animates a matrix.
-     * @param {Object} options - Options for the animation.
-     * @param {Function} options.render_callback - The function that will be called when the animation renders.
-     * @param {Number} [options.duration=10] - The duration of the animation.
-     * @param {Number} [options.render_interval=1] - The interval at which the animation should render.
-     * @param {Number} [options.delay=0] - The delay before the animation starts.
-     * @param {Object} [options.animationTriggers] - Animation triggers.
-     * @param {Function} [options.callback] - The function that will be called when the animation is finished.
-     * @param {Array} [options.steps] - The steps to be animated.
-     * @param {Boolean} [options.loop=false] - Whether the animation should loop.
-     * @param {Number} [options.steps_max_length] - The maximum number of steps the animation should have.
-     * @returns {Matrix_Lerp} The created Matrix_Lerp object.
      */
     Matrix_Lerp(args) {
         return new Matrix_Lerp(this, args)
@@ -558,18 +505,6 @@ class Animator {
 
     /**
      * Creates a new Timeline object.
-     * A Timeline acts like a Lerp-Animation that does not fire a callback after each animation-frame.
-     * It can be used to trigger and control other timelines, lerps, matrixLerps, lambdas, or constants on the worker.
-     * @param {Object} args - Options for the Timeline.
-     * @param {Function} [args.render_callback] - The function that gets called on the main thread after the render loop.
-     * @param {Number} [args.duration=10] - The maximum amount of computations per step.
-     * @param {Number} [args.render_interval=1] - The interval at which the animation should render.
-     * @param {Number} [args.delay=0] - The amount of steps to wait before starting the animation.
-     * @param {Object} [args.animationTriggers] - A list of animation trigger objects.
-     * @param {Function} [args.callback] - The function that will be called when the animation is finished.
-     * @param {Boolean} [args.loop=false] - Whether the animation should loop.
-     * @param {Number} [args.steps_max_length] - The maximum length of steps for this animation.
-     * @returns {Timeline} The created Timeline object.
      */
     Timeline(args){
         return new Timeline(this, args)
@@ -702,3 +637,104 @@ class Spring {
         this.elements = elements
     }
 }
+    //    const ast = parse(callback, {
+        //     sourceType: 'module',
+        //     plugins: [    "jsx",
+        //         "flow"],
+        //   })
+    
+    //   //  console.log(JSON.stringify(ast.program.body[1], null, 2));
+    //   const transform =   recast.visit(ast, {
+    //     visitCallExpression (path) {
+    //       let node = path.node;
+    //         console.log(node)
+    //         if (node.type === 'ExpressionStatement') {
+    //         if(node.loc.tokens.includes("kooljs_worker__WEBPACK_IMPORTED_MODULE_1__")){
+    //             const index=node.loc.tokens.indexOf("kooljs_worker__WEBPACK_IMPORTED_MODULE_1__")
+                
+    //         }
+    //           var lastIndex=0
+    //           node.loc.tokens=node.loc.tokens.reverse().filter((x,i)=>{
+    //             console.log(x.value)
+    //             if(x.value==="kooljs_worker__WEBPACK_IMPORTED_MODULE_1__"){
+    //             lastIndex=i
+    //                 return false
+    //           }else if(lastIndex===i-1&&x.value==="."){
+    //               return false
+    //           }
+    //         }).reverse()
+    //         console.log(node.loc.tokens,)
+    //         }
+    //         this.traverse(path);
+
+    //       },
+    //   });
+// old lambda approaches
+  // for (let i = 0; i < import_strings.length; i++) {
+        //     callback = callback.replace(import_strings[i], worker_functions[i]);
+        //   } 
+        // worker_functions.map((x)=>{
+        //     console.log(`(0,kooljs_worker__WEBPACK_IMPORTED_MODULE_1__.${x})`);
+        //     callback = callback.replace(new RegExp(`\\(0,kooljs_worker__WEBPACK_IMPORTED_MODULE_1__.${x}\\)`, 'g'), x);
+        // })
+
+        // //  console.log(replaced_callback);
+        
+
+        // const ast = parse(callback.toString(), {
+        //     sourceType: 'script',
+        //     plugins: ['jsx'],
+        //   })
+        //   const getMatrixCalls = [];
+        // console.log( ast)
+        // function traverse(node) {
+        //     console.log("----------------")
+        //     console.log(node.name)
+        //     console.log(node.type);
+        //     console.log(node)
+
+        //   if(node.callee){
+        //     console.log(node.callee.name)
+        //   }
+        //     if (node.type === 'CallExpression') {
+        //       if (node.callee.name === 'getMatrix') {
+        //         const args = node.arguments;
+        //         const argString = args.map((arg) => arg.value).join(', ');
+        //         getMatrixCalls.push(`getMatrix(${argString})`);
+        //       }
+        //     }
+        //     if (node.body) {
+        //       node.body.map((child) => {
+        //         traverse(child);
+        //       });
+        //     }
+          
+        //     if (node.expression) {
+        //       traverse(node.expression);
+        //     }
+          
+        //     if (node.arguments) {
+        //       node.arguments.forEach((arg) => {
+        //         traverse(arg);
+        //       });
+        //     }
+          
+        //     if (node.expressions) {
+        //       node.expressions.forEach((expr) => {
+        //         traverse(expr);
+        //       });
+        //     }
+        //   }
+        //   traverse(ast.program.body[0].expression.body);
+
+        // ast.program.body[0].expression.body.body.forEach((statement) => {
+        //     console.log(statement)
+        //     if (statement.type === 'ExpressionStatement' && statement.expression.type === 'CallExpression') {
+        //     const callee = statement.expression.callee;
+        //     if (callee.type === 'Identifier' && callee.name === 'getMatrix') {
+        //     const args = statement.expression.arguments;
+        //     const argString = args.map((arg) => arg.value).join(', ');
+        //     getMatrixCalls.push(`getMatrix(${argString})`);
+        //     }
+        // }
+        // });

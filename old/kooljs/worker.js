@@ -11,14 +11,7 @@ var finished = []
 var fps = 10.33
 var signal,loop_resolver = null
 var triggers_step
-async function sleep(milliseconds,signal) {
-    return new Promise((resolve,reject) => {
-        const t=setTimeout(resolve, milliseconds)
-        signal.addEventListener('abort', () => {
-            clearTimeout(t)
-        });    
-    })
-}
+const callback_map=new Map()
 // ----------------------------------------> CLASS DEFINITIONS <--
 class Lerp {
     constructor() {
@@ -34,6 +27,7 @@ class Lerp {
         this.loop=undefined
         this.activelist = []
         this.results = new Map()
+        this.lerp_callbacks=new Map()
     }
     activate(id) {
         if (this.activelist.includes(id) == false) {
@@ -91,12 +85,6 @@ class LerpChain{
         }
     }
 }
-class Callback {
-    constructor() {
-        this.callback=new Map()
-        this.condition=new Map()
-    }
-}
 class Constant {
     constructor(matrices,numbers){
         this.matrix=new Map()
@@ -108,7 +96,7 @@ class Constant {
         constant_registry[type].set(id,value)
         if(this.render_callbacks.has(id))  this.render_callbacks.get(id).map((l) => {
             console.log(l)
-            lambda_registry.callback.get(l.id)(l.args)
+            callback_map.get(l.id)(l.args)
         })
         if(this.render_triggers.has(id)) start_animations(this.render_triggers.get(id))
      }
@@ -128,9 +116,7 @@ class Constant {
 // ----------------------------------------> DATABASE <--
 const lerp_registry = new Lerp()
 const constant_registry = new Constant()
-const callback_registry = new Callback()
 const lerpChain_registry = new LerpChain()
-const lambda_registry = new Callback()
 const trigger_registry = new Map()
 // ----------------------------------------> ANIMATION <--
 var t
@@ -181,8 +167,8 @@ async function animate() {
                             break
                     }
                    args={id:val,value:lerp_registry.results.get(val),step:lerpChain_registry.progress[val], time:lerp_registry.progress[val] ,step:lerpChain_registry.progress[val]} //time war vorther lerp_registry.delta_t[val]
-                   if(callback_registry.condition.has(val)&&(callback_registry.condition.get(val)||callback_registry.condition.get(val)(args)==true)) {
-                     callback_registry.callback.get(val)(args)
+                   if(lerp_registry.lerp_callbacks.has(val)) {
+                     lerp_registry.lerp_callbacks.get(val)(args)
                    }
                 }
                 lerp_registry.progress[val] += 1
@@ -293,17 +279,17 @@ async function reset_animations(indices){
 }
 function change_framerate(fps_new) { fps = fps_new }
 const integers = ["loop","delay","type","progress","duration","render_interval","lerp_chain_start","activelist"]
-function init(new_fps, lerps, lerpChains, matrixChains, triggers, constants, condi_new, lambdas, springs) {
+function init(new_fps, lerps, lerpChains, matrixChains, triggers, constants, condi_new, lerp_callbacks, springs) {
     fps=new_fps
     triggers.forEach((trigger,key)=>trigger_registry.set(key,trigger))
     condi_new.forEach((val,key)=>{
-          callback_registry.callback.set(key,eval(val.callback))
-          callback_registry.condition.set(key,eval(val.condition))
+            callback_map.set(key,eval(val))
     })
-    lambdas.forEach((val,key)=>{
-        lambda_registry.callback.set(key,eval(val.callback))
-        lambda_registry.condition.set(key,eval(val.condition))
+    lerp_callbacks.forEach((val,key)=>{
+            // no shallow copy just copying the pointer
+            lerp_registry.lerp_callbacks.set(key,callback_map.get(val))
     })
+    
     lerpChains.forEach((arr,name)=>{
             lerpChain_registry[name]=new Float32Array(arr)
           //  console.log(lerpChain_registry[name])
@@ -332,7 +318,6 @@ function init(new_fps, lerps, lerpChains, matrixChains, triggers, constants, con
             lerp_registry.results.set(i,lerpChain_registry.buffer[lerp_registry.lerp_chain_start[i]])
         }
         else if(t==3){
-            console.log(i)
             lerp_registry.results.set(i,new Float32Array(lerpChain_registry.matrixChains.get(i).get(0)))
         }
     })
@@ -414,12 +399,8 @@ function update(type,values){
         lerpChain_registry.reset(x.id)
     })
 }
-var lambda // <- just for debugging
 function lambda_call(id,args){
-    if (lambda_registry.condition.get(id) ==undefined || lambda_registry.condition.get(id)){
-       lambda= lambda_registry.callback.get(id)
-       lambda(args)
-    } 
+       callback_map.get(id)(args)
 }
 // ----------------------------------------> EVENTS <--
 async function render() {
@@ -432,7 +413,17 @@ async function render_constant(id,type) {
 onmessage = (event) => {
     switch (event.data.method) {
         case 'init':
-            init(event.data.fps,event.data.data, event.data.chain_map, event.data.matrix_chain_map, event.data.trigger_map, event.data.constants, event.data.callback_map, event.data.lambda_map,event.data.spring_map,);
+            init(
+                event.data.fps,
+                event.data.data, 
+                event.data.chain_map, 
+                event.data.matrix_chain_map, 
+                event.data.trigger_map, 
+                event.data.constants, 
+                event.data.callback_map, 
+                event.data.lerp_callbacks, 
+                event.data.spring_map
+            );
             break;
         case "update":
             update(event.data.type,event.data.data)
@@ -444,8 +435,7 @@ onmessage = (event) => {
             start_loop();
             break;
         case 'set_lambda':
-             lambda_registry.callback.set(event.data.id,eval(event.data.callback))
-             lambda_registry.condition.set(event.data.id,eval(event.data.condition))
+             callback_map.set(event.data.id,eval(event.data.callback))
             break;
         //makes no sense since we would require a promise on the mainthread
         //this is shitty, cause you have to have a list of promises

@@ -3,14 +3,16 @@ kooljs is a multithreaded animation tool for the web.
 
 ## what can it do?
 - compute lerp animations on a worker thread
-- custom logic (lambdas) that run on the worker
-- timelines to orchestrate animations
+- build your own animation statemachines that are running on the worker
+  - custom logic (lambdas, or callbacks) that run on the worker
+  - timelines to orchestrate animations
+  - trigger other animations
 - MatrixLerps to animate multiple values at once
-- stores and accesses the values requied for animations efficiently on the worker using TypedArray and Map Datatypes
+- stores and accesses the values on the worker using TypedArray and Map Datatypes
 - avoid prop drilling for values that are only used for animations by storing and updating them on the worker
 
 
-## LiveDemo v0.1.7
+## LiveDemo v0.2.0
 - check out the [LiveDemo](https://ji-podhead.github.io/kooljs/)
 - I will add adding additional Examples over time
 
@@ -22,6 +24,28 @@ The animator serves as our Middleware to communicate with the worker:
 - creates the registry on the worker
 - update values
 - start/stop animations
+#### how to use
+- since kooljs is using workers and typed  arrays, the procedure is as follows:
+  - 1. create an animator instance 
+    ```js
+    import { Animator } from "kooljs/animations"
+
+    const animator = new Animator(30)
+    ```
+  - 2. create a Lerp instance
+    ```js
+      const new_lerp=animator.Lerp({ 
+        render_callback: ((val) => {document.getElementById("e1_a").style.transform = `translate(0,${val}%)`;
+        }), 
+        duration: 50, 
+        steps: [0, 400],
+     })
+    ```
+  - 3. initialize the worker
+    ```js
+    animator.init()
+    ```
+> each time you call animator.init() it will recreate the entire registry in the worker, so do that only if you really have to and pass down the animator where ever you can
   
 
 
@@ -36,8 +60,8 @@ Those are Components we iterate over for a certain amount of time in the render 
   - MatrixLerp lets you animate multipe values, but they only require a single `render_callback` call to pass them to the mainthread at once
     - this can be handy if you dont want to create multiple animations for a single div and therefore `prevents overhead` 
 - ***Timeline***
-  -  Timeline act like a Lerp-Animation that does not fire a callback after a each animation-frame.
-  -  They can be used to trigger and control other timelines, lerps, matrixLerps, lambdas or constants on the worker.
+  -  Timeline acts like a Lerp-Animation that does not fire a callback after a each animation-frame.
+  -  They can be used to trigger and control other timelines, lerps, matrixLerps, lambdas or constants on the worker, or to create a statemachine
     
 #### Arguments
 |***L***-Lerp|***M***-MatrixLerp|***T***-Timeline|
@@ -55,18 +79,7 @@ Those are Components we iterate over for a certain amount of time in the render 
 | animationTriggers | a list of animationtrigger objects | undefined |  All |
 | callback | a callback object that gets called on the worker | undefined |  All |
 
-#### callback
-should be a list of dicts with this structure
-```js
-{
-condition: true || string,
-callback: string
-}
-```
-the callback field should be a string that includes valid code like this:
-```js
-`({id}=> console.log(id))`
-```
+
 
 ### Constants
 Constants are either matrices or numbers that get stored on the worker.
@@ -80,15 +93,46 @@ But they can also get used as Middleware to update values on the mainthread.
 
 - when updating Constants, they can also trigger animations by using `render_triggers`, or call lambdas by using `render_lamba_calls`
 
-### Lambdas
-Lambdas lets you use youre custom logic on the worker.
+### Lambdas & Callbacks (Lerp, MatrixLerp, Timeline)
+
+Lambdas and Callbacks lets you use youre custom logic on the worker.
+You can basically create your own statemachine that is running on the worker.
+- ***The Arrow function needs to be either a string, or a function***
+
+#### using the function syntax and the animProps dict 
+- ***Passing function instead of a string, requires to add an additional `animProps` dict if you use variables inside your arrow function that are located in your scripts***
+  ```js
+  props:{
+    some_value:"printing on the worker"
+  }
+  //... later when creating the animation, or lambda
+  callback:{
+    callback: (()=>{
+    console.log(`${animProps.some_value}`)
+   }),
+   animProps:props
+  ```
+#### using the string syntax
+- so the syntax is the same as when using variables in a string.
+  - so if you wanto to pass your callbacks as a string, the syntax is like this:
+  ```js
+    props:{
+    some_value:"printing on the worker"
+  }
+  //... later when creating the animation, or lambda
+  callback:{
+    callback:`(()=>{
+    console.log(${props.some_value})
+  })`
+  }
+  ```
 - you can fire callbacks eventbased (eg onMouseOver) without having to start a animation and its `callback` function
 - you can also call them using the `callback` argument of the animated components on the worker directly
 - just like with the `callback` of the animated components, they require a string as input that gets evaluated on the worker
 
 
-### worker utility functions
-There are a bunch of mehtods you can use in your custom `callback` logic (Lambdas, MatrixLerp, Lerp) to manipulate, start, or stop animations.
+#### worker utility functions
+There are a bunch of mehtods you can use in your custom  logic to manipulate, start, or stop animations.
 Some of them will just set, or return a value from the registry.
 
 | Method | Description | Arguments | 
@@ -122,40 +166,94 @@ Some of them will just set, or return a value from the registry.
 | get_delay_delta | get the delay_delta (delay progress) of an animation | id | 
 | set_delay_delta | set the delay_delta (delay progress) of an animation | id, val | 
 | lambda_call | perform a lambda call | id, args |
+
 ### Examples
+> the full examples can be found [here](https://github.com/ji-podhead/kooljs/blob/main/livedemo_project/src/examples/e4.js) and [here](https://github.com/ji-podhead/kooljs/blob/main/livedemo_project/src/examples/e5.js) 
+#### Constant
+```js
+animProps.reference_matrix=animator.constant({
+  type:"matrix",
+  value:reference_matrix // eg [[x,y,z],[x,y,z]]
+})
+```
+#### Lerp
+```js
+animationProps.target_b=animator.Lerp({ 
+  render_callback: ((val)=>transform('e3_b',val)),
+    duration: 10, 
+    steps: [0, 400, 0],
+    animationTriggers:[{
+        step:0,
+        start:10,
+        target:animationProps.target_c.id
+    }]
+})
+```
+
+#### MatrixLerp
+```js
+for (let i=0;i<length;i++){
+  animProps.boxes[i]={
+    anim: animator.Matrix_Lerp({ 
+      render_callback:((val)=>setStyle(i,val)), 
+      duration: 10, 
+      steps: reference_matrix, // eg [[x,y,z],[x,y,z]]
+      loop:false,
+      }),
+    }
+  animProps.indices[i]=animProps.boxes[i].anim.id
+}
+```
+#### Lambda
+```js
+animProps.stop_active = animator.Lambda({
+  callback: (()=>{
+    get_constant_row(`${animProps.indices.id}`,0).map((i)=>{
+      if(get_constant_number(`${animProps.selected.id}`)!=i ){
+        if( get_constant_row(`${animProps.reference_matrix.id}`,0)!=get_lerp_value(i))
+        {
+          lambda_call(`${animProps.replace_indices.id}`,{index:i,ref_step:0})
+          set_duration(i, get_time(i)<3?3:get_time(i))
+          soft_reset(i)
+        }
+      }
+    })
+  }),
+  animProps:animProps
+})
+```
 
 #### Timeline
 - in this example we are using lambdas to edit edit the registry on the worker to alter the animations during certain events.<br/>
-> the full example can be found [here](https://github.com/ji-podhead/kooljs/blob/main/livedemo_project/src/examples/e5.js) 
+
 ```js
-    animProps.idle_animation= animator.Timeline({ 
-      duration: 100,
-      render_interval:20, 
-      steps: [[0],[1]],
-      loop:true,
-      callback:{
-        callback:`(({time})=>{
-          console.log("----------timeline animation----------")
-          console.log("time " + time)
-          if(time==0){
-                  update_constant(${animProps.selected.id},"number",-1)
-                  // those are some additional lambdas we defined earlier         
-                  lambda_call(${animProps.stop_active.id}) 
-                  lambda_call(${animProps.start_random.id}) 
-          }
-          else if(time==80){
-            const random_index = get_constant_number(${animProps.selected.id})
-            console.log("random selection is " + random_index)
-            // those are some additional lambdas we defined earlier 
-            lambda_call(${animProps.replace_indices.id},{index:random_index,ref_step:0})
-            console.log("updated values")
-            console.log("started animation with index " + random_index)
-            soft_reset(random_index)
-          }
-            console.log("--------------------------------")
-        })`
+animProps.idle_animation= animator.Timeline({ 
+  duration: 100,
+  render_interval:20, 
+  length:1,
+  loop:true,
+  callback:{
+    callback:(({time})=>{
+      console.log("----------timeline animation----------")
+      console.log("time " + time)
+      if(time==0){
+        update_constant(`${animProps.selected.id}`,"number",-1)        
+        lambda_call(`${animProps.stop_active.id}`)
+        lambda_call(`${animProps.start_random.id}`)
       }
-      })
+      else if(time==80){
+        const random_index = get_constant_number(`${animProps.selected.id}`)
+        console.log("random selection is " + random_index)
+        lambda_call(`${animProps.replace_indices.id}`,{index:random_index,ref_step:0})
+        console.log("updated values")
+        console.log("started animation with index " + random_index)
+        soft_reset(random_index)
+      }
+      console.log("--------------------------------")
+    }),
+    animProps:animProps
+  }
+})
 ```
  
 
@@ -167,36 +265,22 @@ Feel free to contribute your own examples or open a feature request.
 
 ## how to run the example project
 - git clone `git@github.com:ji-podhead/kooljs.git`
-- cd example_project
+- cd livedemo_project
 - bun start
 
-
-- I left the vscode folder in the branch so you can directly debug it with chrome
+> - I left the vscode folder in the branch so you can directly debug it with chrome
   - firefox is apprently having some issues with triggering breakpoints on rhel
 
 
+### changing the kooljs code and use it in the demo
+  i used bun link to install kooljs locally in the dmeo project
+  - after making changes to the source code you need to run this from the demo folder:
+  ```js
+    bun install ../kooljs
+  ```
 
-## how to use
-- since kooljs is using workers and typed  arrays, the procedure is as follows:
-  - 1. create an animator instance 
-    ```js
-    import { Animator } from "./kooljs/animations"
 
-    const animator = new Animator(30)
-    ```
-  - 2. create a Lerp instance
-    ```js
-      const new_lerp=animator.Lerp({ 
-        accessor: [undefined, ((val,id) => {document.getElementById(`e3_${id}`).style.transform = `translate(0%,${val}%)`;})],
-        duration: 10,
-        steps: [10,100],
-    })
-    ```
-  - 3. initialize the worker
-    ```js
-    animator.init()
-    ```
-> each time you call animator.init() it will recreate the entire registry in the worker, so do that only if you really have to and pass down the animator where ever you can
+
 ## roadmap
 - rendering canvas 
 - spline
@@ -215,5 +299,5 @@ Feel free to contribute your own examples or open a feature request.
 
 ---
 
-### info
+### notes
 a cool animation tool for js. name provided by thebusinessman0920_55597 and bomi from the programers hangout helped with the name!

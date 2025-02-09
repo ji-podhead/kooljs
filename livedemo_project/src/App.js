@@ -1,7 +1,7 @@
 
 import './App.css';
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Animator } from "./kooljs/animations"
+import { Animator } from "kooljs/animations"
 import {  Example as E1 } from './examples/e1';
 import {  Example as E2 } from './examples/e2';
 import {  Example as E3} from './examples/e3';
@@ -10,7 +10,6 @@ import {  Example as E5} from './examples/e5';
 import {  Example as E6} from './examples/e6';
 
 import { Widgets, AnimationControl, Header, CodeBlocks } from "./utils"
-import { Util } from './kooljs/util_component';
 const Animated_Components = []
 const animator = new Animator(50)
 function App() {

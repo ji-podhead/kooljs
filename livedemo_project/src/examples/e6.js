@@ -24,6 +24,7 @@ const animProps={
   size_animation:undefined,//                <- single number lerp     << Lerp >>
   size_constant:undefined,//                 <- xy                     << Constant-Matrix >>
   color_animation:undefined,//               <- xyz                    << MatrixLerp >> 
+  size_constant_id:undefined
 }
 function bg(val){
   return `linear-gradient(to right, rgb(0,0,0), rgb(${val[0]}, ${val[1]}, ${val[2]})`
@@ -44,17 +45,16 @@ function Example(animator) {
         render_callback:((val)=>setStyle(val)),
         duration: 10, 
         steps: [[0,0],[100,100]],
-        
     })
-    const size_constant_id=animator.get_constant_size("matrix")
+    animProps.size_constant_id=animator.get_constant_size("matrix")
     animProps.start_animation = animator.Lambda({
       callback:  (()=>{
         setMatrix(`${animProps.color_animation.id}`,1, [Math.random()*50, Math.random()*50, Math.random()*255]);
-        const random_size=get_constant_row(size_constant_id,0);
+        const random_size=get_constant_row(`${animProps.size_constant_id}`,0);
         console.log(random_size);
         setMatrix(`${animProps.size_animation.id}`,1, random_size);
         start_animations([`${animProps.size_animation.id}`])
-        }),
+      }),
       animProps:animProps
     }) 
     animProps.size_constant=animator.constant({
