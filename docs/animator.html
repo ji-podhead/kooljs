@@ -1,0 +1,516 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>&lt;no title&gt; &mdash; kooljs 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="&lt;no title&gt;" href="worker.html" />
+    <link rel="prev" title="what can it do?" href="README.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            kooljs
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="README.html">what can it do?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#install">install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#livedemo-v0-2-0">LiveDemo v0.2.0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#components">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#how-to-run-the-example-project">how to run the example project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#roadmap">roadmap</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">animator</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">animator.Animator</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#animator.Animator.Lambda"><code class="docutils literal notranslate"><span class="pre">animator.Animator.Lambda()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#animator.Animator.Lerp"><code class="docutils literal notranslate"><span class="pre">animator.Animator.Lerp()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#animator.Animator.Matrix_Lerp"><code class="docutils literal notranslate"><span class="pre">animator.Animator.Matrix_Lerp()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#animator.Animator.Timeline"><code class="docutils literal notranslate"><span class="pre">animator.Animator.Timeline()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#animator.Animator.addTrigger"><code class="docutils literal notranslate"><span class="pre">animator.Animator.addTrigger()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#animator.Animator.constant"><code class="docutils literal notranslate"><span class="pre">animator.Animator.constant()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#animator.Animator.init"><code class="docutils literal notranslate"><span class="pre">animator.Animator.init()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#animator.Animator.lambda_call"><code class="docutils literal notranslate"><span class="pre">animator.Animator.lambda_call()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#animator.Animator.removeTrigger"><code class="docutils literal notranslate"><span class="pre">animator.Animator.removeTrigger()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#animator.Animator.reset_animations"><code class="docutils literal notranslate"><span class="pre">animator.Animator.reset_animations()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#animator.Animator.setFPS"><code class="docutils literal notranslate"><span class="pre">animator.Animator.setFPS()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#animator.Animator.start"><code class="docutils literal notranslate"><span class="pre">animator.Animator.start()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#animator.Animator.start_animations"><code class="docutils literal notranslate"><span class="pre">animator.Animator.start_animations()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#animator.Animator.stop"><code class="docutils literal notranslate"><span class="pre">animator.Animator.stop()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#animator.Animator.stop_animations"><code class="docutils literal notranslate"><span class="pre">animator.Animator.stop_animations()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#animator.Animator.update_constant"><code class="docutils literal notranslate"><span class="pre">animator.Animator.update_constant()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#animator.Animator.update_lerp"><code class="docutils literal notranslate"><span class="pre">animator.Animator.update_lerp()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#animator.Animator.update_matrix_lerp"><code class="docutils literal notranslate"><span class="pre">animator.Animator.update_matrix_lerp()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#animator.Constant"><code class="docutils literal notranslate"><span class="pre">animator.Constant</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#animator.Lerp"><code class="docutils literal notranslate"><span class="pre">animator.Lerp</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#animator.Matrix_Lerp"><code class="docutils literal notranslate"><span class="pre">animator.Matrix_Lerp</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#animator.Timeline"><code class="docutils literal notranslate"><span class="pre">animator.Timeline</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#animator.Lambda"><code class="docutils literal notranslate"><span class="pre">animator.Lambda</span></code></a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">worker</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="worker.html"><code class="docutils literal notranslate"><span class="pre">worker.get_time()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.set_delta_t"><code class="docutils literal notranslate"><span class="pre">worker.set_delta_t()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_step"><code class="docutils literal notranslate"><span class="pre">worker.get_step()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.set_step"><code class="docutils literal notranslate"><span class="pre">worker.set_step()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.is_active"><code class="docutils literal notranslate"><span class="pre">worker.is_active()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_active"><code class="docutils literal notranslate"><span class="pre">worker.get_active()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.start_animations"><code class="docutils literal notranslate"><span class="pre">worker.start_animations()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.stop_animations"><code class="docutils literal notranslate"><span class="pre">worker.stop_animations()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.setLerp"><code class="docutils literal notranslate"><span class="pre">worker.setLerp()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.setMatrix"><code class="docutils literal notranslate"><span class="pre">worker.setMatrix()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_lerp_value"><code class="docutils literal notranslate"><span class="pre">worker.get_lerp_value()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.soft_reset"><code class="docutils literal notranslate"><span class="pre">worker.soft_reset()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.hard_reset"><code class="docutils literal notranslate"><span class="pre">worker.hard_reset()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_duration"><code class="docutils literal notranslate"><span class="pre">worker.get_duration()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.set_duration"><code class="docutils literal notranslate"><span class="pre">worker.set_duration()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.set_sequence_length"><code class="docutils literal notranslate"><span class="pre">worker.set_sequence_length()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.change_framerate"><code class="docutils literal notranslate"><span class="pre">worker.change_framerate()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_constant"><code class="docutils literal notranslate"><span class="pre">worker.get_constant()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_constant_number"><code class="docutils literal notranslate"><span class="pre">worker.get_constant_number()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_constant_row"><code class="docutils literal notranslate"><span class="pre">worker.get_constant_row()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.render_constant"><code class="docutils literal notranslate"><span class="pre">worker.render_constant()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.update_constant"><code class="docutils literal notranslate"><span class="pre">worker.update_constant()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.set_delay"><code class="docutils literal notranslate"><span class="pre">worker.set_delay()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#get_delay"><code class="docutils literal notranslate"><span class="pre">get_delay()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_delay_delta"><code class="docutils literal notranslate"><span class="pre">worker.get_delay_delta()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.set_delay_delta"><code class="docutils literal notranslate"><span class="pre">worker.set_delay_delta()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.lambda_call"><code class="docutils literal notranslate"><span class="pre">worker.lambda_call()</span></code></a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">kooljs</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">&lt;no title&gt;</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/animator.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <dl class="js class">
+<dt class="sig sig-object js" id="animator.Animator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="n"><span class="pre">animator</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">Animator</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fps=45</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">autostart</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#animator.Animator" title="Link to this definition"></a></dt>
+<dd><p>The Animator Class lets you create and control the animation thread to manage your animations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fps</strong> (<em>number</em>) – the fps to render animations; default: 33.33</p></li>
+<li><p><strong>autostart</strong> (<em>boolean</em>) – whether or not to call the init method after construction; default: true</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="js function">
+<dt class="sig sig-object js" id="animator.Animator.Lambda">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">animator</span></span><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">Animator</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">Lambda</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">condition</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#animator.Animator.Lambda" title="Link to this definition"></a></dt>
+<dd><p>Creates a new lambda animation with the given condition and callback.
+The callback is a function that is called when the condition is true.
+The callback is called with the value of the lerp animation that triggered the condition.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>condition</strong> (<em>function</em>) – A function that takes one argument, the value of the lerp animation and returns true if the condition is met.</p></li>
+<li><p><strong>callback</strong> (<em>function</em>) – A function that takes one argument, the value of the lerp animation that triggered the condition.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Lambda</strong> – The lambda animation that was created.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="animator.Animator.Lerp">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">animator</span></span><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">Animator</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">Lerp</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#animator.Animator.Lerp" title="Link to this definition"></a></dt>
+<dd><p>Creates a new Lerp object.</p>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="animator.Animator.Matrix_Lerp">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">animator</span></span><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">Animator</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">Matrix_Lerp</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#animator.Animator.Matrix_Lerp" title="Link to this definition"></a></dt>
+<dd><p>Create a Matrix_Lerp object.</p>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="animator.Animator.Timeline">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">animator</span></span><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">Animator</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">Timeline</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#animator.Animator.Timeline" title="Link to this definition"></a></dt>
+<dd><p>Creates a new Timeline object.</p>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="animator.Animator.addTrigger">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">animator</span></span><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">Animator</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">addTrigger</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#animator.Animator.addTrigger" title="Link to this definition"></a></dt>
+<dd><p>Add a trigger to the animation with the given id.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>number</em>) – the id of the animation to add the trigger to</p></li>
+<li><p><strong>target</strong> (<em>number</em>) – the target id of the trigger</p></li>
+<li><p><strong>step</strong> (<em>number</em>) – the step at which the trigger should trigger</p></li>
+<li><p><strong>time</strong> (<em>number</em>) – the time at which the trigger should trigger</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="animator.Animator.constant">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">animator</span></span><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">Animator</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">constant</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_callback</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#animator.Animator.constant" title="Link to this definition"></a></dt>
+<dd><p>Constant.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>type</strong> (<em>string</em>) – the type of the constant can be number, matrix</p></li>
+<li><p><strong>value</strong> (<em>number|list</em>) – all lists will get merged to a map of float32 arrays, where numbers are one giant float32 array</p></li>
+<li><p><strong>render_callback</strong> (<em>function</em>) – a function that gets called when you call render_constant on the worker</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>dict</strong> – Constant - returns a instance of a Constant consisting of the id and value: {id:number, value:number|map}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="animator.Animator.init">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">animator</span></span><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">Animator</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">init</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#animator.Animator.init" title="Link to this definition"></a></dt>
+<dd><p>Initializes the animator and sends all data to the worker. If autostart is true, it also starts the animation.
+If the animator is already running, it will first stop the animation, reset the animations and then
+sends the data to the worker.</p>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="animator.Animator.lambda_call">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">animator</span></span><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">Animator</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">lambda_call</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#animator.Animator.lambda_call" title="Link to this definition"></a></dt>
+<dd><p>Calls a lambda function with the given id and arguments. The lambda function must be added to the animator via the Lambda class, or Animator.Lambda().</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>number</em>) – The id of the lambda function that should be called.</p></li>
+<li><p><strong>args</strong> (<em>*</em>) – The arguments to pass to the lambda function.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="animator.Animator.removeTrigger">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">animator</span></span><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">Animator</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">removeTrigger</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#animator.Animator.removeTrigger" title="Link to this definition"></a></dt>
+<dd><p>Removes a trigger from the animation with the given id.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>number</em>) – the id of the animation to remove the trigger from</p></li>
+<li><p><strong>target</strong> (<em>number</em>) – the target id of the trigger to remove</p></li>
+<li><p><strong>step</strong> (<em>number</em>) – the step at which the trigger to remove should trigger</p></li>
+<li><p><strong>time</strong> (<em>number</em>) – the time at which the trigger to remove should trigger</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="animator.Animator.reset_animations">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">animator</span></span><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">Animator</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">reset_animations</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indices</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#animator.Animator.reset_animations" title="Link to this definition"></a></dt>
+<dd><p>Reset animations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>indices</strong> (<em>number|Array.&lt;number&gt;</em>) – the index or indices of the animations to reset. If set to “all”, resets all animations.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="animator.Animator.setFPS">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">animator</span></span><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">Animator</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">setFPS</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fps</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#animator.Animator.setFPS" title="Link to this definition"></a></dt>
+<dd><p>Changes the framerate of the animation thread.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fps</strong> (<em>number</em>) – the new framerate in frames per second</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="animator.Animator.start">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">animator</span></span><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">Animator</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">start</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#animator.Animator.start" title="Link to this definition"></a></dt>
+<dd><p>Start the animation thread. This will continue any animation that was running before
+calling stop().</p>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="animator.Animator.start_animations">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">animator</span></span><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">Animator</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">start_animations</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indices</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#animator.Animator.start_animations" title="Link to this definition"></a></dt>
+<dd><p>Start animations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>indices</strong> (<em>number|Array.&lt;number&gt;</em>) – the index or indices of the animations to start.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="animator.Animator.stop">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">animator</span></span><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">Animator</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">stop</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#animator.Animator.stop" title="Link to this definition"></a></dt>
+<dd><p>Stop the animation thread. This will pause all animations.</p>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="animator.Animator.stop_animations">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">animator</span></span><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">Animator</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">stop_animations</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indices</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#animator.Animator.stop_animations" title="Link to this definition"></a></dt>
+<dd><p>Stop animations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>indices</strong> (<em>number|Array.&lt;number&gt;</em>) – the index or indices of the animations to stop. If set to “all”, stops all animations.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="animator.Animator.update_constant">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">animator</span></span><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">Animator</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">update_constant</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#animator.Animator.update_constant" title="Link to this definition"></a></dt>
+<dd><p>Update multiple constants at once.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>Array</em>) – an array of objects containing the following properties: - type: the type of the constant (string) - id: the id of the constant to update (number) - value: the new value of the constant (number or list)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="animator.Animator.update_lerp">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">animator</span></span><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">Animator</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">update_lerp</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#animator.Animator.update_lerp" title="Link to this definition"></a></dt>
+<dd><p>Updates the values of the lerp animations. The data is an array of objects with the following properties:
+- id: The id of the lerp animation that should be updated.
+- values: The new values of the lerp animation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>Array.&lt;Object&gt;</em>) – An array of objects with the properties id and values.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="animator.Animator.update_matrix_lerp">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">animator</span></span><span class="p"><span class="pre">.</span></span><span class="n"><span class="pre">Animator</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">update_matrix_lerp</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#animator.Animator.update_matrix_lerp" title="Link to this definition"></a></dt>
+<dd><p>Updates the matrix lerp animations with new data.
+Sends a message to the worker to update animations of type 3.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>Array.&lt;Object&gt;</em>) – An array of objects with the properties id and values for the matrix lerp animation.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="js class">
+<dt class="sig sig-object js" id="animator.Constant">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="n"><span class="pre">animator</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">Constant</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">animator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_callbacks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_triggers</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#animator.Constant" title="Link to this definition"></a></dt>
+<dd><p>Creates a new Constant instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>animator</strong> (<em>Animator</em>) – the Animator Instance</p></li>
+<li><p><strong>options</strong> (<em>object</em>) – options for the constant</p></li>
+<li><p><strong>type</strong> (<em>string</em>) – the type of the constant can be number, matrix</p></li>
+<li><p><strong>value</strong> (<em>number|list</em>) – all lists will get merged to a map of float32 arrays, where numbers are one giant float32 array</p></li>
+<li><p><strong>render_callbacks</strong> (<em>function|list</em>) – a function or list of functions that gets called when the constant value gets updated</p></li>
+<li><p><strong>render_triggers</strong> (<em>function|list</em>) – a function or list of functions that gets called when the constant value gets updated</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>dict</strong> – Constant - returns a instance of a Constant consisting of the id and value: {id:number, value:number|map} - RenderCallbacks: { id: number, args: string } - RenderTriggers: list(callback_id’s)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js class">
+<dt class="sig sig-object js" id="animator.Lerp">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="n"><span class="pre">animator</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">Lerp</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">animator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_callback</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration=10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_interval=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothstep=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delay=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">animationTriggers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loop=false</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps_max_length</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#animator.Lerp" title="Link to this definition"></a></dt>
+<dd><p>Creates a new Lerp object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>animator</strong> (<em>Animator</em>) – the animator object</p></li>
+<li><p><strong>options</strong> (<em>Object</em>) – options for the Lerp object</p></li>
+<li><p><strong>render_callback</strong> (<em>function</em>) – the callback function for when the animation is rendered</p></li>
+<li><p><strong>duration</strong> (<em>number</em>) – the duration of the animation in seconds</p></li>
+<li><p><strong>render_interval</strong> (<em>number</em>) – the interval in which the animation is rendered in seconds</p></li>
+<li><p><strong>smoothstep</strong> (<em>number</em>) – the smoothstep value for the animation</p></li>
+<li><p><strong>delay</strong> (<em>number</em>) – the delay before the animation starts</p></li>
+<li><p><strong>animationTriggers</strong> (<em>Array</em>) – the animation triggers</p></li>
+<li><p><strong>callback.callback</strong> (<em>function|string</em>) – the callback function for when the animation is finished</p></li>
+<li><p><strong>callback.animProps</strong> (<em>dict|undefined</em>) – the props used for the callback, when callback is not a string</p></li>
+<li><p><strong>steps</strong> (<em>Array</em>) – the steps of the animation</p></li>
+<li><p><strong>loop</strong> (<em>boolean</em>) – whether or not the animation should loop</p></li>
+<li><p><strong>steps_max_length</strong> (<em>number</em>) – the maximum length of the steps array</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js class">
+<dt class="sig sig-object js" id="animator.Matrix_Lerp">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="n"><span class="pre">animator</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">Matrix_Lerp</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">animator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_callback</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration=10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_interval=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothstep=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delay=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">animationTriggers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loop=false</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps_max_length</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#animator.Matrix_Lerp" title="Link to this definition"></a></dt>
+<dd><p>Creates a new MatrixLerp object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>animator</strong> (<em>Animator</em>) – the animator object</p></li>
+<li><p><strong>options</strong> (<em>Object</em>) – options for the MatrixLerp object</p></li>
+<li><p><strong>render_callback</strong> (<em>function</em>) – the callback function for when the animation is rendered</p></li>
+<li><p><strong>duration</strong> (<em>number</em>) – the duration of the animation in seconds</p></li>
+<li><p><strong>render_interval</strong> (<em>number</em>) – the interval in which the animation is rendered in seconds</p></li>
+<li><p><strong>smoothstep</strong> (<em>number</em>) – the smoothstep value for the animation</p></li>
+<li><p><strong>delay</strong> (<em>number</em>) – the delay before the animation starts</p></li>
+<li><p><strong>animationTriggers</strong> (<em>Array</em>) – the animation triggers</p></li>
+<li><p><strong>callback.callback</strong> (<em>function|string</em>) – the callback function for when the animation is finished</p></li>
+<li><p><strong>callback.animProps</strong> (<em>dict|undefined</em>) – the props used for the callback, when callback is not a string</p></li>
+<li><p><strong>steps</strong> (<em>Array</em>) – the steps of the animation</p></li>
+<li><p><strong>loop</strong> (<em>boolean</em>) – whether or not the animation should loop</p></li>
+<li><p><strong>steps_max_length</strong> (<em>number</em>) – the maximum length of the steps array</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js class">
+<dt class="sig sig-object js" id="animator.Timeline">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="n"><span class="pre">animator</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">Timeline</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">animator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_callback</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration=10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_interval=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delay=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">animationTriggers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loop=false</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#animator.Timeline" title="Link to this definition"></a></dt>
+<dd><p>Creates a new Timeline object.
+A Timeline is a type of animation similar to Lerp, but it does not fire a callback after each animation frame.
+It is used to trigger and control other animations such as timelines, lerps, and matrixLerps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>animator</strong> (<em>Animator</em>) – The animator instance.</p></li>
+<li><p><strong>options</strong> (<em>Object</em>) – Options for the Timeline object.</p></li>
+<li><p><strong>render_callback</strong> (<em>function</em>) – The function called when the animation renders.</p></li>
+<li><p><strong>duration</strong> (<em>Number</em>) – The duration of the animation.</p></li>
+<li><p><strong>render_interval</strong> (<em>Number</em>) – The interval at which the animation should render.</p></li>
+<li><p><strong>delay</strong> (<em>Number</em>) – The delay before the animation starts.</p></li>
+<li><p><strong>animationTriggers</strong> (<em>Object</em>) – Animation triggers.</p></li>
+<li><p><strong>callback.callback</strong> (<em>function|string</em>) – the callback function for when the animation is finished</p></li>
+<li><p><strong>callback.animProps</strong> (<em>dict|undefined</em>) – the props used for the callback, when callback is not a string</p></li>
+<li><p><strong>loop</strong> (<em>Boolean</em>) – Whether the animation should loop.</p></li>
+<li><p><strong>length</strong> (<em>Number</em>) – The amount of steps in the timeline. length of 1 equals steps.length=2. <strong>*This is a required parameter if steps is not defined*</strong>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Lerp</strong> – The created Timeline object as a Lerp instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js class">
+<dt class="sig sig-object js" id="animator.Lambda">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="n"><span class="pre">animator</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">Lambda</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">animator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">animProps</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#animator.Lambda" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>animator</strong> (<em>Animator</em>) – the Animator Instance</p></li>
+<li><p><strong>callback</strong> (<em>string|function</em>) – the type of the constant can be number, matrix</p></li>
+<li><p><strong>animProps</strong> (<em>dict|undefined</em>) – used to pass your animation properties. * <strong>*Only needed if you pass a function as a callback.*</strong> * The used props need to have this structure: `${prop}`</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>number</strong> – id  - animator.lambda_map.size</p>
+</dd>
+</dl>
+</dd></dl>
+
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="README.html" class="btn btn-neutral float-left" title="what can it do?" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="worker.html" class="btn btn-neutral float-right" title="&lt;no title&gt;" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
