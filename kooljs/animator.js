@@ -6,7 +6,8 @@
 // 2. The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. 
 // import { parse } from "@babel/parser"
 // import * as recast from "recast";
-const worker_functions=
+
+const worker_functions =
 [ 
   "get_status",
   "addTrigger",
@@ -53,17 +54,18 @@ class Prop {
         this.updater = this.update_callback
     }
 }
+
 var index
 class Constant {
     /**
      * Creates a new Constant instance.
      * @param {Animator} animator - the Animator Instance
      * @param {object} options - options for the constant
-     * @param {string} options.type - the type of the constant can be number, matrix
-     * @param { number | list } options.value - all lists will get merged to a map of float32 arrays, where numbers are one giant float32 array 
-     * @param { function | list } [options.render_callbacks] - a function or list of functions that gets called when the constant value gets updated
-     * @param { function | list } [options.render_triggers] - a function or list of functions that gets called when the constant value gets updated
-     * @returns {dict {id:number, value:number|map}} Constant - returns a instance of a Constant consisting of the id and value
+     * @param {string} type - the type of the constant can be number, matrix
+     * @param { number | list } value - all lists will get merged to a map of float32 arrays, where numbers are one giant float32 array 
+     * @param { function | list } [render_callbacks] - a function or list of functions that gets called when the constant value gets updated
+     * @param { function | list } [render_triggers] - a function or list of functions that gets called when the constant value gets updated
+     * @returns {dict } Constant - returns a instance of a Constant consisting of the id and value: {id:number, value:number|map}
      * - RenderCallbacks:
      *  {
      *  id: number,
@@ -193,17 +195,17 @@ class Lerp {
      * Creates a new Lerp object.
      * @param {Animator} animator - the animator object
      * @param {Object} options - options for the Lerp object
-     * @param {function} options.render_callback - the callback function for when the animation is rendered
-     * @param {number} [options.duration=10] - the duration of the animation in seconds
-     * @param {number} [options.render_interval=1] - the interval in which the animation is rendered in seconds
-     * @param {number} [options.smoothstep=1] - the smoothstep value for the animation
-     * @param {number} [options.delay=0] - the delay before the animation starts
-     * @param {Array} [options.animationTriggers] - the animation triggers
-     * @param {function|string} [options.callback.callback] - the callback function for when the animation is finished
-     * @param {dict | undefined} [options.callback.animProps] - the props used for the callback, when callback is not a string
-     * @param {Array} [options.steps] - the steps of the animation
-     * @param {boolean} [options.loop=false] - whether or not the animation should loop
-     * @param {number} [options.steps_max_length] - the maximum length of the steps array
+     * @param {function} render_callback - the callback function for when the animation is rendered
+     * @param {number} [duration=10] - the duration of the animation in seconds
+     * @param {number} [render_interval=1] - the interval in which the animation is rendered in seconds
+     * @param {number} [smoothstep=1] - the smoothstep value for the animation
+     * @param {number} [delay=0] - the delay before the animation starts
+     * @param {Array} [animationTriggers] - the animation triggers
+     * @param {function|string} [callback.callback] - the callback function for when the animation is finished
+     * @param {dict | undefined} [callback.animProps] - the props used for the callback, when callback is not a string
+     * @param {Array} [steps] - the steps of the animation
+     * @param {boolean} [loop=false] - whether or not the animation should loop
+     * @param {number} [steps_max_length] - the maximum length of the steps array
      */
     constructor(animator, { render_callback, duration = 10, render_interval = 1, smoothstep = 1, delay = 0, animationTriggers, callback, steps = undefined, loop=false, steps_max_length,type=2 }) {
         //currentValue = currentValue;
@@ -259,15 +261,15 @@ class Timeline{
  * It is used to trigger and control other animations such as timelines, lerps, and matrixLerps.
  * @param {Animator} animator - The animator instance.
  * @param {Object} options - Options for the Timeline object.
- * @param {Function} options.render_callback - The function called when the animation renders.
- * @param {Number} [options.duration=10] - The duration of the animation.
- * @param {Number} [options.render_interval=1] - The interval at which the animation should render.
- * @param {Number} [options.delay=0] - The delay before the animation starts.
- * @param {Object} [options.animationTriggers] - Animation triggers.
- * @param {function|string} [options.callback.callback] - the callback function for when the animation is finished
- * @param {dict | undefined} [options.callback.animProps] - the props used for the callback, when callback is not a string
- * @param {Boolean} [options.loop=false] - Whether the animation should loop.
- * @param {Number} [options.length] - The amount of steps in the timeline. length of 1 equals steps.length=2. ***This is a required parameter if steps is not defined***.
+ * @param {Function} render_callback - The function called when the animation renders.
+ * @param {Number} [duration=10] - The duration of the animation.
+ * @param {Number} [render_interval=1] - The interval at which the animation should render.
+ * @param {Number} [delay=0] - The delay before the animation starts.
+ * @param {Object} [animationTriggers] - Animation triggers.
+ * @param {function|string} [callback.callback] - the callback function for when the animation is finished
+ * @param {dict | undefined} [callback.animProps] - the props used for the callback, when callback is not a string
+ * @param {Boolean} [loop=false] - Whether the animation should loop.
+ * @param {Number} [length] - The amount of steps in the timeline. length of 1 equals steps.length=2. ***This is a required parameter if steps is not defined***.
  * @returns {Lerp} The created Timeline object as a Lerp instance.
  */
     constructor(animator, {steps,length,render_callback, duration, render_interval, delay, animationTriggers, callback,loop }) {
@@ -286,17 +288,17 @@ class Matrix_Lerp {
      * Creates a new MatrixLerp object.
      * @param {Animator} animator - the animator object
      * @param {Object} options - options for the MatrixLerp object
-     * @param {function} options.render_callback - the callback function for when the animation is rendered
-     * @param {number} [options.duration=10] - the duration of the animation in seconds
-     * @param {number} [options.render_interval=1] - the interval in which the animation is rendered in seconds
-     * @param {number} [options.smoothstep=1] - the smoothstep value for the animation
-     * @param {number} [options.delay=0] - the delay before the animation starts
-     * @param {Array} [options.animationTriggers] - the animation triggers
-     * @param {function|string} [options.callback.callback] - the callback function for when the animation is finished
-     * @param {dict | undefined} [options.callback.animProps] - the props used for the callback, when callback is not a string
-     * @param {Array} [options.steps] - the steps of the animation
-     * @param {boolean} [options.loop=false] - whether or not the animation should loop
-     * @param {number} [options.steps_max_length] - the maximum length of the steps array
+     * @param {function} render_callback - the callback function for when the animation is rendered
+     * @param {number} [duration=10] - the duration of the animation in seconds
+     * @param {number} [render_interval=1] - the interval in which the animation is rendered in seconds
+     * @param {number} [smoothstep=1] - the smoothstep value for the animation
+     * @param {number} [delay=0] - the delay before the animation starts
+     * @param {Array} [animationTriggers] - the animation triggers
+     * @param {function|string} [callback.callback] - the callback function for when the animation is finished
+     * @param {dict | undefined} [callback.animProps] - the props used for the callback, when callback is not a string
+     * @param {Array} [steps] - the steps of the animation
+     * @param {boolean} [loop=false] - whether or not the animation should loop
+     * @param {number} [steps_max_length] - the maximum length of the steps array
      */
     constructor(animator, { type=3, render_callback, duration = 10, render_interval = 1, smoothstep = 1, delay = 0, animationTriggers, callback, steps = undefined, loop=false, steps_max_length }) {
         //currentValue = currentValue;
@@ -514,7 +516,7 @@ class Animator {
      * @param {string} type - the type of the constant can be number, matrix
      * @param { number | list } value - all lists will get merged to a map of float32 arrays, where numbers are one giant float32 array 
      * @param { function } render_callback - a function that gets called when you call render_constant on the worker    
-     * @returns {dict {id:number, value:number|map}} Constant - returns a instance of a Constant consisting of the id and value
+     * @returns {dict } Constant - returns a instance of a Constant consisting of the id and value: {id:number, value:number|map}
      */
     constant(args){
         return new Constant(this,args)

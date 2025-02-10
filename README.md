@@ -1,5 +1,4 @@
 
-# kooljs 
 
  ![NPM Version](https://img.shields.io/npm/v/kooljs)  ![Static Badge](https://img.shields.io/badge/LiveDemo-0.2.0-brightgreen) 
 
@@ -35,7 +34,7 @@ The animator serves as our Middleware to communicate with the worker:
 - since kooljs is using workers and typed  arrays, the procedure is as follows:
   - 1. create an animator instance 
     ```js
-    import { Animator } from "kooljs/animations"
+    import { Animator } from "kooljs/animator"
 
     const animator = new Animator(30)
     ```
@@ -141,7 +140,10 @@ You can basically create your own statemachine that is running on the worker.
 #### worker utility functions
 There are a bunch of mehtods you can use in your custom  logic to manipulate, start, or stop animations.
 Some of them will just set, or return a value from the registry.
-
+import them via:
+```js
+import {get_time,stop_animations,setMatrix,get_lerp_value,soft_reset,hard_reset,set_duration,get_constant_number,get_constant_row,update_constant,lambda_call} from "kooljs/worker"
+```
 | Method | Description | Arguments | 
 | --- | --- | --- | 
 | addTrigger | triggers another animation at a certain step and delta_t value | id, target, step, time | 
@@ -286,6 +288,24 @@ Feel free to contribute your own examples or open a feature request.
     bun install ../kooljs
   ```
 
+### how to create the autodocs
+```bash
+cd kooljs 
+sudo npm install -g jsdoc
+pip3 install sphinx-js
+pip3 install myst-parser
+pip3 install sphinx-argparse
+pip3 install sphinxcontrib.autoprogram
+pip3 install sphinx-rtd-theme
+cd ../.docs
+make html
+```
+### how to publish the react site
+```bash
+cd livedemo_project
+bun run build
+bun run deploy
+```
 
 
 ## roadmap

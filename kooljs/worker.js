@@ -41,7 +41,18 @@ class Lerp {
     }
 }
 var final_step,final_sub_step
+
 class LerpChain{
+/**
+ * The constructor for the LerpChain class.
+ * Initializes properties related to the state and progress of the lerp chain.
+ * 
+ * @property {Array|undefined} buffer - The buffer holding the chain data.
+ * @property {Map|undefined} matrixChains - The map containing matrix chains.
+ * @property {Array|undefined} progress - The progress of each chain.
+ * @property {Array|undefined} lengths - The lengths of each chain.
+ */
+
     constructor(){
         this.buffer=undefined
         this.matrixChains=undefined
@@ -233,12 +244,20 @@ async function stop_loop() {
         loop_resolver=null
     }
 }
+    /**
+     * starts a list of animations
+     * @param {Array<number>} indices an array of ids of the animations to start
+     */
 function start_animations(indices){
     indices.map((id)=>{
         lerpChain_registry.soft_reset(id)
     })
     start_loop()
 }
+    /**
+     * stops a list of animations
+     * @param {Array<number>|string} indices an array of ids of the animations to stop; if "all", stops all animations
+     */
 function stop_animations(indices){
     if(indices==="all"){
         lerp_registry.activelist=[]
@@ -255,6 +274,17 @@ function stop_animations(indices){
         stop_loop()
     } 
 }
+/**
+ * Resets a list of animations.
+ * 
+ * If "all" is passed, stops the animation loop and resets all active animations.
+ * Otherwise, resets each animation in the provided indices, re-activates it, and 
+ * updates the results based on its type. If any animations were stopped and reset,
+ * a render message is posted with the updated results.
+ * 
+ * @param {Array<number>|string} indices - An array of animation IDs to reset, or "all" to reset all animations.
+ */
+
 async function reset_animations(indices){
     if(indices=="all"){stop_loop();indices=lerp_registry.activelist}
     //stop_animations(indices)
@@ -277,7 +307,14 @@ async function reset_animations(indices){
     })
     if(stopped.length>0) postMessage({ message: "render", results: lerp_registry.results, result_indices: indices })
 }
-function change_framerate(fps_new) { fps = fps_new }
+/**
+ * Changes the framerate of the animation loop.
+ * 
+ * @param {number} fps_new - The new framerate in frames per second.
+ */
+function change_framerate(fps_new) {
+     fps = fps_new 
+    }
 const integers = ["loop","delay","type","progress","duration","render_interval","lerp_chain_start","activelist"]
 function init(new_fps, lerps, lerpChains, matrixChains, triggers, constants, condi_new, lerp_callbacks, springs) {
     fps=new_fps
@@ -324,6 +361,15 @@ function init(new_fps, lerps, lerpChains, matrixChains, triggers, constants, con
     lerp_registry.delta_t=new Float32Array(lerp_registry.duration.length)
     lerp_registry.delay_delta=new Float32Array(lerp_registry.duration.length)
 }
+/**
+ * Adds a trigger to the trigger registry.
+ * If the trigger does not exist at the given time and step in the given animation, it is created.
+ * If the trigger does exist, the target is added to the existing trigger.
+ * @param {number} id - The id of the animation to add the trigger to.
+ * @param {number} target - The target of the trigger.
+ * @param {number} step - The step of the trigger.
+ * @param {number} time - The time of the trigger.
+ */
 function addTrigger(id,target,step,time){
     var trigger = []
     if(trigger_registry.get(id)==undefined){
@@ -349,6 +395,16 @@ function addTrigger(id,target,step,time){
         }   
     }
 }
+/**
+ * Removes a trigger from the trigger registry.
+ * If the trigger does not exist at the given time and step in the given animation, a warning is printed.
+ * If the trigger does exist, the target is removed from the existing trigger.
+ * If the trigger is empty after removal (i.e. it only contained the target), the trigger is removed.
+ * @param {number} id - The id of the animation to remove the trigger from.
+ * @param {number} target - The target of the trigger.
+ * @param {number} step - The step of the trigger.
+ * @param {number} time - The time of the trigger.
+ */
 function removeTrigger(id,target,step,time){
     var trigger=trigger_registry.get(id).get(step)
     if(trigger!=undefined){
@@ -399,6 +455,12 @@ function update(type,values){
         lerpChain_registry.reset(x.id)
     })
 }
+
+/**
+ * Calls a lambda function stored in callback_map with the given id and arguments.
+ * @param {number} id - The id of the lambda function to call
+ * @param {any[]} args - The arguments to pass to the lambda function
+ */
 function lambda_call(id,args){
        callback_map.get(id)(args)
 }
@@ -407,6 +469,12 @@ async function render() {
     const active=lerp_registry.activelist.filter((x)=>lerp_registry.type[x]!=4)
     postMessage({ message: "render", results: lerp_registry.results, result_indices: active }) 
 }
+/**
+ * This function can be called by the worker when a constant value is changed.
+ * The main thread will receive a message with the changed value.
+ * @param {number} id - the id of the constant
+ * @param {number} type - the type of the constant (0 = number, 1 = matrix)
+ */
 async function render_constant(id,type) {
     postMessage({ message: "render_constant", id:id, type: type, value:  get_constant(id,type)})
 }
@@ -528,7 +596,7 @@ function is_active(id){return lerp_registry.activelist.includes(id)}
  * @param {number} id - The identifier for the animation.
  * @returns {number} - The current step value of the animation.
  */
-function current_step(id){return lerpChain_registry.progress(id)}
+function get_step(id){return lerpChain_registry.progress(id)}
 /**
  * Gets the lerp result value of an animation.
  * @param {number} id - The identifier for the animation.
@@ -583,8 +651,18 @@ function get_delay(id){return lerp_registry.delay[id]}
  * @param {number} id - The identifier for the animation.
  * @param {number} val - The desired delay value for the animation.
  */
-function set_delay(id,val){lerp_registry.delay[id]=val}
-function get_delay_delta(id){return lerp_registry.delay_delta[id]}
+function set_delay(id,val){
+    lerp_registry.delay[id]=val
+}
+
+
+/**
+ * Retrieves the current delay progress value of an animation.
+ * @param {number} id - The identifier for the animation.
+ * @returns {number} - The current delay progress value of the animation.
+ */
+function get_delay_delta(id){
+    return lerp_registry.delay_delta[id]}
 /**
  * Sets the current delay progress value for an animation.
  * @param {number} id - The identifier for the animation.
@@ -620,27 +698,11 @@ function get_active(id){return lerp_registry.activelis}
  * Retrieves a boolean indicating whether the animation loop is currently running.
  * @returns {boolean} - true if the animation loop is currently running, false otherwise.
  */
-function get_status(){return loop_resolver!=null}
-
-export {
-    get_status,
-    addTrigger,removeTrigger,
-    get_time,set_delta_t,
-    current_step,set_step,
-    is_active,get_active,
-    start_animations,stop_animations,
-    setLerp,setMatrix,
-    get_lerp_value,
-    soft_reset,hard_reset,
-    get_duration,set_duration,
-    set_sequence_length,
-    change_framerate,
-    get_constant,get_constant_number,get_constant_row,render_constant,
-    update_constant,
-    set_delay,get_delay,
-    get_delay_delta,set_delay_delta,
-    lambda_call
+function get_status(){
+    return loop_resolver!=null
 }
+
+
 
 // ----------------------------------------> REQUIRES IMPLEMENTATION <--
 
@@ -666,6 +728,26 @@ function convex_hull(){
 }
 function spring(){
 
+}
+// this has to commented out when creating the docs
+export {
+    get_status,
+    addTrigger,removeTrigger,
+    get_time,set_delta_t,
+    get_step,set_step,
+    is_active,get_active,
+    start_animations,stop_animations,
+    setLerp,setMatrix,
+    get_lerp_value,
+    soft_reset,hard_reset,
+    get_duration,set_duration,
+    set_sequence_length,
+    change_framerate,
+    get_constant,get_constant_number,get_constant_row,render_constant,
+    update_constant,
+    set_delay,get_delay,
+    get_delay_delta,set_delay_delta,
+    lambda_call,
 }
 //t = callback_registry.callback.get(val)?.(val, t) ?? undefined; //  Null-Coalescing-Operator -- if callback not undefined then use and process the value t for callback
 // const eslapsed = performance.now() - startTime;

@@ -7,8 +7,9 @@
 **build
 # testing
 /coverage
-**/livedemo_project/node_modules
-/livedemo_project/buid
+** kooljs/node_modules
+/kooljs_website
+ /buid
 # production
 *.lockb
 
