@@ -1,7 +1,7 @@
 {
   "name": "kooljs",
   "homepage": "https://github.com/ji-podhead/kooljs",
-  "version": "0.1.199",
+  "version": "0.2.0",
   "private": false,
   "dependencies": {
     "@babel/parser": "^7.26.7",
