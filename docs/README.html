@@ -1,0 +1,742 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>what can it do? &mdash; kooljs 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="&lt;no title&gt;" href="animator.html" />
+    <link rel="prev" title="kooljs documentation" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            kooljs
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">what can it do?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#install">install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#livedemo-v0-2-0">LiveDemo v0.2.0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#components">Components</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#animator">Animator</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#how-to-use">how to use</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#components-that-are-updated-in-the-render-loop">Components that are updated in the render loop</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#arguments">Arguments</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#constants">Constants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#lambdas-callbacks-lerp-matrixlerp-timeline">Lambdas &amp; Callbacks (Lerp, MatrixLerp, Timeline)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#using-the-function-syntax-and-the-animprops-dict">using the function syntax and the animProps dict</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#using-the-string-syntax">using the string syntax</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#worker-utility-functions">worker utility functions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#constant">Constant</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lerp">Lerp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#matrixlerp">MatrixLerp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lambda">Lambda</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#timeline">Timeline</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#contrbuting-examples">contrbuting examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#how-to-run-the-example-project">how to run the example project</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#changing-the-kooljs-code-and-use-it-in-the-demo">changing the kooljs code and use it in the demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-create-the-autodocs">how to create the autodocs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-publish-the-react-site">how to publish the react site</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#roadmap">roadmap</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#enhancements">Enhancements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#notes">notes</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">animator</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="animator.html"><code class="docutils literal notranslate"><span class="pre">animator.Animator</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="animator.html#animator.Constant"><code class="docutils literal notranslate"><span class="pre">animator.Constant</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="animator.html#animator.Lerp"><code class="docutils literal notranslate"><span class="pre">animator.Lerp</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="animator.html#animator.Matrix_Lerp"><code class="docutils literal notranslate"><span class="pre">animator.Matrix_Lerp</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="animator.html#animator.Timeline"><code class="docutils literal notranslate"><span class="pre">animator.Timeline</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="animator.html#animator.Lambda"><code class="docutils literal notranslate"><span class="pre">animator.Lambda</span></code></a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">worker</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="worker.html"><code class="docutils literal notranslate"><span class="pre">worker.get_time()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.set_delta_t"><code class="docutils literal notranslate"><span class="pre">worker.set_delta_t()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_step"><code class="docutils literal notranslate"><span class="pre">worker.get_step()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.set_step"><code class="docutils literal notranslate"><span class="pre">worker.set_step()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.is_active"><code class="docutils literal notranslate"><span class="pre">worker.is_active()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_active"><code class="docutils literal notranslate"><span class="pre">worker.get_active()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.start_animations"><code class="docutils literal notranslate"><span class="pre">worker.start_animations()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.stop_animations"><code class="docutils literal notranslate"><span class="pre">worker.stop_animations()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.setLerp"><code class="docutils literal notranslate"><span class="pre">worker.setLerp()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.setMatrix"><code class="docutils literal notranslate"><span class="pre">worker.setMatrix()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_lerp_value"><code class="docutils literal notranslate"><span class="pre">worker.get_lerp_value()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.soft_reset"><code class="docutils literal notranslate"><span class="pre">worker.soft_reset()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.hard_reset"><code class="docutils literal notranslate"><span class="pre">worker.hard_reset()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_duration"><code class="docutils literal notranslate"><span class="pre">worker.get_duration()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.set_duration"><code class="docutils literal notranslate"><span class="pre">worker.set_duration()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.set_sequence_length"><code class="docutils literal notranslate"><span class="pre">worker.set_sequence_length()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.change_framerate"><code class="docutils literal notranslate"><span class="pre">worker.change_framerate()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_constant"><code class="docutils literal notranslate"><span class="pre">worker.get_constant()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_constant_number"><code class="docutils literal notranslate"><span class="pre">worker.get_constant_number()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_constant_row"><code class="docutils literal notranslate"><span class="pre">worker.get_constant_row()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.render_constant"><code class="docutils literal notranslate"><span class="pre">worker.render_constant()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.update_constant"><code class="docutils literal notranslate"><span class="pre">worker.update_constant()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.set_delay"><code class="docutils literal notranslate"><span class="pre">worker.set_delay()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#get_delay"><code class="docutils literal notranslate"><span class="pre">get_delay()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_delay_delta"><code class="docutils literal notranslate"><span class="pre">worker.get_delay_delta()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.set_delay_delta"><code class="docutils literal notranslate"><span class="pre">worker.set_delay_delta()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.lambda_call"><code class="docutils literal notranslate"><span class="pre">worker.lambda_call()</span></code></a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">kooljs</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">what can it do?</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/README.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <p><img alt="NPM Version" src="https://img.shields.io/npm/v/kooljs" />  <img alt="Static Badge" src="https://img.shields.io/badge/LiveDemo-0.2.0-brightgreen" /></p>
+<p>kooljs is a multithreaded animation tool for the web.</p>
+<section id="what-can-it-do">
+<h1>what can it do?<a class="headerlink" href="#what-can-it-do" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p>compute lerp animations on a worker thread</p></li>
+<li><p>build your own animation statemachines that are running on the worker</p>
+<ul>
+<li><p>custom logic (lambdas, or callbacks) that run on the worker</p></li>
+<li><p>timelines to orchestrate animations</p></li>
+<li><p>trigger other animations</p></li>
+</ul>
+</li>
+<li><p>MatrixLerps to animate multiple values at once</p></li>
+<li><p>stores and accesses the values on the worker using TypedArray and Map Datatypes</p></li>
+<li><p>avoid prop drilling for values that are only used for animations by storing and updating them on the worker</p></li>
+</ul>
+</section>
+<section id="install">
+<h1>install<a class="headerlink" href="#install" title="Link to this heading"></a></h1>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">npm</span><span class="w"> </span><span class="nx">i</span><span class="w"> </span><span class="nx">kooljs</span>
+</pre></div>
+</div>
+</section>
+<section id="livedemo-v0-2-0">
+<h1>LiveDemo v0.2.0<a class="headerlink" href="#livedemo-v0-2-0" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p>check out the <a class="reference external" href="https://ji-podhead.github.io/kooljs/">LiveDemo</a></p></li>
+<li><p>I will add adding additional Examples over time</p></li>
+</ul>
+</section>
+<section id="components">
+<h1>Components<a class="headerlink" href="#components" title="Link to this heading"></a></h1>
+<section id="animator">
+<h2>Animator<a class="headerlink" href="#animator" title="Link to this heading"></a></h2>
+<p>The animator serves as our Middleware to communicate with the worker:</p>
+<ul class="simple">
+<li><p>its one task/worker thread per animator instance</p></li>
+<li><p>creates the animated objects</p></li>
+<li><p>creates the registry on the worker</p></li>
+<li><p>update values</p></li>
+<li><p>start/stop animations</p></li>
+</ul>
+<section id="how-to-use">
+<h3>how to use<a class="headerlink" href="#how-to-use" title="Link to this heading"></a></h3>
+<ul>
+<li><p>since kooljs is using workers and typed  arrays, the procedure is as follows:</p>
+<ul>
+<li><ol class="arabic simple">
+<li><p>create an animator instance</p></li>
+</ol>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Animator</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">&quot;kooljs/animator&quot;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">animator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">Animator</span><span class="p">(</span><span class="mf">30</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><ol class="arabic simple" start="2">
+<li><p>create a Lerp instance</p></li>
+</ol>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">new_lerp</span><span class="o">=</span><span class="nx">animator</span><span class="p">.</span><span class="nx">Lerp</span><span class="p">({</span><span class="w"> </span>
+<span class="w">    </span><span class="nx">render_callback</span><span class="o">:</span><span class="w"> </span><span class="p">((</span><span class="nx">val</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&quot;e1_a&quot;</span><span class="p">).</span><span class="nx">style</span><span class="p">.</span><span class="nx">transform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sb">`translate(0,</span><span class="si">${</span><span class="nx">val</span><span class="si">}</span><span class="sb">%)`</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}),</span><span class="w"> </span>
+<span class="w">    </span><span class="nx">duration</span><span class="o">:</span><span class="w"> </span><span class="mf">50</span><span class="p">,</span><span class="w"> </span>
+<span class="w">    </span><span class="nx">steps</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="mf">0</span><span class="p">,</span><span class="w"> </span><span class="mf">400</span><span class="p">],</span>
+<span class="w"> </span><span class="p">})</span>
+</pre></div>
+</div>
+</li>
+<li><ol class="arabic simple" start="3">
+<li><p>initialize the worker</p></li>
+</ol>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">animator</span><span class="p">.</span><span class="nx">init</span><span class="p">()</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<div><p>each time you call animator.init() it will recreate the entire registry in the worker, so do that only if you really have to and pass down the animator where ever you can</p>
+</div></blockquote>
+</section>
+</section>
+<section id="components-that-are-updated-in-the-render-loop">
+<h2>Components that are updated in the render loop<a class="headerlink" href="#components-that-are-updated-in-the-render-loop" title="Link to this heading"></a></h2>
+<p>Those are Components we iterate over for a certain amount of time in the render loop on the worker.</p>
+<ul class="simple">
+<li><p><em><strong>Lerp</strong></em></p>
+<ul>
+<li><p>uses a series of numbers to lerp through as the input of <code class="docutils literal notranslate"><span class="pre">steps</span></code></p></li>
+<li><p>use the <code class="docutils literal notranslate"><span class="pre">render_callback</span></code> to pass the computed values to a callback on the main thread</p></li>
+<li><p>you can either call document.get in the callback directly to apply the styling using the animated value, or you can store the values (eg usecallback) to store and process them</p></li>
+</ul>
+</li>
+<li><p><em><strong>MatrixLerp</strong></em></p>
+<ul>
+<li><p>The same as <code class="docutils literal notranslate"><span class="pre">Lerp</span></code>, but it requires a list of subarrays (Matrices) instead a list of numbers as the input of <code class="docutils literal notranslate"><span class="pre">steps</span></code></p></li>
+<li><p>MatrixLerp lets you animate multipe values, but they only require a single <code class="docutils literal notranslate"><span class="pre">render_callback</span></code> call to pass them to the mainthread at once</p>
+<ul>
+<li><p>this can be handy if you dont want to create multiple animations for a single div and therefore <code class="docutils literal notranslate"><span class="pre">prevents</span> <span class="pre">overhead</span></code></p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><em><strong>Timeline</strong></em></p>
+<ul>
+<li><p>Timeline acts like a Lerp-Animation that does not fire a callback after a each animation-frame.</p></li>
+<li><p>They can be used to trigger and control other timelines, lerps, matrixLerps, lambdas or constants on the worker, or to create a statemachine</p></li>
+</ul>
+</li>
+</ul>
+<section id="arguments">
+<h3>Arguments<a class="headerlink" href="#arguments" title="Link to this heading"></a></h3>
+<p>|<em><strong>L</strong></em>-Lerp|<em><strong>M</strong></em>-MatrixLerp|<em><strong>T</strong></em>-Timeline|</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>arg</p></th>
+<th class="head"><p>description</p></th>
+<th class="head"><p>default</p></th>
+<th class="head"><p>Components</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>render_callback</p></td>
+<td><p>a function that gets called on the mainthread after the render loop</p></td>
+<td><p>none</p></td>
+<td><p>L,M</p></td>
+</tr>
+<tr class="row-odd"><td><p>duration</p></td>
+<td><p>the max amount of computations pro step</p></td>
+<td><p>10</p></td>
+<td><p>All</p></td>
+</tr>
+<tr class="row-even"><td><p>steps</p></td>
+<td><p>a list of values to lerp through</p></td>
+<td><p>undefined</p></td>
+<td><p>All</p></td>
+</tr>
+<tr class="row-odd"><td><p>steps_max_length</p></td>
+<td><p>the max length of steps for this animation.</p></td>
+<td><p>steps.length</p></td>
+<td><p>L</p></td>
+</tr>
+<tr class="row-even"><td><p>loop</p></td>
+<td><p>if this animation will get reseted after a lifecycle</p></td>
+<td><p>false</p></td>
+<td><p>All</p></td>
+</tr>
+<tr class="row-odd"><td><p>render_interval</p></td>
+<td><p>computations pro step =  render_interval // duration</p></td>
+<td><p>1</p></td>
+<td><p>All</p></td>
+</tr>
+<tr class="row-even"><td><p>smoothstep</p></td>
+<td><p>the amount of smooth step/easing that is applied</p></td>
+<td><p>1</p></td>
+<td><p>L,M</p></td>
+</tr>
+<tr class="row-odd"><td><p>delay</p></td>
+<td><p>the amount of steps to wait before starting the animation</p></td>
+<td><p>0</p></td>
+<td><p>All</p></td>
+</tr>
+<tr class="row-even"><td><p>animationTriggers</p></td>
+<td><p>a list of animationtrigger objects</p></td>
+<td><p>undefined</p></td>
+<td><p>All</p></td>
+</tr>
+<tr class="row-odd"><td><p>callback</p></td>
+<td><p>a callback object that gets called on the worker</p></td>
+<td><p>undefined</p></td>
+<td><p>All</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="constants">
+<h2>Constants<a class="headerlink" href="#constants" title="Link to this heading"></a></h2>
+<p>Constants are either matrices or numbers that get stored on the worker.
+They are called Constants since they are not getting animated in the render loop.</p>
+<p>However you can update them from both the mainthread (Animator.update_constant) and the worker (using lambdas or Lerp callbacks).</p>
+<p>Constants serve as a way to update multiple animation values on the worker instead of calling animator.update() for every related animation from the mainthread, which requires to serialize the values.</p>
+<p>But they can also get used as Middleware to update values on the mainthread.</p>
+<ul class="simple">
+<li><p>when updating Constants, they can also trigger animations by using <code class="docutils literal notranslate"><span class="pre">render_triggers</span></code>, or call lambdas by using <code class="docutils literal notranslate"><span class="pre">render_lamba_calls</span></code></p></li>
+</ul>
+</section>
+<section id="lambdas-callbacks-lerp-matrixlerp-timeline">
+<h2>Lambdas &amp; Callbacks (Lerp, MatrixLerp, Timeline)<a class="headerlink" href="#lambdas-callbacks-lerp-matrixlerp-timeline" title="Link to this heading"></a></h2>
+<p>Lambdas and Callbacks lets you use youre custom logic on the worker.
+You can basically create your own statemachine that is running on the worker.</p>
+<ul class="simple">
+<li><p><em><strong>The Arrow function needs to be either a string, or a function</strong></em></p></li>
+</ul>
+<section id="using-the-function-syntax-and-the-animprops-dict">
+<h3>using the function syntax and the animProps dict<a class="headerlink" href="#using-the-function-syntax-and-the-animprops-dict" title="Link to this heading"></a></h3>
+<ul>
+<li><p><em><strong>Passing function instead of a string, requires to add an additional <code class="docutils literal notranslate"><span class="pre">animProps</span></code> dict if you use variables inside your arrow function that are located in your scripts</strong></em></p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">props</span><span class="o">:</span><span class="p">{</span>
+<span class="w">  </span><span class="nx">some_value</span><span class="o">:</span><span class="s2">&quot;printing on the worker&quot;</span>
+<span class="p">}</span>
+<span class="c1">//... later when creating the animation, or lambda</span>
+<span class="nx">callback</span><span class="o">:</span><span class="p">{</span>
+<span class="w">  </span><span class="nx">callback</span><span class="o">:</span><span class="w"> </span><span class="p">(()=&gt;{</span>
+<span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">animProps</span><span class="p">.</span><span class="nx">some_value</span><span class="si">}</span><span class="sb">`</span><span class="p">)</span>
+<span class="w"> </span><span class="p">}),</span>
+<span class="w"> </span><span class="nx">animProps</span><span class="o">:</span><span class="nx">props</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+<section id="using-the-string-syntax">
+<h3>using the string syntax<a class="headerlink" href="#using-the-string-syntax" title="Link to this heading"></a></h3>
+<ul>
+<li><p>so the syntax is the same as when using variables in a string.</p>
+<ul class="simple">
+<li><p>so if you wanto to pass your callbacks as a string, the syntax is like this:</p></li>
+</ul>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="nx">props</span><span class="o">:</span><span class="p">{</span>
+<span class="w">  </span><span class="nx">some_value</span><span class="o">:</span><span class="s2">&quot;printing on the worker&quot;</span>
+<span class="p">}</span>
+<span class="c1">//... later when creating the animation, or lambda</span>
+<span class="nx">callback</span><span class="o">:</span><span class="p">{</span>
+<span class="w">  </span><span class="nx">callback</span><span class="o">:</span><span class="sb">`(()=&gt;{</span>
+<span class="sb">  console.log(</span><span class="si">${</span><span class="nx">props</span><span class="p">.</span><span class="nx">some_value</span><span class="si">}</span><span class="sb">)</span>
+<span class="sb">})`</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</li>
+<li><p>you can fire callbacks eventbased (eg onMouseOver) without having to start a animation and its <code class="docutils literal notranslate"><span class="pre">callback</span></code> function</p></li>
+<li><p>you can also call them using the <code class="docutils literal notranslate"><span class="pre">callback</span></code> argument of the animated components on the worker directly</p></li>
+<li><p>just like with the <code class="docutils literal notranslate"><span class="pre">callback</span></code> of the animated components, they require a string as input that gets evaluated on the worker</p></li>
+</ul>
+</section>
+<section id="worker-utility-functions">
+<h3>worker utility functions<a class="headerlink" href="#worker-utility-functions" title="Link to this heading"></a></h3>
+<p>There are a bunch of mehtods you can use in your custom  logic to manipulate, start, or stop animations.
+Some of them will just set, or return a value from the registry.
+import them via:</p>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="nx">get_time</span><span class="p">,</span><span class="nx">stop_animations</span><span class="p">,</span><span class="nx">setMatrix</span><span class="p">,</span><span class="nx">get_lerp_value</span><span class="p">,</span><span class="nx">soft_reset</span><span class="p">,</span><span class="nx">hard_reset</span><span class="p">,</span><span class="nx">set_duration</span><span class="p">,</span><span class="nx">get_constant_number</span><span class="p">,</span><span class="nx">get_constant_row</span><span class="p">,</span><span class="nx">update_constant</span><span class="p">,</span><span class="nx">lambda_call</span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">&quot;kooljs/worker&quot;</span>
+</pre></div>
+</div>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Arguments</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>addTrigger</p></td>
+<td><p>triggers another animation at a certain step and delta_t value</p></td>
+<td><p>id, target, step, time</p></td>
+</tr>
+<tr class="row-odd"><td><p>removeTrigger</p></td>
+<td><p>removes a trigger</p></td>
+<td><p>id, target, step, time</p></td>
+</tr>
+<tr class="row-even"><td><p>get_time</p></td>
+<td><p>gets the delta_t value of an animation</p></td>
+<td><p>id</p></td>
+</tr>
+<tr class="row-odd"><td><p>set_delta_t</p></td>
+<td><p>sets the delta_t value of an animation</p></td>
+<td><p>id, val</p></td>
+</tr>
+<tr class="row-even"><td><p>get_step</p></td>
+<td><p>returns the current step of an animation</p></td>
+<td><p>id</p></td>
+</tr>
+<tr class="row-odd"><td><p>set_step</p></td>
+<td><p>sets the current step of an animation</p></td>
+<td><p>id, val</p></td>
+</tr>
+<tr class="row-even"><td><p>is_active</p></td>
+<td><p>returns true if an animations is currently running</p></td>
+<td><p>id</p></td>
+</tr>
+<tr class="row-odd"><td><p>get_active</p></td>
+<td><p>get all avtive animation indices</p></td>
+<td><p>.</p></td>
+</tr>
+<tr class="row-even"><td><p>start_animations</p></td>
+<td><p>a list of animation indices to start</p></td>
+<td><p>indices</p></td>
+</tr>
+<tr class="row-odd"><td><p>stop_animations</p></td>
+<td><p>a list of animation indices to stop</p></td>
+<td><p>indices</p></td>
+</tr>
+<tr class="row-even"><td><p>setLerp</p></td>
+<td><p>set a Lerp target value for a certain step of an animation</p></td>
+<td><p>index, step, value</p></td>
+</tr>
+<tr class="row-odd"><td><p>setMatrix</p></td>
+<td><p>set the matrix lerp target value for a certain step of an animation</p></td>
+<td><p>index, step, value</p></td>
+</tr>
+<tr class="row-even"><td><p>get_lerp_value</p></td>
+<td><p>returnt the lerp result vlaue of an animation</p></td>
+<td><p>id</p></td>
+</tr>
+<tr class="row-odd"><td><p>soft_reset</p></td>
+<td><p>starts and resets an animation if its finished, or not playing</p></td>
+<td><p>id</p></td>
+</tr>
+<tr class="row-even"><td><p>hard_reset</p></td>
+<td><p>starts and resets the animation without checking if its finished</p></td>
+<td><p>id</p></td>
+</tr>
+<tr class="row-odd"><td><p>get_duration</p></td>
+<td><p>get the duration of an animation</p></td>
+<td><p>id</p></td>
+</tr>
+<tr class="row-even"><td><p>set_duration</p></td>
+<td><p>set the duraiton of an animation</p></td>
+<td><p>id, val</p></td>
+</tr>
+<tr class="row-odd"><td><p>set_sequence_length</p></td>
+<td><p>set the lengths of steps that get lerped through</p></td>
+<td><p>id, val</p></td>
+</tr>
+<tr class="row-even"><td><p>change_framerate</p></td>
+<td><p>set the fps</p></td>
+<td><p>fps_new</p></td>
+</tr>
+<tr class="row-odd"><td><p>get_constant</p></td>
+<td><p>returns a constant (matrix, or number)</p></td>
+<td><p>id, type</p></td>
+</tr>
+<tr class="row-even"><td><p>get_constant_number</p></td>
+<td><p>returns a constant (number)</p></td>
+<td><p>id</p></td>
+</tr>
+<tr class="row-odd"><td><p>get_constant_row</p></td>
+<td><p>returns a row of a matrix constant</p></td>
+<td><p>id, row</p></td>
+</tr>
+<tr class="row-even"><td><p>render_constant</p></td>
+<td><p>messages the mainthread and sends the updated constant value</p></td>
+<td><p>id, type</p></td>
+</tr>
+<tr class="row-odd"><td><p>update_constant</p></td>
+<td><p>set a constant value</p></td>
+<td><p>id, type, value</p></td>
+</tr>
+<tr class="row-even"><td><p>set_delay</p></td>
+<td><p>set the delay of an animaiton</p></td>
+<td><p>id, val</p></td>
+</tr>
+<tr class="row-odd"><td><p>get_delay</p></td>
+<td><p>get the delay of an animation</p></td>
+<td><p>id</p></td>
+</tr>
+<tr class="row-even"><td><p>get_delay_delta</p></td>
+<td><p>get the delay_delta (delay progress) of an animation</p></td>
+<td><p>id</p></td>
+</tr>
+<tr class="row-odd"><td><p>set_delay_delta</p></td>
+<td><p>set the delay_delta (delay progress) of an animation</p></td>
+<td><p>id, val</p></td>
+</tr>
+<tr class="row-even"><td><p>lambda_call</p></td>
+<td><p>perform a lambda call</p></td>
+<td><p>id, args</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
+<blockquote>
+<div><p>the full examples can be found <a class="reference external" href="https://github.com/ji-podhead/kooljs/blob/main/livedemo_project/src/examples/e4.js">here</a> and <a class="reference external" href="https://github.com/ji-podhead/kooljs/blob/main/livedemo_project/src/examples/e5.js">here</a></p>
+</div></blockquote>
+<section id="constant">
+<h3>Constant<a class="headerlink" href="#constant" title="Link to this heading"></a></h3>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">animProps</span><span class="p">.</span><span class="nx">reference_matrix</span><span class="o">=</span><span class="nx">animator</span><span class="p">.</span><span class="nx">constant</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">type</span><span class="o">:</span><span class="s2">&quot;matrix&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">value</span><span class="o">:</span><span class="nx">reference_matrix</span><span class="w"> </span><span class="c1">// eg [[x,y,z],[x,y,z]]</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+</section>
+<section id="lerp">
+<h3>Lerp<a class="headerlink" href="#lerp" title="Link to this heading"></a></h3>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">animationProps</span><span class="p">.</span><span class="nx">target_b</span><span class="o">=</span><span class="nx">animator</span><span class="p">.</span><span class="nx">Lerp</span><span class="p">({</span><span class="w"> </span>
+<span class="w">  </span><span class="nx">render_callback</span><span class="o">:</span><span class="w"> </span><span class="p">((</span><span class="nx">val</span><span class="p">)=&gt;</span><span class="nx">transform</span><span class="p">(</span><span class="s1">&#39;e3_b&#39;</span><span class="p">,</span><span class="nx">val</span><span class="p">)),</span>
+<span class="w">    </span><span class="nx">duration</span><span class="o">:</span><span class="w"> </span><span class="mf">10</span><span class="p">,</span><span class="w"> </span>
+<span class="w">    </span><span class="nx">steps</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="mf">0</span><span class="p">,</span><span class="w"> </span><span class="mf">400</span><span class="p">,</span><span class="w"> </span><span class="mf">0</span><span class="p">],</span>
+<span class="w">    </span><span class="nx">animationTriggers</span><span class="o">:</span><span class="p">[{</span>
+<span class="w">        </span><span class="nx">step</span><span class="o">:</span><span class="mf">0</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">start</span><span class="o">:</span><span class="mf">10</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">target</span><span class="o">:</span><span class="nx">animationProps</span><span class="p">.</span><span class="nx">target_c</span><span class="p">.</span><span class="nx">id</span>
+<span class="w">    </span><span class="p">}]</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+</section>
+<section id="matrixlerp">
+<h3>MatrixLerp<a class="headerlink" href="#matrixlerp" title="Link to this heading"></a></h3>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">let</span><span class="w"> </span><span class="nx">i</span><span class="o">=</span><span class="mf">0</span><span class="p">;</span><span class="nx">i</span><span class="o">&lt;</span><span class="nx">length</span><span class="p">;</span><span class="nx">i</span><span class="o">++</span><span class="p">){</span>
+<span class="w">  </span><span class="nx">animProps</span><span class="p">.</span><span class="nx">boxes</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span><span class="o">=</span><span class="p">{</span>
+<span class="w">    </span><span class="nx">anim</span><span class="o">:</span><span class="w"> </span><span class="nx">animator</span><span class="p">.</span><span class="nx">Matrix_Lerp</span><span class="p">({</span><span class="w"> </span>
+<span class="w">      </span><span class="nx">render_callback</span><span class="o">:</span><span class="p">((</span><span class="nx">val</span><span class="p">)=&gt;</span><span class="nx">setStyle</span><span class="p">(</span><span class="nx">i</span><span class="p">,</span><span class="nx">val</span><span class="p">)),</span><span class="w"> </span>
+<span class="w">      </span><span class="nx">duration</span><span class="o">:</span><span class="w"> </span><span class="mf">10</span><span class="p">,</span><span class="w"> </span>
+<span class="w">      </span><span class="nx">steps</span><span class="o">:</span><span class="w"> </span><span class="nx">reference_matrix</span><span class="p">,</span><span class="w"> </span><span class="c1">// eg [[x,y,z],[x,y,z]]</span>
+<span class="w">      </span><span class="nx">loop</span><span class="o">:</span><span class="kc">false</span><span class="p">,</span>
+<span class="w">      </span><span class="p">}),</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="nx">animProps</span><span class="p">.</span><span class="nx">indices</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span><span class="o">=</span><span class="nx">animProps</span><span class="p">.</span><span class="nx">boxes</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">anim</span><span class="p">.</span><span class="nx">id</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="lambda">
+<h3>Lambda<a class="headerlink" href="#lambda" title="Link to this heading"></a></h3>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">animProps</span><span class="p">.</span><span class="nx">stop_active</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">animator</span><span class="p">.</span><span class="nx">Lambda</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">callback</span><span class="o">:</span><span class="w"> </span><span class="p">(()=&gt;{</span>
+<span class="w">    </span><span class="nx">get_constant_row</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">animProps</span><span class="p">.</span><span class="nx">indices</span><span class="p">.</span><span class="nx">id</span><span class="si">}</span><span class="sb">`</span><span class="p">,</span><span class="mf">0</span><span class="p">).</span><span class="nx">map</span><span class="p">((</span><span class="nx">i</span><span class="p">)=&gt;{</span>
+<span class="w">      </span><span class="k">if</span><span class="p">(</span><span class="nx">get_constant_number</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">animProps</span><span class="p">.</span><span class="nx">selected</span><span class="p">.</span><span class="nx">id</span><span class="si">}</span><span class="sb">`</span><span class="p">)</span><span class="o">!=</span><span class="nx">i</span><span class="w"> </span><span class="p">){</span>
+<span class="w">        </span><span class="k">if</span><span class="p">(</span><span class="w"> </span><span class="nx">get_constant_row</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">animProps</span><span class="p">.</span><span class="nx">reference_matrix</span><span class="p">.</span><span class="nx">id</span><span class="si">}</span><span class="sb">`</span><span class="p">,</span><span class="mf">0</span><span class="p">)</span><span class="o">!=</span><span class="nx">get_lerp_value</span><span class="p">(</span><span class="nx">i</span><span class="p">))</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">          </span><span class="nx">lambda_call</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">animProps</span><span class="p">.</span><span class="nx">replace_indices</span><span class="p">.</span><span class="nx">id</span><span class="si">}</span><span class="sb">`</span><span class="p">,{</span><span class="nx">index</span><span class="o">:</span><span class="nx">i</span><span class="p">,</span><span class="nx">ref_step</span><span class="o">:</span><span class="mf">0</span><span class="p">})</span>
+<span class="w">          </span><span class="nx">set_duration</span><span class="p">(</span><span class="nx">i</span><span class="p">,</span><span class="w"> </span><span class="nx">get_time</span><span class="p">(</span><span class="nx">i</span><span class="p">)</span><span class="o">&lt;</span><span class="mf">3</span><span class="o">?</span><span class="mf">3</span><span class="o">:</span><span class="nx">get_time</span><span class="p">(</span><span class="nx">i</span><span class="p">))</span>
+<span class="w">          </span><span class="nx">soft_reset</span><span class="p">(</span><span class="nx">i</span><span class="p">)</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">})</span>
+<span class="w">  </span><span class="p">}),</span>
+<span class="w">  </span><span class="nx">animProps</span><span class="o">:</span><span class="nx">animProps</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+</section>
+<section id="timeline">
+<h3>Timeline<a class="headerlink" href="#timeline" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>in this example we are using lambdas to edit edit the registry on the worker to alter the animations during certain events.<br/></p></li>
+</ul>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="nx">animProps</span><span class="p">.</span><span class="nx">idle_animation</span><span class="o">=</span><span class="w"> </span><span class="nx">animator</span><span class="p">.</span><span class="nx">Timeline</span><span class="p">({</span><span class="w"> </span>
+<span class="w">  </span><span class="nx">duration</span><span class="o">:</span><span class="w"> </span><span class="mf">100</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">render_interval</span><span class="o">:</span><span class="mf">20</span><span class="p">,</span><span class="w"> </span>
+<span class="w">  </span><span class="nx">length</span><span class="o">:</span><span class="mf">1</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">loop</span><span class="o">:</span><span class="kc">true</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">callback</span><span class="o">:</span><span class="p">{</span>
+<span class="w">    </span><span class="nx">callback</span><span class="o">:</span><span class="p">(({</span><span class="nx">time</span><span class="p">})=&gt;{</span>
+<span class="w">      </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;----------timeline animation----------&quot;</span><span class="p">)</span>
+<span class="w">      </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;time &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nx">time</span><span class="p">)</span>
+<span class="w">      </span><span class="k">if</span><span class="p">(</span><span class="nx">time</span><span class="o">==</span><span class="mf">0</span><span class="p">){</span>
+<span class="w">        </span><span class="nx">update_constant</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">animProps</span><span class="p">.</span><span class="nx">selected</span><span class="p">.</span><span class="nx">id</span><span class="si">}</span><span class="sb">`</span><span class="p">,</span><span class="s2">&quot;number&quot;</span><span class="p">,</span><span class="o">-</span><span class="mf">1</span><span class="p">)</span><span class="w">        </span>
+<span class="w">        </span><span class="nx">lambda_call</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">animProps</span><span class="p">.</span><span class="nx">stop_active</span><span class="p">.</span><span class="nx">id</span><span class="si">}</span><span class="sb">`</span><span class="p">)</span>
+<span class="w">        </span><span class="nx">lambda_call</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">animProps</span><span class="p">.</span><span class="nx">start_random</span><span class="p">.</span><span class="nx">id</span><span class="si">}</span><span class="sb">`</span><span class="p">)</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">      </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="p">(</span><span class="nx">time</span><span class="o">==</span><span class="mf">80</span><span class="p">){</span>
+<span class="w">        </span><span class="kd">const</span><span class="w"> </span><span class="nx">random_index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">get_constant_number</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">animProps</span><span class="p">.</span><span class="nx">selected</span><span class="p">.</span><span class="nx">id</span><span class="si">}</span><span class="sb">`</span><span class="p">)</span>
+<span class="w">        </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;random selection is &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nx">random_index</span><span class="p">)</span>
+<span class="w">        </span><span class="nx">lambda_call</span><span class="p">(</span><span class="sb">`</span><span class="si">${</span><span class="nx">animProps</span><span class="p">.</span><span class="nx">replace_indices</span><span class="p">.</span><span class="nx">id</span><span class="si">}</span><span class="sb">`</span><span class="p">,{</span><span class="nx">index</span><span class="o">:</span><span class="nx">random_index</span><span class="p">,</span><span class="nx">ref_step</span><span class="o">:</span><span class="mf">0</span><span class="p">})</span>
+<span class="w">        </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;updated values&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;started animation with index &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nx">random_index</span><span class="p">)</span>
+<span class="w">        </span><span class="nx">soft_reset</span><span class="p">(</span><span class="nx">random_index</span><span class="p">)</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">      </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;--------------------------------&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="p">}),</span>
+<span class="w">    </span><span class="nx">animProps</span><span class="o">:</span><span class="nx">animProps</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">})</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="contrbuting-examples">
+<h2>contrbuting examples<a class="headerlink" href="#contrbuting-examples" title="Link to this heading"></a></h2>
+<p>Feel free to contribute your own examples or open a feature request.</p>
+<ul class="simple">
+<li><p>I deployed to gh-pages branch <code class="docutils literal notranslate"><span class="pre">using</span> <span class="pre">bun</span> <span class="pre">deploy</span></code></p></li>
+</ul>
+</section>
+</section>
+<section id="how-to-run-the-example-project">
+<h1>how to run the example project<a class="headerlink" href="#how-to-run-the-example-project" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p>git clone <code class="docutils literal notranslate"><span class="pre">git&#64;github.com:ji-podhead/kooljs.git</span></code></p></li>
+<li><p>cd livedemo_project</p></li>
+<li><p>bun start</p></li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li><p>I left the vscode folder in the branch so you can directly debug it with chrome</p></li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><p>firefox is apprently having some issues with triggering breakpoints on rhel</p></li>
+</ul>
+<section id="changing-the-kooljs-code-and-use-it-in-the-demo">
+<h2>changing the kooljs code and use it in the demo<a class="headerlink" href="#changing-the-kooljs-code-and-use-it-in-the-demo" title="Link to this heading"></a></h2>
+<p>i used bun link to install kooljs locally in the dmeo project</p>
+<ul class="simple">
+<li><p>after making changes to the source code you need to run this from the demo folder:</p></li>
+</ul>
+<div class="highlight-js notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="nx">bun</span><span class="w"> </span><span class="nx">install</span><span class="w"> </span><span class="p">..</span><span class="o">/</span><span class="nx">kooljs</span>
+</pre></div>
+</div>
+</section>
+<section id="how-to-create-the-autodocs">
+<h2>how to create the autodocs<a class="headerlink" href="#how-to-create-the-autodocs" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>kooljs<span class="w"> </span>
+sudo<span class="w"> </span>npm<span class="w"> </span>install<span class="w"> </span>-g<span class="w"> </span>jsdoc
+pip3<span class="w"> </span>install<span class="w"> </span>sphinx-js
+pip3<span class="w"> </span>install<span class="w"> </span>myst-parser
+pip3<span class="w"> </span>install<span class="w"> </span>sphinx-argparse
+pip3<span class="w"> </span>install<span class="w"> </span>sphinxcontrib.autoprogram
+pip3<span class="w"> </span>install<span class="w"> </span>sphinx-rtd-theme
+<span class="nb">cd</span><span class="w"> </span>../.docs
+make<span class="w"> </span>html
+</pre></div>
+</div>
+</section>
+<section id="how-to-publish-the-react-site">
+<h2>how to publish the react site<a class="headerlink" href="#how-to-publish-the-react-site" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>livedemo_project
+bun<span class="w"> </span>run<span class="w"> </span>build
+bun<span class="w"> </span>run<span class="w"> </span>deploy
+</pre></div>
+</div>
+</section>
+</section>
+<section id="roadmap">
+<h1>roadmap<a class="headerlink" href="#roadmap" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p>rendering canvas</p></li>
+<li><p>spline</p></li>
+<li><p>spring</p></li>
+<li><p>constant renderevents, when changing constants via worker_callback</p></li>
+<li><p>lerp_divs</p></li>
+<li><p>GPU acceleration</p></li>
+<li><p>matrix lerp and complex magrix calculcations via callback function</p></li>
+</ul>
+<section id="enhancements">
+<h2>Enhancements<a class="headerlink" href="#enhancements" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>removeing accessor and exchange with <em>render_callback</em> (using setter only)</p></li>
+<li><p>use fixed size for results<br>
+~~- use special keywords in the callback to use the registry of the worker thread~~<br>
+~~- triggering animations on the worker thread~~</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="notes">
+<h2>notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
+<p>a cool animation tool for js. name provided by thebusinessman0920_55597 and bomi from the programers hangout helped with the name!</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="kooljs documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="animator.html" class="btn btn-neutral float-right" title="&lt;no title&gt;" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

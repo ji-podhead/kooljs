@@ -1,0 +1,545 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>&lt;no title&gt; &mdash; kooljs 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="animator.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            kooljs
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="README.html">what can it do?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#install">install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#livedemo-v0-2-0">LiveDemo v0.2.0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#components">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#how-to-run-the-example-project">how to run the example project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#roadmap">roadmap</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">animator</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="animator.html"><code class="docutils literal notranslate"><span class="pre">animator.Animator</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="animator.html#animator.Constant"><code class="docutils literal notranslate"><span class="pre">animator.Constant</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="animator.html#animator.Lerp"><code class="docutils literal notranslate"><span class="pre">animator.Lerp</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="animator.html#animator.Matrix_Lerp"><code class="docutils literal notranslate"><span class="pre">animator.Matrix_Lerp</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="animator.html#animator.Timeline"><code class="docutils literal notranslate"><span class="pre">animator.Timeline</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="animator.html#animator.Lambda"><code class="docutils literal notranslate"><span class="pre">animator.Lambda</span></code></a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">worker</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">worker.get_time()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#worker.set_delta_t"><code class="docutils literal notranslate"><span class="pre">worker.set_delta_t()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#worker.get_step"><code class="docutils literal notranslate"><span class="pre">worker.get_step()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#worker.set_step"><code class="docutils literal notranslate"><span class="pre">worker.set_step()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#worker.is_active"><code class="docutils literal notranslate"><span class="pre">worker.is_active()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#worker.get_active"><code class="docutils literal notranslate"><span class="pre">worker.get_active()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#worker.start_animations"><code class="docutils literal notranslate"><span class="pre">worker.start_animations()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#worker.stop_animations"><code class="docutils literal notranslate"><span class="pre">worker.stop_animations()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#worker.setLerp"><code class="docutils literal notranslate"><span class="pre">worker.setLerp()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#worker.setMatrix"><code class="docutils literal notranslate"><span class="pre">worker.setMatrix()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#worker.get_lerp_value"><code class="docutils literal notranslate"><span class="pre">worker.get_lerp_value()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#worker.soft_reset"><code class="docutils literal notranslate"><span class="pre">worker.soft_reset()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#worker.hard_reset"><code class="docutils literal notranslate"><span class="pre">worker.hard_reset()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#worker.get_duration"><code class="docutils literal notranslate"><span class="pre">worker.get_duration()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#worker.set_duration"><code class="docutils literal notranslate"><span class="pre">worker.set_duration()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#worker.set_sequence_length"><code class="docutils literal notranslate"><span class="pre">worker.set_sequence_length()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#worker.change_framerate"><code class="docutils literal notranslate"><span class="pre">worker.change_framerate()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#worker.get_constant"><code class="docutils literal notranslate"><span class="pre">worker.get_constant()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#worker.get_constant_number"><code class="docutils literal notranslate"><span class="pre">worker.get_constant_number()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#worker.get_constant_row"><code class="docutils literal notranslate"><span class="pre">worker.get_constant_row()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#worker.render_constant"><code class="docutils literal notranslate"><span class="pre">worker.render_constant()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#worker.update_constant"><code class="docutils literal notranslate"><span class="pre">worker.update_constant()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#worker.set_delay"><code class="docutils literal notranslate"><span class="pre">worker.set_delay()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#get_delay"><code class="docutils literal notranslate"><span class="pre">get_delay()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#worker.get_delay_delta"><code class="docutils literal notranslate"><span class="pre">worker.get_delay_delta()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#worker.set_delay_delta"><code class="docutils literal notranslate"><span class="pre">worker.set_delay_delta()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="#worker.lambda_call"><code class="docutils literal notranslate"><span class="pre">worker.lambda_call()</span></code></a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">kooljs</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">&lt;no title&gt;</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/worker.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <dl class="js function">
+<dt class="sig sig-object js" id="worker.get_time">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">worker</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_time</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#worker.get_time" title="Link to this definition"></a></dt>
+<dd><p>Gets the current progress of the animation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>number</em>) – The identifier for the animation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>number</strong> – - The current progress value of the animation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="worker.set_delta_t">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">worker</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">set_delta_t</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#worker.set_delta_t" title="Link to this definition"></a></dt>
+<dd><p>Sets the current progress of an animation and updates the delta t value accordingly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>number</em>) – The identifier for the animation.</p></li>
+<li><p><strong>val</strong> (<em>number</em>) – The new progress value for the animation.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="worker.get_step">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">worker</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_step</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#worker.get_step" title="Link to this definition"></a></dt>
+<dd><p>Gets the current step of the animation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>number</em>) – The identifier for the animation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>number</strong> – - The current step value of the animation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="worker.set_step">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">worker</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">set_step</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#worker.set_step" title="Link to this definition"></a></dt>
+<dd><p>Sets the current step of an animation.
+If the provided step value exceeds the maximum length of the animation, it will be set to the maximum length.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>number</em>) – The identifier for the animation.</p></li>
+<li><p><strong>val</strong> (<em>number</em>) – The desired step value for the animation.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="worker.is_active">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">worker</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">is_active</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#worker.is_active" title="Link to this definition"></a></dt>
+<dd><p>Checks if an animation is currently running.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>number</em>) – The identifier for the animation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>boolean</strong> – - true if the animation is currently running, false otherwise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="worker.get_active">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">worker</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_active</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#worker.get_active" title="Link to this definition"></a></dt>
+<dd><p>Retrieves an array of all active animation identifiers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Array.&lt;number&gt;</strong> – - An array of active animation identifiers.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="worker.start_animations">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">worker</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">start_animations</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indices</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#worker.start_animations" title="Link to this definition"></a></dt>
+<dd><p>starts a list of animations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>indices</strong> (<em>Array.&lt;number&gt;</em>) – an array of ids of the animations to start</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="worker.stop_animations">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">worker</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">stop_animations</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indices</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#worker.stop_animations" title="Link to this definition"></a></dt>
+<dd><p>stops a list of animations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>indices</strong> (<em>Array.&lt;number&gt;|string</em>) – an array of ids of the animations to stop; if “all”, stops all animations</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="worker.setLerp">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">worker</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">setLerp</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#worker.setLerp" title="Link to this definition"></a></dt>
+<dd><p>Sets a Lerp target value for a certain step of an animation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>index</strong> (<em>number</em>) – the index of the animation</p></li>
+<li><p><strong>step</strong> (<em>number</em>) – the step for which the value should be set</p></li>
+<li><p><strong>value</strong> (<em>number</em>) – the value to set</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="worker.setMatrix">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">worker</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">setMatrix</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#worker.setMatrix" title="Link to this definition"></a></dt>
+<dd><p>Sets the matrix lerp target value for a certain step of an animation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>index</strong> (<em>number</em>) – the index of the animation</p></li>
+<li><p><strong>step</strong> (<em>number</em>) – the step for which the value should be set</p></li>
+<li><p><strong>value</strong> (<em>Array.&lt;number&gt;</em>) – the matrix to set. The matrix is a 1 dimensional array of floats with a length that is a multiple of 4 (e.g. [r1, g1, b1, a1, r2, g2, b2, a2])</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="worker.get_lerp_value">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">worker</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_lerp_value</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#worker.get_lerp_value" title="Link to this definition"></a></dt>
+<dd><p>Gets the lerp result value of an animation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>number</em>) – The identifier for the animation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>number</strong> – - The lerp result value of the animation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="worker.soft_reset">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">worker</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">soft_reset</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#worker.soft_reset" title="Link to this definition"></a></dt>
+<dd><p>Starts and resets an animation if its finished, or not playing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>number</em>) – The identifier for the animation.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="worker.hard_reset">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">worker</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">hard_reset</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#worker.hard_reset" title="Link to this definition"></a></dt>
+<dd><p>Starts and resets an animation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>number</em>) – The identifier for the animation.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="worker.get_duration">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">worker</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_duration</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#worker.get_duration" title="Link to this definition"></a></dt>
+<dd><p>Gets the duration of an animation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>number</em>) – The identifier for the animation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>number</strong> – - The duration of the animation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="worker.set_duration">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">worker</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">set_duration</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#worker.set_duration" title="Link to this definition"></a></dt>
+<dd><p>Sets the duration of an animation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>number</em>) – The identifier for the animation.</p></li>
+<li><p><strong>val</strong> (<em>number</em>) – The desired duration value for the animation.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="worker.set_sequence_length">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">worker</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">set_sequence_length</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#worker.set_sequence_length" title="Link to this definition"></a></dt>
+<dd><p>Sets the sequence length of an animation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>number</em>) – The identifier for the animation.</p></li>
+<li><p><strong>val</strong> (<em>number</em>) – The desired sequence length for the animation.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="worker.change_framerate">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">worker</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">change_framerate</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fps_new</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#worker.change_framerate" title="Link to this definition"></a></dt>
+<dd><p>Changes the framerate of the animation loop.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fps_new</strong> (<em>number</em>) – The new framerate in frames per second.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="worker.get_constant">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">worker</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_constant</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#worker.get_constant" title="Link to this definition"></a></dt>
+<dd><p>Gets a constant value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>number</em>) – the id of the constant</p></li>
+<li><p><strong>type</strong> (<em>string</em>) – the type of the constant (number or matrix)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>number|Array.&lt;number&gt;</strong> – value - the value of the constant</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="worker.get_constant_number">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">worker</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_constant_number</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#worker.get_constant_number" title="Link to this definition"></a></dt>
+<dd><p>Retrieves a constant number value by its identifier.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>number</em>) – The identifier for the constant number.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>number</strong> – - The constant number value associated with the given identifier.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="worker.get_constant_row">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">worker</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_constant_row</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#worker.get_constant_row" title="Link to this definition"></a></dt>
+<dd><p>Retrieves a specific row from a matrix constant.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>number</em>) – The identifier for the matrix constant.</p></li>
+<li><p><strong>row</strong> (<em>number</em>) – The index of the row to retrieve from the matrix constant.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Array</strong> – - The specified row from the matrix constant.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="worker.render_constant">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">worker</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">render_constant</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#worker.render_constant" title="Link to this definition"></a></dt>
+<dd><p>This function can be called by the worker when a constant value is changed.
+The main thread will receive a message with the changed value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>number</em>) – the id of the constant</p></li>
+<li><p><strong>type</strong> (<em>number</em>) – the type of the constant (0 = number, 1 = matrix)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="worker.update_constant">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">worker</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">update_constant</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#worker.update_constant" title="Link to this definition"></a></dt>
+<dd><p>Updates a constant value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>number</em>) – the id of the constant to update</p></li>
+<li><p><strong>type</strong> (<em>string</em>) – the type of the constant (number or matrix)</p></li>
+<li><p><strong>value</strong> (<em>number|Array.&lt;number&gt;</em>) – the new value of the constant</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="worker.set_delay">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">worker</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">set_delay</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#worker.set_delay" title="Link to this definition"></a></dt>
+<dd><p>Sets the delay of an animation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>number</em>) – The identifier for the animation.</p></li>
+<li><p><strong>val</strong> (<em>number</em>) – The desired delay value for the animation.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="get_delay">
+<span class="sig-name descname"><span class="n"><span class="pre">get_delay</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#get_delay" title="Link to this definition"></a></dt>
+<dd><p>Retrieves the delay of an animation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>number</em>) – The identifier for the animation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>number</strong> – - The delay value of the animation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="worker.get_delay_delta">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">worker</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_delay_delta</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#worker.get_delay_delta" title="Link to this definition"></a></dt>
+<dd><p>Retrieves the current delay progress value of an animation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>number</em>) – The identifier for the animation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>number</strong> – - The current delay progress value of the animation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="worker.set_delay_delta">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">worker</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">set_delay_delta</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#worker.set_delay_delta" title="Link to this definition"></a></dt>
+<dd><p>Sets the current delay progress value for an animation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>number</em>) – The identifier for the animation.</p></li>
+<li><p><strong>val</strong> (<em>number</em>) – The desired delay progress value for the animation.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="js function">
+<dt class="sig sig-object js" id="worker.lambda_call">
+<span class="sig-prename descclassname"><span class="n"><span class="pre">worker</span></span><span class="p"><span class="pre">.</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">lambda_call</span></span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#worker.lambda_call" title="Link to this definition"></a></dt>
+<dd><p>Calls a lambda function stored in callback_map with the given id and arguments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Arguments<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>number</em>) – The id of the lambda function to call</p></li>
+<li><p><strong>args</strong> (<em>Array.&lt;any&gt;</em>) – The arguments to pass to the lambda function</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="animator.html" class="btn btn-neutral float-left" title="&lt;no title&gt;" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

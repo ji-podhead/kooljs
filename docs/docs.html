@@ -1,0 +1,245 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>kooljs documentation &mdash; kooljs 0.2.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=938c9ccc"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="what can it do?" href="README.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            kooljs
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="README.html">what can it do?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#install">install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#livedemo-v0-2-0">LiveDemo v0.2.0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#components">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#how-to-run-the-example-project">how to run the example project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#roadmap">roadmap</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">animator</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="animator.html"><code class="docutils literal notranslate"><span class="pre">animator.Animator</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="animator.html#animator.Constant"><code class="docutils literal notranslate"><span class="pre">animator.Constant</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="animator.html#animator.Lerp"><code class="docutils literal notranslate"><span class="pre">animator.Lerp</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="animator.html#animator.Matrix_Lerp"><code class="docutils literal notranslate"><span class="pre">animator.Matrix_Lerp</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="animator.html#animator.Timeline"><code class="docutils literal notranslate"><span class="pre">animator.Timeline</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="animator.html#animator.Lambda"><code class="docutils literal notranslate"><span class="pre">animator.Lambda</span></code></a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">worker</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="worker.html"><code class="docutils literal notranslate"><span class="pre">worker.get_time()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.set_delta_t"><code class="docutils literal notranslate"><span class="pre">worker.set_delta_t()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_step"><code class="docutils literal notranslate"><span class="pre">worker.get_step()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.set_step"><code class="docutils literal notranslate"><span class="pre">worker.set_step()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.is_active"><code class="docutils literal notranslate"><span class="pre">worker.is_active()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_active"><code class="docutils literal notranslate"><span class="pre">worker.get_active()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.start_animations"><code class="docutils literal notranslate"><span class="pre">worker.start_animations()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.stop_animations"><code class="docutils literal notranslate"><span class="pre">worker.stop_animations()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.setLerp"><code class="docutils literal notranslate"><span class="pre">worker.setLerp()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.setMatrix"><code class="docutils literal notranslate"><span class="pre">worker.setMatrix()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_lerp_value"><code class="docutils literal notranslate"><span class="pre">worker.get_lerp_value()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.soft_reset"><code class="docutils literal notranslate"><span class="pre">worker.soft_reset()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.hard_reset"><code class="docutils literal notranslate"><span class="pre">worker.hard_reset()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_duration"><code class="docutils literal notranslate"><span class="pre">worker.get_duration()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.set_duration"><code class="docutils literal notranslate"><span class="pre">worker.set_duration()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.set_sequence_length"><code class="docutils literal notranslate"><span class="pre">worker.set_sequence_length()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.change_framerate"><code class="docutils literal notranslate"><span class="pre">worker.change_framerate()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_constant"><code class="docutils literal notranslate"><span class="pre">worker.get_constant()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_constant_number"><code class="docutils literal notranslate"><span class="pre">worker.get_constant_number()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_constant_row"><code class="docutils literal notranslate"><span class="pre">worker.get_constant_row()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.render_constant"><code class="docutils literal notranslate"><span class="pre">worker.render_constant()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.update_constant"><code class="docutils literal notranslate"><span class="pre">worker.update_constant()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.set_delay"><code class="docutils literal notranslate"><span class="pre">worker.set_delay()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#get_delay"><code class="docutils literal notranslate"><span class="pre">get_delay()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_delay_delta"><code class="docutils literal notranslate"><span class="pre">worker.get_delay_delta()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.set_delay_delta"><code class="docutils literal notranslate"><span class="pre">worker.set_delay_delta()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.lambda_call"><code class="docutils literal notranslate"><span class="pre">worker.lambda_call()</span></code></a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">kooljs</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">kooljs documentation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="kooljs-documentation">
+<h1>kooljs documentation<a class="headerlink" href="#kooljs-documentation" title="Link to this heading"></a></h1>
+<p>Welcome to the kooljs autodocs.</p>
+<div class="toctree-wrapper compound">
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">About:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="README.html">what can it do?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#install">install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#livedemo-v0-2-0">LiveDemo v0.2.0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#components">Components</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="README.html#animator">Animator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="README.html#components-that-are-updated-in-the-render-loop">Components that are updated in the render loop</a></li>
+<li class="toctree-l2"><a class="reference internal" href="README.html#constants">Constants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="README.html#lambdas-callbacks-lerp-matrixlerp-timeline">Lambdas &amp; Callbacks (Lerp, MatrixLerp, Timeline)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="README.html#examples">Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="README.html#contrbuting-examples">contrbuting examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#how-to-run-the-example-project">how to run the example project</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="README.html#changing-the-kooljs-code-and-use-it-in-the-demo">changing the kooljs code and use it in the demo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="README.html#how-to-create-the-autodocs">how to create the autodocs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="README.html#how-to-publish-the-react-site">how to publish the react site</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="README.html#roadmap">roadmap</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="README.html#enhancements">Enhancements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="README.html#notes">notes</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">animator</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="animator.html"><code class="docutils literal notranslate"><span class="pre">animator.Animator</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="animator.html#animator.Animator.Lambda"><code class="docutils literal notranslate"><span class="pre">animator.Animator.Lambda()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="animator.html#animator.Animator.Lerp"><code class="docutils literal notranslate"><span class="pre">animator.Animator.Lerp()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="animator.html#animator.Animator.Matrix_Lerp"><code class="docutils literal notranslate"><span class="pre">animator.Animator.Matrix_Lerp()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="animator.html#animator.Animator.Timeline"><code class="docutils literal notranslate"><span class="pre">animator.Animator.Timeline()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="animator.html#animator.Animator.addTrigger"><code class="docutils literal notranslate"><span class="pre">animator.Animator.addTrigger()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="animator.html#animator.Animator.constant"><code class="docutils literal notranslate"><span class="pre">animator.Animator.constant()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="animator.html#animator.Animator.init"><code class="docutils literal notranslate"><span class="pre">animator.Animator.init()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="animator.html#animator.Animator.lambda_call"><code class="docutils literal notranslate"><span class="pre">animator.Animator.lambda_call()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="animator.html#animator.Animator.removeTrigger"><code class="docutils literal notranslate"><span class="pre">animator.Animator.removeTrigger()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="animator.html#animator.Animator.reset_animations"><code class="docutils literal notranslate"><span class="pre">animator.Animator.reset_animations()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="animator.html#animator.Animator.setFPS"><code class="docutils literal notranslate"><span class="pre">animator.Animator.setFPS()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="animator.html#animator.Animator.start"><code class="docutils literal notranslate"><span class="pre">animator.Animator.start()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="animator.html#animator.Animator.start_animations"><code class="docutils literal notranslate"><span class="pre">animator.Animator.start_animations()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="animator.html#animator.Animator.stop"><code class="docutils literal notranslate"><span class="pre">animator.Animator.stop()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="animator.html#animator.Animator.stop_animations"><code class="docutils literal notranslate"><span class="pre">animator.Animator.stop_animations()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="animator.html#animator.Animator.update_constant"><code class="docutils literal notranslate"><span class="pre">animator.Animator.update_constant()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="animator.html#animator.Animator.update_lerp"><code class="docutils literal notranslate"><span class="pre">animator.Animator.update_lerp()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="animator.html#animator.Animator.update_matrix_lerp"><code class="docutils literal notranslate"><span class="pre">animator.Animator.update_matrix_lerp()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="animator.html#animator.Constant"><code class="docutils literal notranslate"><span class="pre">animator.Constant</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="animator.html#animator.Lerp"><code class="docutils literal notranslate"><span class="pre">animator.Lerp</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="animator.html#animator.Matrix_Lerp"><code class="docutils literal notranslate"><span class="pre">animator.Matrix_Lerp</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="animator.html#animator.Timeline"><code class="docutils literal notranslate"><span class="pre">animator.Timeline</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="animator.html#animator.Lambda"><code class="docutils literal notranslate"><span class="pre">animator.Lambda</span></code></a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">worker</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="worker.html"><code class="docutils literal notranslate"><span class="pre">worker.get_time()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.set_delta_t"><code class="docutils literal notranslate"><span class="pre">worker.set_delta_t()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_step"><code class="docutils literal notranslate"><span class="pre">worker.get_step()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.set_step"><code class="docutils literal notranslate"><span class="pre">worker.set_step()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.is_active"><code class="docutils literal notranslate"><span class="pre">worker.is_active()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_active"><code class="docutils literal notranslate"><span class="pre">worker.get_active()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.start_animations"><code class="docutils literal notranslate"><span class="pre">worker.start_animations()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.stop_animations"><code class="docutils literal notranslate"><span class="pre">worker.stop_animations()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.setLerp"><code class="docutils literal notranslate"><span class="pre">worker.setLerp()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.setMatrix"><code class="docutils literal notranslate"><span class="pre">worker.setMatrix()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_lerp_value"><code class="docutils literal notranslate"><span class="pre">worker.get_lerp_value()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.soft_reset"><code class="docutils literal notranslate"><span class="pre">worker.soft_reset()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.hard_reset"><code class="docutils literal notranslate"><span class="pre">worker.hard_reset()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_duration"><code class="docutils literal notranslate"><span class="pre">worker.get_duration()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.set_duration"><code class="docutils literal notranslate"><span class="pre">worker.set_duration()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.set_sequence_length"><code class="docutils literal notranslate"><span class="pre">worker.set_sequence_length()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.change_framerate"><code class="docutils literal notranslate"><span class="pre">worker.change_framerate()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_constant"><code class="docutils literal notranslate"><span class="pre">worker.get_constant()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_constant_number"><code class="docutils literal notranslate"><span class="pre">worker.get_constant_number()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_constant_row"><code class="docutils literal notranslate"><span class="pre">worker.get_constant_row()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.render_constant"><code class="docutils literal notranslate"><span class="pre">worker.render_constant()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.update_constant"><code class="docutils literal notranslate"><span class="pre">worker.update_constant()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.set_delay"><code class="docutils literal notranslate"><span class="pre">worker.set_delay()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#get_delay"><code class="docutils literal notranslate"><span class="pre">get_delay()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.get_delay_delta"><code class="docutils literal notranslate"><span class="pre">worker.get_delay_delta()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.set_delay_delta"><code class="docutils literal notranslate"><span class="pre">worker.set_delay_delta()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="worker.html#worker.lambda_call"><code class="docutils literal notranslate"><span class="pre">worker.lambda_call()</span></code></a></li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="README.html" class="btn btn-neutral float-right" title="what can it do?" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

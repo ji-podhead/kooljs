@@ -1,17 +1,17 @@
 {
   "files": {
-    "main.css": "/kooljs/static/css/main.ad95141a.css",
-    "main.js": "/kooljs/static/js/main.9c8b45b8.js",
-    "static/js/921.5a518847.chunk.js": "/kooljs/static/js/921.5a518847.chunk.js",
+    "main.css": "/kooljs/static/css/main.213070d2.css",
+    "main.js": "/kooljs/static/js/main.c643d50c.js",
+    "static/js/964.ff505a96.chunk.js": "/kooljs/static/js/964.ff505a96.chunk.js",
     "static/js/453.a28bd35d.chunk.js": "/kooljs/static/js/453.a28bd35d.chunk.js",
     "index.html": "/kooljs/index.html",
-    "main.ad95141a.css.map": "/kooljs/static/css/main.ad95141a.css.map",
-    "main.9c8b45b8.js.map": "/kooljs/static/js/main.9c8b45b8.js.map",
-    "921.5a518847.chunk.js.map": "/kooljs/static/js/921.5a518847.chunk.js.map",
+    "main.213070d2.css.map": "/kooljs/static/css/main.213070d2.css.map",
+    "main.c643d50c.js.map": "/kooljs/static/js/main.c643d50c.js.map",
+    "964.ff505a96.chunk.js.map": "/kooljs/static/js/964.ff505a96.chunk.js.map",
     "453.a28bd35d.chunk.js.map": "/kooljs/static/js/453.a28bd35d.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.ad95141a.css",
-    "static/js/main.9c8b45b8.js"
+    "static/css/main.213070d2.css",
+    "static/js/main.c643d50c.js"
   ]
 }
