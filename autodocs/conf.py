@@ -4,16 +4,7 @@ sys.path.insert(0, os.path.abspath('../'))
 js_source_path = '../kooljs'
 root_for_relative_js_paths = '../kooljs'
 primary_domain = 'js'
-html_context = {
-    'css_files': [
-        '_static/css/pygments.css',
-    ],
-    'csp': {
-        'default-src': "'self'",
-        'font-src': 'https://fonts.gstatic.com',
-        'style-src': "'self' https://fonts.googleapis.com",
-    }
-}
+
 
 extensions = [
     'sphinx.ext.autodoc',  # Core library for html generation from docstrings
@@ -32,7 +23,7 @@ autosummary_generate = True  # Turn on sphinx.ext.autosummary
 #autodoc_mock_imports = [                        ]
 templates_path = ['_templates']
 
-html_theme = 'classic'
+html_theme = 'sphinx_rtd_theme'
 html_theme_options = {
     "rightsidebar": "true",
     "relbarbgcolor": "black"
