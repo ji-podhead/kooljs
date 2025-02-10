@@ -23,7 +23,7 @@ autosummary_generate = True  # Turn on sphinx.ext.autosummary
 #autodoc_mock_imports = [                        ]
 templates_path = ['_templates']
 
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'classic'
 html_theme_options = {
     "rightsidebar": "true",
     "relbarbgcolor": "black"
