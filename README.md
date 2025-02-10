@@ -35,10 +35,6 @@
   </tr>
 </table>
 </div>
-<<<<<<< HEAD
-
-=======
->>>>>>> 0f38bf0455b46784fbc77095b0cb377b07fa23e3
 ## about
 
 
@@ -56,14 +52,6 @@
 ```js
 npm i kooljs
 ```
-<<<<<<< HEAD
-=======
-
-## LiveDemo v0.2.0
-
-- check out the [LiveDemo](https://ji-podhead.github.io/kooljs/)
-- I will add adding additional Examples over time
->>>>>>> 0f38bf0455b46784fbc77095b0cb377b07fa23e3
 
 ## Get Started
 
