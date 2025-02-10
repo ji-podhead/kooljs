@@ -1,3 +1,4 @@
+
 <div align="center">
 <table style="width: 100%; margin: 0 auto; text-align: center; display: table; margin-top: 20px; margin-bottom: 20px;">
 
@@ -13,28 +14,27 @@
   <tr>
     <td style="text-align: left;">
       <a href="https://www.npmjs.com/package/kooljs">
-        <img alt="NPM Version" src="https://img.shields.io/npm/v/kooljs?style=for-the-badge">
+        <img alt="NPM Version" width="500" src="https://img.shields.io/npm/v/kooljs?style=for-the-badge">
       </a>
     </td>
     <td style="text-align: right;">
       <a href="https://ji-podhead.github.io/kooljs-website/">
-        <img alt="Static Badge" src="https://img.shields.io/badge/LiveDemo-%F0%9F%8E%AE-green?style=for-the-badge">
+        <img alt="Static Badge" width="500" src="https://img.shields.io/badge/LiveDemo-%F0%9F%8E%AE-green?style=for-the-badge">
       </a>
     </td>
     <td style="text-align: right;">
       <a href="https://ji-podhead.github.io/kooljs/docs/html/">
-        <img alt="Static Badge" src="https://img.shields.io/badge/Api%20Docs-%F0%9F%93%9A-lightblue?style=for-the-badge">
+        <img alt="Static Badge" width="500" src="https://img.shields.io/badge/Api%20Docs-%F0%9F%93%9A-lightblue?style=for-the-badge">
       </a>
     </td>
     <td style="text-align: right;">
       <a href="https://github.com/ji-podhead/kooljs">
-        <img alt="Static Badge" src="https://img.shields.io/badge/open%20source-blue?style=for-the-badge&logo=github">
+        <img alt="Static Badge"  width="500" src="https://img.shields.io/badge/open%20source-blue?style=for-the-badge&logo=github">
       </a>
     </td>
   </tr>
 </table>
 </div>
-
 ## about
 
 
