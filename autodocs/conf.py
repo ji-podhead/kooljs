@@ -11,7 +11,8 @@ extensions = [
     'sphinx.ext.autosummary',  # Create neat summary tables
     'myst_parser',
     'sphinxarg.ext','sphinxcontrib.autoprogram',
-    'sphinx_js'
+    'sphinx_js',
+    "sphinxcontrib.jquery",
     ]
 source_suffix = {
     '.rst': 'restructuredtext',
