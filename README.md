@@ -1,7 +1,7 @@
-<center>
+<div align="center">
 <table style="width: 100%; margin: 0 auto; text-align: center; display: table; margin-top: 20px; margin-bottom: 20px;">
 
-  <tr>
+  <tr  style="width: 100%;">
     <td style="text-align: left;" colspan="3">
       <h1>KoolJs</h1>
       kooljs is a multithreaded animation tool for the web.
@@ -33,7 +33,7 @@
     </td>
   </tr>
 </table>
-</center>
+</div>
 
 ## about
 
