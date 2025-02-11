@@ -93,8 +93,8 @@ function addCallback(animator,callback, animProps){
    lambda_index =animator.callback_map.size  
     if(typeof(callback)=="function"){
         callback=(callback.toString())
-        callback = worker_functions.reduce((str, func) => {  
-            return str.replace(new RegExp(`\\(0,kooljs_worker__WEBPACK_IMPORTED_MODULE_0__.${func}\\)`, 'g'), func);
+        callback = worker_functions.reduce((str, func) => {  // eg (0,kooljs_worker__WEBPACK_IMPORTED_MODULE_0__.get_constant_row) where the second 0 can be any number
+            return str.replace(new RegExp(`\\(0,kooljs_worker__WEBPACK_IMPORTED_MODULE_(\\d+?)__.${func}\\)`, 'g'), func);
         }, callback);
         var val
         callback = callback.replace(/`\$\{([^}]+)\}`/g, (match, group) => {
