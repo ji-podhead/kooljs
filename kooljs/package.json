@@ -1,7 +1,7 @@
 {
   "name": "kooljs",
   "homepage": "https://github.com/ji-podhead/kooljs",
-  "version": "0.2.4",
+  "version": "0.2.6",
   "private": false,
   "dependencies": {
     "@babel/parser": "^7.26.7",
@@ -31,7 +31,7 @@
     "lib",
     "../README.md"
   ],
-  "module": "animator.js",
+  "module": "./animator.js",
   "type": "module",
   "peerDependencies": {
     "typescript": "^5.0.0"

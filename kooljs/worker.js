@@ -106,7 +106,6 @@ class Constant {
    update(type, id, value){
         constant_registry[type].set(id,value)
         if(this.render_callbacks.has(id))  this.render_callbacks.get(id).map((l) => {
-            console.log(l)
             callback_map.get(l.id)(l.args)
         })
         if(this.render_triggers.has(id)) start_animations(this.render_triggers.get(id))
@@ -478,6 +477,7 @@ async function render() {
 async function render_constant(id,type) {
     postMessage({ message: "render_constant", id:id, type: type, value:  get_constant(id,type)})
 }
+var const_map_new
 onmessage = (event) => {
     switch (event.data.method) {
         case 'init':
@@ -497,7 +497,16 @@ onmessage = (event) => {
             update(event.data.type,event.data.data)
             break
         case 'update_constant':
-            constant_registry.update(event.data.type, event.data.id,event.data.value);
+                if(event.data.type=="matrix"){
+                    const_map_new=new Map
+                event.data.value.map((val,i)=>{
+                    if(typeof(val)!="function"){
+                        event.data.value[i]=new Float32Array(val)
+                    }        
+                    const_map_new.set(i,event.data.value[i])
+                })
+            }
+            constant_registry.update(event.data.type, event.data.id,const_map_new);
             break;
         case 'start':
             start_loop();

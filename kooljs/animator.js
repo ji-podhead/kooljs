@@ -530,6 +530,7 @@ class Animator {
      */
     update_constant(data) {
         data.map((x) => {
+
             this.worker.postMessage({ method: 'update_constant', type: x.type, id: x.id, value: x.value });
         })
     }
