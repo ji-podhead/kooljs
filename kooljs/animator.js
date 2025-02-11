@@ -94,7 +94,7 @@ function addCallback(animator,callback, animProps){
     if(typeof(callback)=="function"){
         callback=(callback.toString())
         callback = worker_functions.reduce((str, func) => {  
-            return str.replace(new RegExp(`\\(0,kooljs_worker__WEBPACK_IMPORTED_MODULE_1__.${func}\\)`, 'g'), func);
+            return str.replace(new RegExp(`\\(0,kooljs_worker__WEBPACK_IMPORTED_MODULE_0__.${func}\\)`, 'g'), func);
         }, callback);
         var val
         callback = callback.replace(/`\$\{([^}]+)\}`/g, (match, group) => {
