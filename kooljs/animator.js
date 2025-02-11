@@ -112,7 +112,7 @@ function addCallback(animator,callback, animProps){
             }
             return match;
         });
-        console.log((callback))
+        //console.log((callback))
     }
     
     else if(typeof(callback)!="string"){ 
