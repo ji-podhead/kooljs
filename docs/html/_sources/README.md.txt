@@ -56,9 +56,15 @@ npm i kooljs
 ```
 
 ## Get Started
-
-- check out the [LiveDemo](https://ji-podhead.github.io/kooljs-website/)
 - API documentation can be found [here](https://ji-podhead.github.io/kooljs/docs/html/)
+- check out the [kooljs website](https://ji-podhead.github.io/kooljs-website/)
+  > - each component is explained interactivly and you can check out the code
+  > -  i also added the api docs to the website
+- [kooljs website](https://github.com/ji-podhead/kooljs-website) on github
+- [Example Scripts](https://github.com/ji-podhead/kooljs-website/tree/main/app/src/examples) on github
+
+
+
 
 ## Components
 
@@ -242,6 +248,27 @@ import {
 | get_delay_delta     | get the delay_delta (delay progress) of an animation                | id                     |
 | set_delay_delta     | set the delay_delta (delay progress) of an animation                | id, val                |
 | lambda_call         | perform a lambda call                                               | id, args               |
+#### Debugging custom functions on the worker
+- all you need to do is add the `debugger` flag somewhere in you custon function like this:
+```js
+  animProps.stop_active = animator.Lambda({
+    callback: (() => {
+      get_constant_row(`${animProps.indices.id}`, 0).map((i) => {
+        debugger
+        if (get_constant_number(`${animProps.selected.id}`) != i) {
+          if (get_constant_row(`${animProps.reference_matrix.id}`, 0) != get_lerp_value(i)) {
+            lambda_call(`${animProps.replace_indices.id}`, { index: i, ref_step: 0 })
+            set_duration(i, get_time(i) < 3 ? 3 : get_time(i))
+            soft_reset(i)
+          }
+        }
+      })
+    }),
+    animProps: animProps
+  })
+```
+- when debugging your webapp, you should hit a breakpoint, which looks like this:
+![debug_custom](https://github.com/ji-podhead/kooljs/blob/main/debug_custom.png?raw=true)
 
 ### Examples
 
@@ -357,27 +384,44 @@ Feel free to contribute your own examples or open a feature request.
 - I deployed to gh-pages branch `using bun deploy`
 
 ## how to run the example project
-
-- git clone `git@github.com:ji-podhead/kooljs.git`
-- cd livedemo_project
+- mk dir kool_js_project
+- git clone https://github.com/ji-podhead/kooljs-website
+- git clone https://github.com/ji-podhead/kooljs
+- cd kooljs-website
 - bun start
 
 > - I left the vscode folder in the branch so you can directly debug it with chrome
 
+
 - firefox is apprently having some issues with triggering breakpoints on rhel
+
 
 ### changing the kooljs code and use it in the demo
 
 i used bun link to install kooljs locally in the dmeo project
 
-- after making changes to the source code you need to run this from the demo folder:
+- if you dont have the relative import in your package json, you need to run this from the kooljs-website app folder:
 
 ```js
-  bun install ../kooljs
+  bun install ../../kooljs
 ```
+- or add it to the package.json:
+```js
+    ...
+    "kooljs": "file:../../kooljs/kooljs",
+    ...
+```
+  - after that run:
+    ```js
+      bun install
+    ```
+
+> - to make changes to kooljs code and see the results using the website, use a ***multi-workspace*** by adding the other project-folder to vs
+
 
 ### how to create the autodocs
 
+- if you are doing it for the first time:
 ```bash
 cd kooljs
 sudo npm install -g jsdoc
@@ -389,14 +433,19 @@ pip3 install sphinx-rtd-theme
 cd ../.docs
 make html
 ```
+- after that you can use the `docs.sh` script in the kooljs root folder
 
-### how to publish the react site
+### how to publsh the code to npm
+- run the `publish.sh` script in the kooljs root folder
+
+### how to publish the react site to gh pages
 
 ```bash
 cd livedemo_project
 bun run build
 bun run deploy
 ```
+
 
 ## roadmap
 
