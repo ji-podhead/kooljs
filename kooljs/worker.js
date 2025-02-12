@@ -505,8 +505,12 @@ onmessage = (event) => {
                     }        
                     const_map_new.set(i,event.data.value[i])
                 })
+                constant_registry.update(event.data.type, event.data.id,const_map_new);
             }
-            constant_registry.update(event.data.type, event.data.id,const_map_new);
+            else{
+                constant_registry.update(event.data.type, event.data.id,event.data.value);
+            }
+            
             break;
         case 'start':
             start_loop();
@@ -697,7 +701,8 @@ function get_constant_row(id,row){return constant_registry.get_row(id,row)}
  * @param {number} id - The identifier for the constant number.
  * @returns {number} - The constant number value associated with the given identifier.
  */
-function get_constant_number(id){return constant_registry.get_number(id)}
+function get_constant_number(id){
+    return constant_registry.get_number(id)}
 /**
  * Retrieves an array of all active animation identifiers.
  * @returns {Array<number>} - An array of active animation identifiers.
