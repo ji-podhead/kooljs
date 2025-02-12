@@ -707,7 +707,7 @@ function get_constant_number(id){
  * Retrieves an array of all active animation identifiers.
  * @returns {Array<number>} - An array of active animation identifiers.
  */
-function get_active(id){return lerp_registry.activelis}
+function get_active(id){return lerp_registry.activelist}
 /**
  * Retrieves a boolean indicating whether the animation loop is currently running.
  * @returns {boolean} - true if the animation loop is currently running, false otherwise.
