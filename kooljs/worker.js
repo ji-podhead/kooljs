@@ -1,5 +1,4 @@
 // Copyright (c) 2025 Ji-Podhead and Project Contributors
-
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, subject to the following conditions:
 
 // 1. All commercial uses of the Software must:  
@@ -16,7 +15,6 @@ const callback_map=new Map()
 class Lerp {
     constructor() {
         this.type = undefined
-        this.delta_t = undefined
         this.duration = undefined
         this.render_interval = undefined
         this.delay_delta = undefined
@@ -83,6 +81,7 @@ class LerpChain{
         lerp_registry.delay_delta[id]=0
         lerp_registry.progress[id]=0   
         this.progress[id]=0
+        
     }
     soft_reset(id){
         final_step=this.progress[id]==this.lengths[id]-1
@@ -139,7 +138,7 @@ function smoothstep(x) {
     return x * x * (3 - 2 * x);
 }
 //var triggers,triggers_step
-var targets,allow_render, args
+var targets,allow_render, args,delta_t
 async function animate() {
     finished=[]
     lerp_registry.activelist.map((val, index) => {
@@ -152,13 +151,13 @@ async function animate() {
             else {
                 allow_render=lerp_registry.progress[val] % lerp_registry.render_interval[val] 
                 if (allow_render == 0) {
-                    lerp_registry.delta_t[val] = lerp_registry.progress[val] / lerp_registry.duration[val];
+                    delta_t= lerp_registry.progress[val] / lerp_registry.duration[val];
                     switch(lerp_registry.type[val]){
                         case(2):
                         lerp_registry.results.set(val, smoothLerp(
                                 lerpChain_registry.buffer[lerp_registry.lerp_chain_start[val]+lerpChain_registry.progress[val]],
                                 lerpChain_registry.buffer[lerp_registry.lerp_chain_start[val]+lerpChain_registry.progress[val]+1],
-                                lerp_registry.delta_t[val] ,
+                                delta_t,
                                 lerp_registry.smoothstep[val]
                             ))
                             break
@@ -168,7 +167,7 @@ async function animate() {
                                 lerp_registry.results.get(val)[i]= smoothLerp(
                                     lerpChain_registry.matrixChains.get(val).get(lerpChain_registry.progress[val])[i],
                                     lerpChain_registry.matrixChains.get(val).get(lerpChain_registry.progress[val]+1)[i],
-                                    lerp_registry.delta_t[val] ,
+                                    delta_t ,
                                     lerp_registry.smoothstep[val]
                                 )
                             }
@@ -187,8 +186,9 @@ async function animate() {
                     if ( triggers_step != undefined) {
                         targets= triggers_step.get(lerp_registry.progress[val]-1)
                         targets&&targets.map((target)=>{
-                            lerpChain_registry.soft_reset(target)
+                            if(target==val) hard_reset(target); else soft_reset(target)
                         })
+
                     }
                 }
             }
@@ -259,8 +259,8 @@ function start_animations(indices){
      */
 function stop_animations(indices){
     if(indices==="all"){
-        lerp_registry.activelist=[]
         stop_loop()
+        lerp_registry.activelist=[]
     }
     else{
         indices.map((id)=>{
@@ -357,7 +357,6 @@ function init(new_fps, lerps, lerpChains, matrixChains, triggers, constants, con
             lerp_registry.results.set(i,new Float32Array(lerpChain_registry.matrixChains.get(i).get(0)))
         }
     })
-    lerp_registry.delta_t=new Float32Array(lerp_registry.duration.length)
     lerp_registry.delay_delta=new Float32Array(lerp_registry.duration.length)
 }
 /**
@@ -631,7 +630,7 @@ function hard_reset(id){lerpChain_registry.reset(id)}
  * @param {number} id - The identifier for the animation.
  * @param {number} val - The new progress value for the animation.
  */
-function set_delta_t(id,val){lerp_registry.progress=val;lerp_registry.delta_t[id]=lerp_registry.duration[id]/lerp_registry.progress[id]}
+function set_time(id,val){lerp_registry.progress=val}
 /**
  * Sets the current step of an animation.
  * If the provided step value exceeds the maximum length of the animation, it will be set to the maximum length.
@@ -715,9 +714,162 @@ function get_active(id){return lerp_registry.activelist}
 function get_status(){
     return loop_resolver!=null
 }
+/**
+ * Retrieves the target value for a specific step of an animation.
+ * 
+ * This function determines the type of the animation and returns the target value
+ * for the specified step. 
+ * 
+ * @param {number} id - The identifier for the animation.
+ * @param {number} step - The step for which to retrieve the target value.
+ * @returns {number|number[]} - The target value for the specified step of the animation.
+ */
 
+function get_step_target(id,step){
+    if(lerp_registry.type[id]==2)return lerpChain_registry.buffer[lerp_registry.lerp_chain_start[id]+step]
+    else if(lerp_registry.type[id]==3)return lerpChain_registry.matrixChains.get(id).get(step)
+    
+}
 
+/**
+ * Replaces the target value for a specific step of an animation with a new one.
+ * 
+ * If the animation type is not a matrix-chain, the function will set the lerp values
+ * at the specified step and step + direction accordingly.
+ * 
+ * If the animation type is a matrix-chain, the function will set the matrix values
+ * at the specified step and step + direction accordingly.
+ * 
+ * @param {object} opts - An object containing the following properties:
+ * @param {number} opts.index - The index of the animation to reorient.
+ * @param {number} opts.step - The step for which to reorient the target value.
+ * @param {number} opts.direction - The direction (+1 or -1) in which to reorient the target value.
+ * @param {number|number[]} opts.reference - The new target value to set for the animation.
+ * @param {number[]} opts.matrix_row - The matrix row to set as the new target value.
+ * @param {boolean} opts.verbose - Whether to log information about the reorientation process.
+ */
+function reorient_target({ index,step,direction, reference,matrix_row=0, verbose=false }){
+    
+    verbose&&console.log("replacing indices " + index)
+    if(lerp_registry.type[index]!=2){
+    setMatrix(index, step, get_lerp_value(index))
+    setMatrix(index, step+direction, reference, matrix_row)
+    }
+    else{
+        setLerp(index, step, reference)
+        setLerp(index, step+direction, matrix_row)
+    }
+    verbose&&console.log("reoriented animation with index " + index)
+}
+function reorient_duration({ index,min_duration,max_duration, verbose=false }){
+    if(min_duration!=undefined){
+        soft_reset(index)
+        const time=is_active(index)?get_time(index):0
+        const duration = time < min_duration ? Math.floor(max_duration - time) : max_duration
+        set_duration(index, duration)
+       verbose&& console.log("new start_duration for " + index + " is " + duration)
+      }
+}
+function lerp(value, target, min, max, threshold) {
+    const t = (value - min) / (max - min);
+    const result = target * t + (1 - t) * threshold;
+    return result;
+  }
+function normalizeDistance(target, current, max) {
+    const distance = Math.abs(current - target);
+    return distance / Math.abs(max - target);
+  }
+function clamp(value, min, max) {
+return Math.min(Math.max(value, min), max);
+}
+let distance,duration
+/**
+ * Reorients the duration of an animation based on the distance between the current value
+ * and a target value.
+ * 
+ * @param {object} opts - An object containing the following properties:
+ * @param {number} opts.index - The index of the animation to reorient.
+ * @param {number|number[]} opts.target - The target value towards which to reorient the animation.
+ * @param {number} opts.max_distance - The max distance.
+ * @param {number} opts.min_duration - The minimum duration of the animation.
+ * @param {number} opts.max_duration - The maximum duration of the animation.
+ * @param {string} opts.mode - The mode to use for calculating the distance. Possible values are "max_distance",
+ *                             "manhattan_distance", "cosine_similarity", and "vector_magnitude".
+ * 
+ * @returns {number} - The new duration of the animation.
+ */
+function reorient_duration_by_distance({index, target,  max_distance, min_duration, max_duration, mode = "max_distance"}) {
+    const current = get_lerp_value(index);
+    
 
+    if(lerp_registry.type[index]!=2 ){
+        switch (mode) {
+            case "max_distance":
+              const distances = [];
+              for (let i = 0; i < target.length; i++) {
+                distances.push(Math.abs(target[i] - current[i]));
+              }
+              distance = Math.max(...distances);
+              break;
+            case "manhattan_distance":
+              distance = 0;
+              for (let i = 0; i < target.length; i++) {
+                distance += Math.abs(target[i] - current[i]);
+              }
+              break;
+            case "cosine_similarity":
+              const dotProduct = 0;a
+              const magnitudeTarget = 0;
+              const magnitudeCurrent = 0;
+              for (let i = 0; i < target.length; i++) {
+                dotProduct += target[i] * current[i];
+                magnitudeTarget += target[i] ** 2;
+                magnitudeCurrent += current[i] ** 2;
+              }
+              magnitudeTarget = Math.sqrt(magnitudeTarget);
+              magnitudeCurrent = Math.sqrt(magnitudeCurrent);
+              distance = 1 - (dotProduct / (magnitudeTarget * magnitudeCurrent));
+              break;
+            case "vector_magnitude":
+              distance = 0;
+              for (let i = 0; i < target.length; i++) {
+                distance += (target[i] - current[i]) ** 2;
+              }
+              distance = Math.sqrt(distance);
+              break;
+            default:
+              throw new Error(`Unbekannter Modus: ${mode}`);
+          }
+    }
+    else if(lerp_registry.type[index]==2) distance = Math.abs(target-max_distance)
+    duration = min_duration + (distance / max_distance) * (max_duration - min_duration);
+//Math.min(max_duration, Math.max(min_duration, distance * max_distance));
+    soft_reset(index)
+    set_duration(index, duration )
+    return duration;
+}
+/**
+ * Reverses the order of the lerp or matrix values in the animation sequence.
+ * 
+ * @param {number|string} id - The identifier for the animation or the lerp-chain to reverse.
+ * 
+ * @category Animation
+ */
+function reverse(id){
+    if(type(id)!="number"){
+        for(let i=lerp_registry.lerp_chain_start[id]; i<=lerp_registry.lerp_chain_start[id]+lerpChain_registry.lengths[id];i++  ){
+            lerpChain_registry.buffer[lerpChain_registry.lengths[id]-i]=lerpChain_registry.buffer[i]    
+        }
+    }
+        else{
+            const newMap = new Map()
+            lerpChain_registry.matrixChains.get(id).forEach((val,i)=>{
+                newMap.set(lerpChain_registry.lengths[id]-i,val)
+            })
+            lerpChain_registry.matrixChains.set(id, newMap)
+    }
+}   
+    
 // ----------------------------------------> REQUIRES IMPLEMENTATION <--
 
 class Spring{
@@ -747,7 +899,7 @@ function spring(){
 export {
     get_status,
     addTrigger,removeTrigger,
-    get_time,set_delta_t,
+    get_time,set_time,
     get_step,set_step,
     is_active,get_active,
     start_animations,stop_animations,
@@ -761,7 +913,9 @@ export {
     update_constant,
     set_delay,get_delay,
     get_delay_delta,set_delay_delta,
-    lambda_call,
+    lambda_call,get_step_target,
+    reorient_duration,reorient_duration_by_distance,
+    reverse,reorient_target
 }
 //t = callback_registry.callback.get(val)?.(val, t) ?? undefined; //  Null-Coalescing-Operator -- if callback not undefined then use and process the value t for callback
 // const eslapsed = performance.now() - startTime;

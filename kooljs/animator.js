@@ -13,7 +13,7 @@ const worker_functions =
   "addTrigger",
   "removeTrigger",
   "get_time",
-  "set_delta_t",
+  "set_time",
   "get_step",
   "set_step",
   "is_active",
@@ -37,7 +37,12 @@ const worker_functions =
   "set_delay,get_delay",
   "get_delay_delta",
   "set_delay_delta",
-  "lambda_call"
+  "lambda_call",
+  "get_step_target",
+    "reorient_duration",
+    "reverse",
+    "reorient_target",
+    "reorient_duration_by_distance"
 ]
 class Prop {
     update_callback(value, id) {
@@ -402,7 +407,7 @@ class Animator {
         this.worker = new Worker(new URL('./worker.js', import.meta.url));
         //      --> WORKER MESSAGES <--
         this.worker.onmessage = ev => {
-            if (ev.data.message == "render") {
+             if (ev.data.message == "render") {
                 requestAnimationFrame(() => {
                     ev.data.result_indices.map((value, index) => {
                         // console.log(`index: ${value} val: ${ev.data.results[index]}`)

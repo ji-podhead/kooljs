@@ -222,7 +222,7 @@ import {
 | addTrigger          | triggers another animation at a certain step and delta_t value      | id, target, step, time |
 | removeTrigger       | removes a trigger                                                   | id, target, step, time |
 | get_time            | gets the delta_t value of an animation                              | id                     |
-| set_delta_t         | sets the delta_t value of an animation                              | id, val                |
+| set_time            | sets the progress value of an animation                             | id, val                |
 | get_step            | returns the current step of an animation                            | id                     |
 | set_step            | sets the current step of an animation                               | id, val                |
 | is_active           | returns true if an animations is currently running                  | id                     |
