@@ -226,9 +226,9 @@ class Lerp {
      * @param {boolean} [loop=false] - whether or not the animation should loop
      * @param {number} [steps_max_length] - the maximum length of the steps array
      */
-    constructor(animator, { render_callback,group=-1, duration = 10, render_interval = 1, smoothstep = 1, delay = 0, animationTriggers, callback, steps = undefined, loop=false, steps_max_length,type=2 }) {
+    constructor(animator, { render_callback, duration = 10, render_interval = 1, smoothstep = 1, delay = 0, animationTriggers, callback, steps = undefined, loop=false, steps_max_length,type=2 }) {
         //currentValue = currentValue;
-        index = animator.registry_map.get("type").length
+        index = animator.animation_objects.size
         this.id = index
         this.lerpStart = undefined
         animator.count+=1
@@ -260,25 +260,16 @@ class Lerp {
         animator.registry_map.get("type").push(type)
         animator.registry_map.get("delay").push(delay)
         animator.registry_map.get("progress").push(0)
-        group!=-1&&animator.registry_map.get("group").set(this.id,group)
         animator.registry_map.get("smoothstep").push(smoothstep)
-        const callback_id=callback!=undefined?addCallback(animator,callback.callback,callback.animProps):undefined
-
-        if(group==-1&&type!=4){
-            animator.animation_objects.set(this.id, {
-
+        animator.animation_objects.set(this.id, {
             index: index,
             prop: new Prop(render_callback),
-            callback_id: callback_id
-            })
+            callback_id: callback!=undefined?addCallback(animator,callback.callback,callback.animProps):undefined
+        })
+        if(animator.animation_objects.get(this.id).callback_id!=undefined){
+            animator.lerp_callbacks.set(this.id,matrix_lerp_id)
         }
-        else{
-            animator.animation_objects.set(this.id, null)
-        }
-        if(callback_id!=undefined){
-            animator.registry_map.get("lerp_callbacks").set(this.id,matrix_lerp_id)
-
-        }
+        animator.animation_objects.get(this.id).prop.id=this.id
     }
 }
 class Timeline{
@@ -306,7 +297,7 @@ class Timeline{
             return console.error("step_length is undefined and no steps given")
         }
         
-        return new Matrix_Lerp(animator, { type:4,group:-1,render_callback:render_callback, duration:duration, render_interval:render_interval, smoothstep: 0, delay:delay, animationTriggers:animationTriggers, callback:callback, loop:loop, steps_max_length:length })
+        return new Matrix_Lerp(animator, { type:4,render_callback:render_callback, duration:duration, render_interval:render_interval, smoothstep: 0, delay:delay, animationTriggers:animationTriggers, callback:callback, loop:loop, steps_max_length:length })
     }
 }
 var matrix_lerp_id
@@ -328,10 +319,10 @@ class Matrix_Lerp {
      * @param {boolean} [loop=false] - whether or not the animation should loop
      * @param {number} [steps_max_length] - the maximum length of the steps array
      */
-    constructor(animator, { type=3, group=-1, render_callback, duration = 10, render_interval = 1, smoothstep = 1, delay = 0, animationTriggers, callback, steps = undefined, loop=false, steps_max_length }) {
+    constructor(animator, { type=3, render_callback, duration = 10, render_interval = 1, smoothstep = 1, delay = 0, animationTriggers, callback, steps = undefined, loop=false, steps_max_length }) {
         //currentValue = currentValue;
 
-        index =animator.registry_map.get("type").length
+        index = animator.animation_objects.size
         this.id = index
         animator.count+=1
         animator.registry_map.get("lerp_chain_start").push(0)
@@ -348,7 +339,7 @@ class Matrix_Lerp {
             else{
                 animator.registry_map.get("loop").push(0)
             }
-        animator.chain_map.get("matrix_buffer").set(index, matrix_map)
+        animator.matrix_chain_map.set(index, matrix_map)
         //const length=steps_max_length!=undefined?steps_max_length:steps.length-1
         animator.chain_map_points_length += 1
         animator.chain_map.get("lengths").push(1)
@@ -360,86 +351,136 @@ class Matrix_Lerp {
         animator.registry_map.get("delay").push(delay)
         animator.registry_map.get("progress").push(0)
         animator.registry_map.get("smoothstep").push(smoothstep)
-        group!=-1&&animator.registry_map.get("group").set(this.id,group)
         matrix_lerp_id=callback!=undefined?addCallback(animator,callback.callback,callback.animProps):undefined
-        if(group==-1&&type!=4){animator.animation_objects.set(this.id, {
+        animator.animation_objects.set(this.id, {
             index: index,
             prop: new Prop(render_callback),
             callback_id: matrix_lerp_id
         })
+        if(animator.animation_objects.get(this.id).callback_id!=undefined){
+            animator.lerp_callbacks.set(this.id,matrix_lerp_id)
         }
-        else{
-            animator.animation_objects.set(this.id, null)
-        }
-        if(matrix_lerp_id!=undefined){
-            animator.registry_map.get("lerp_callbacks").set(this.id,matrix_lerp_id)
-        }
-    }
-}
-class Group{
-    constructor(animator,callback){
-        this.id=animator.registry_map.get("group").size
-        animator.grouped_animation_objects.set(this.id, {
-            prop: new Prop(callback),
-            callback: callback
-        })
+        animator.animation_objects.get(this.id).prop.id=this.id
     }
 }
 class MatrixChain{
     set_reference_index(step,invert_step){
         if(invert_step==undefined) invert_step==start_step+1
-        if(step>=0&&step<this.this.animator.matrix_chain_map.max_length.value&&invert_step>=0&&step<=this.this.animator.matrix_chain_map.max_length.value)
-        {this.animator.update_constant(this.this.animator.matrix_chain_map.orientation_step.id,"matrix",[step,invert_step])}
-        else{console.error("step out of bounds! max length is: " + this.this.animator.matrix_chain_map.max_length.value)}
+        if(step>=0&&step<this.animProps.max_length.value&&invert_step>=0&&step<=this.animProps.max_length.value)
+        {this.animator.update_constant(this.animProps.orientation_step.id,"matrix",[step,invert_step])}
+        else{console.error("step out of bounds! max length is: " + this.animProps.max_length.value)}
     }
-    constructor(animator,{reference_matrix,min_duration,max_duration,delay,delay_spread,delay_invert=false, loop=false,forward_step=0, reverse_step=1,id_prefix="",callback}){
+    constructor(animator,{reference_matrix,delay,delay_spread,delay_invert=false, forward_step=0, reverse_step=1,id_prefix="",callback}){
         const length=reference_matrix.length
         this.animator=animator
-        this.group=new Group(animator,((val) => callback(id_prefix+i, val)))
-        this.id=this.group.id
-        this.indices=[]
-        this.animator.matrix_chain_map.get("max_length").push(reference_matrix[0].length)
-        this.animator.matrix_chain_map.get("delay").push(delay)
-        this.animator.matrix_chain_map.get("delay_spread").push(delay_spread)
-        this.animator.matrix_chain_map.get("delay_invert").push(delay_invert)
-        this.animator.matrix_chain_map.get("min_duration").push(min_duration)
-        this.animator.matrix_chain_map.get("max_duration").push(max_duration)
+        const animProps={
+        matrixLerps: new Array(length),//           <- matrixLerps dict             << div | MatrixLerp >> 
+        indices: new Float32Array(length),//  <- anim id's              << Float32 >> 
+        max_duration:15,
+        min_duration:5,
+        delay_invert:delay_invert,
+        start_matrix_chain:undefined,
+        reorient_matrix_chain:undefined,
+        ref_matrix:undefined,
+        orientation_step:undefined,
+        max_length:undefined
+        }
         if(reference_matrix[0].length>2){
+            animProps.max_length=new Constant(animator,{type:"number",value:reference_matrix[0].length-1})
             if(reverse_step==undefined) reverse_step==forward_step+1
-            if(forward_step>=0&&forward_step<reference_matrix[0].length&&reverse_step>=0&&forward_step<=reference_matrix[0].length)
-            {
-                this.animator.matrix_chain_map.get("orientation_step").set(this.id,[forward_step,reverse_step])
-            }
-            else{
-                console.error("step out of bounds! max length is: " + reference_matrix[0].length);return Error("MatrixChain failed!")
-            }
+            if(step>=0&&step<this.animProps.max_length.value&&reverse_step>=0&&step<=this.animProps.max_length.value)
+            {animProps.orientation_step=new Constant(animator,{type:"matrix",value:[forward_step,reverse_step]})}
+            else{console.error("step out of bounds! max length is: " + this.animProps.max_length.value);return Error("MatrixChain failed!")}
         }
         else{
-            this.animator.matrix_chain_map.get("orientation_step").set(this.id,[0,1])
+            animProps.orientation_step={value:[0,1]}
+            animProps.max_length=2
         }
-        var mLerp
         for (let i = 0; i < length; i++) {
-           mLerp= new Matrix_Lerp(animator,{
-                duration:min_duration,
-                steps: [reference_matrix[i][forward_step],reference_matrix[i][reverse_step]],
+           animProps.matrixLerps[i] = new Matrix_Lerp(animator,{
+                render_callback: ((val) => callback(id_prefix+i, val)),
+                duration:animProps.min_duration,
+                steps: [reference_matrix[i][animProps.orientation_step.value[0]],reference_matrix[i][animProps.orientation_step.value[1]]],
                 delay:delay+(i*delay_spread),
-                loop: loop,
-                group:this.id,
+                loop: false,
                 type:3
             })
-           this.indices.push(mLerp.id)
+           animProps.indices[i] =animProps.matrixLerps[i].id
         }
-    reference_matrix=reference_matrix.flat(1)
-    reference_matrix = reference_matrix.map((x,i)=>new Float32Array(x))
-    this.animator.matrix_chain_map.get("ref_matrix").set(this.id,reference_matrix)
-    this.indices=new Float32Array(this.indices)
-    this.animator.matrix_chain_map.get("indices").set(this.id,this.indices)
+       animProps.reference_matrix= new Constant(animator,{
+            type: "matrix",
+            value: reference_matrix.flat(1)
+        })
+       animProps.indices= new Constant(animator,{
+            type: "matrix",
+            value: [animProps.indices]
+        })
+       animProps.reorient_matrix_chain = new Lambda(animator,{
+            callback:  (({indices,direction,ref_matrix,max_duration,min_duration,target_step,delay_invert,length})=>{
+            indices.map((index,i)=>{
+                const current= get_lerp_value(index)
+                const ref=ref_matrix.get((i*(target_step+length))+direction)
+                if(ref[1]==current){
+                return console.log("target animation is reachead")
+                }
+                hard_reset(index)
+                reorient_target({
+                    index:index,
+                    step:0, // this is alway zero, since the matrix itself has a steplength of 2, but the ref matrix lnegth can be bigger
+                    direction:1,
+                    matrix_row:0,
+                    verbose:false,
+                    reference:ref
+                });
+                if(delay_invert&&direction==0){
+                    debugger
+                    const target=get_delay(indices[indices.length]-index)
+
+                    set_delay(indices[indices.length]-index, get_delay(index))
+                    set_delay(index,target)
+                }
+                reorient_duration_by_progress({
+                    index:index,
+                    min_duration:min_duration,
+                    max_duration:max_duration,
+                })
+                // console.log(`index: ${index} i: ${i} 
+                //     new_duration ${duration}
+                //     current_position: ${current[0]}, ${current[1]} target_position ${ref[0]}, ${ref[1]} `
+                // )
+            })
+            })
+    })
+   animProps.start_matrix_chain = new Lambda(animator,{
+        callback:  ((direction,ref_id,indices_id,orientation_step,delay_invert,min_duration,max_duration)=>{
+        const ref_matrix=get_constant_row(ref_id,0)
+        const indices=get_constant_row(indices_id,0)
+            debugger
+        if(typeof(orientation_step)=="number"){
+         orientation_step=get_constant(orientation_step,"matrix")
+        }
+        debugger
+        lambda_call(`${animProps.reorient_matrix_chain.id}`,{
+            indices:indices,
+            direction:direction,
+            ref_matrix:ref_matrix,
+            delay_invert:delay_invert,
+            target_step:orientation_step[direction==0?1:0],
+            max_duration:max_duration,
+            min_duration:min_duration
+        })
+        start_animations(indices)
+        }),
+        animProps:animProps
+    })   
+    this.start_animation=animProps.start_matrix_chain
+    this.animProps=animProps
     }
-    // start_forward(){    
-    //     if(typeof(this.this.animator.matrix_chain_map.orientation_step)!="Constant"){
-    //         this.this.animator.matrix_chain_map.start_matrix_chain.call(0,this.this.animator.matrix_chain_map.reference_matrix.id,this.this.animator.matrix_chain_map.indices.id,this.this.animator.matrix_chain_map.orientation_step.value)
-    //     }
-    // }
+    start_forward(){    
+        if(typeof(this.animProps.orientation_step)!="Constant"){
+            this.animProps.start_matrix_chain.call(0,this.animProps.reference_matrix.id,this.animProps.indices.id,this.animProps.orientation_step.value)
+        }
+    }
 }
 class Animator {
     /**
@@ -454,6 +495,7 @@ class Animator {
         //      --> REGRISTRIES <-- 
         this.registry_map = new Map()
         this.callback_map = new Map()
+        this.lerp_callbacks= new Map()
         this.trigger_map= new Map()
         this.chain_map = new Map()
         this.matrix_chain_map = new Map()
@@ -461,16 +503,11 @@ class Animator {
         this.matrix_chain_map = new Map()
         //-->Matrix_chains<<--
 
-        this.matrix_chain_map.set("ref_matrix",new Map())
+        this.matrix_chain_map.set("reference_matrix",new Map())
         this.matrix_chain_map.set("orientation_step",new Map())
-        this.matrix_chain_map.set("indices",new Map())
         this.matrix_chain_map.set("delay",[])
         this.matrix_chain_map.set("delay_spread",[])
         this.matrix_chain_map.set("delay_invert",[])
-        this.matrix_chain_map.set("min_duration",[])
-        this.matrix_chain_map.set("max_duration",[])
-        this.matrix_chain_map.set("max_length",[])
-
         
         //--> constant <--
         this.constant_map = new Map()
@@ -490,13 +527,10 @@ class Animator {
         this.registry_map.set('lerp_chain_start', []);
         this.registry_map.set('loop', []);
         this.registry_map.set('timelines', []);
-        this.registry_map.set("group", new Map())
-        this.registry_map.set("lerp_callbacks", new Map())
         // --> chains <--
         this.chain_map_points = []
         this.chain_map_points_length = 0
         this.chain_map.set('buffer', []);
-        this.chain_map.set('matrix_buffer', new Map());
         this.chain_map.set('progress', []);
         this.chain_map.set('lengths', []);
 
@@ -508,7 +542,6 @@ class Animator {
         this.fps = fps
         this.constant_count=0
         this.animation_objects = new Map()
-        this.grouped_animation_objects=new Map()
         this.indexlist = new Map()
         this.obj = undefined
         this.activelist = []
@@ -552,13 +585,15 @@ class Animator {
             fps: this.fps,
             data: this.registry_map, 
             chain_map: this.chain_map, 
+            matrix_chain_map: this.matrix_chain_map, 
             trigger_map:this.trigger_map,
             constants: this.constant_map,  
             callback_map: this.callback_map,
-            spring_map: this.spring_map,
-            matrix_chain_map:this.matrix_chain_map
+            lerp_callbacks: this.lerp_callbacks,   
+            spring_map: this.spring_map 
         }))
-
+        this.stop_animations("all")
+        this.reset_animations("all")
         initF()
     }
     /**

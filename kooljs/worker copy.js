@@ -18,7 +18,7 @@ const trigger_registry = new Map();
 const callback_map = new Map();
 // ----------------------------------------> CLASS DEFINITIONS <--
 class Lerp {
-  constructor(sequence_registry,callback_map,type,duration,render_interval,delay,smoothstep,lerp_chain_start,loop,group,lerp_callback_ids) {
+  constructor(sequence_registry,callback_map,type,duration,render_interval,delay,smoothstep,lerp_chain_start,loop,group,) {
     this.type=type
     this.duration=duration
     this.render_interval=render_interval
@@ -29,73 +29,34 @@ class Lerp {
     this.lerp_chain_start=lerp_chain_start
     this.loop=loop
     this.activelist = [];
-    this.active_group_list = [];
-    this.active_timeline_list=[]
-    this.active_group_indices_lst=[]
     this.results = new Map();
-    this.group_results= new Map();
     this.lerp_callbacks = new Map();
     this.group=group
-    group.map((g)=>this.group_results.set(g,new Map()))
     type.map((t, i) => {
         //  TODO hier zur vereinfachung interne get funktionen nehmen
         if (t == 2) {
-            if(!this.group.has(i)){
-            this.results.set(
-                i,
-                sequence_registry.buffer[this.lerp_chain_start[i]]
-            );
-            }
-            else{
-                this.group_results.get(this.group(i)).set(
-                    this.group_results.get(this.group(i)).size,
-                    sequence_registry.buffer[this.lerp_chain_start[i]]
-                );
-            }
+          this.results.set(
+            i,
+            sequence_registry.buffer[this.lerp_chain_start[i]]
+          );
          } else if (t == 3) {
-            if(!this.group.has(i)){
           this.results.set(
             i,
             new Float32Array(sequence_registry.matrix_sequences.get(i).get(0))
           );
         }
-        else{
-
-            this.group_results.get(this.group(i)).set(
-                this.group_results.get(this.group(i)).size,
-                (new Float32Array(sequence_registry.matrix_sequences.get(i).get(0)))
-               
-            );
-        }
-        }
       });
-      lerp_callback_ids.forEach((val, key) => {
+      callback_map.forEach((val, key) => {
         // no shallow copy just copying the pointer
-        this.lerp_callbacks.set(key, callback_map.get(val));
+        this.lerp_callbacks.set(key, callback_map.get(key));
       });
   }
   activate(id) {
-    switch (this.type[id]){
-        case(2 | 3):
-            if(this.group.has(id)!=true){
-            if (this.activelist.includes(id) == false) {
-                this.activelist.push(id);
-                }
-            }
-            else{ 
-                if(this.active_group_indices_lst.includes(id)==false){
-                    this.active_group_indices_lst.push(id)
-                }
-                if(this.active_group_list.includes(this.group.get(id)==false)){
-                    this.active_group_list.push(id)
-                }
-            }
-            break
-        case(4):
-            if(this.active_timeline_list.includes(id)==false){
-                this.active_timeline_list.push(id)
-            }
+    if (this.activelist.includes(id) == false) {
+      this.activelist.push(id);
+      return true;
     }
+    return false;
   }
   get(index) {
     //this function is for custom callback functions. its used for getting other values via index
@@ -113,8 +74,6 @@ class Matrix_Chain {
         this.min_duration = min_duration;
         this.delay_invert = delay_invert;
         this.max_length=max_length
-        this.reverse_lookup=new Map()
-        
     }    
   reorient_matrix_chain(id,target_step,direction) {
     this.indices[id].map((index, i) => {
@@ -154,7 +113,6 @@ class Matrix_Chain {
                direction:direction,
               target_step:this.orientation_step.has(id)?this.orientation_step.get(id):default_target_step[direction==0?1:0],
           })
-          lerp_registry.active_group_list.set(this.id,this.indices.length)
           start_animations(this.indices)
       }
 }
@@ -268,10 +226,10 @@ function smoothstep(x) {
   return x * x * (3 - 2 * x);
 }
 //var triggers,triggers_step
-var targets, allow_render, args, delta_t,res,hasgroup
-async function animate(list) {
+var targets, allow_render, args, delta_t;
+async function animate() {
   finished = [];
-  list.map((val, index) => {
+  lerp_registry.activelist.map((val, index) => {
     //checking if the element is finished and needs to be deleted
     if (lerp_registry.progress[val] <= lerp_registry.duration[val]) {
       //waiting for delay
@@ -284,8 +242,9 @@ async function animate(list) {
           delta_t = lerp_registry.progress[val] / lerp_registry.duration[val];
           switch (lerp_registry.type[val]) {
             case 2:
-              
-                res=smoothLerp(
+              lerp_registry.results.set(
+                val,
+                smoothLerp(
                   sequence_registry.buffer[
                     lerp_registry.lerp_chain_start[val] +
                       sequence_registry.progress[val]
@@ -298,10 +257,9 @@ async function animate(list) {
                   delta_t,
                   lerp_registry.smoothstep[val]
                 )
-                if(lerp_registry.group.has(val))lerp_registry.results.set(val,res);else lerp_registry.group_results.get(lerp_registry.group("val")).set(val,res)
+              );
               break;
             case 3:
-                hasgroup=lerp_registry.group.get(val)
               for (
                 let i = 0;
                 i <
@@ -310,7 +268,7 @@ async function animate(list) {
                   .get(sequence_registry.progress[val]).length;
                 i++
               ) {
-                res  = smoothLerp(
+                lerp_registry.results.get(val)[i] = smoothLerp(
                   sequence_registry.matrix_sequences
                     .get(val)
                     .get(sequence_registry.progress[val])[i],
@@ -320,11 +278,6 @@ async function animate(list) {
                   delta_t,
                   lerp_registry.smoothstep[val]
                 );
-                if(hasgroup){
-                    lerp_registry.group_results.get(hasgroup).get(val)[i]=res
-                }else{
-                    lerp_registry.results.get(val)[i]=res
-                }
               }
               break;
             default:
@@ -338,13 +291,7 @@ async function animate(list) {
             step: sequence_registry.progress[val],
           }; //time war vorther lerp_registry.delta_t[val]
           if (lerp_registry.lerp_callbacks.has(val)) {
-            try{
-                lerp_registry.lerp_callbacks.get(val)(args);
-            }
-            catch(err){
-                console.log(err)
-            }
-            
+            lerp_registry.lerp_callbacks.get(val)(args);
           }
         }
         lerp_registry.progress[val] += 1;
@@ -384,7 +331,6 @@ async function animateLoop() {
     while (loop_resolver.signal.aborted == false) {
       startTime = performance.now();
       finished = [];
-      //über die einzelnen 
       if (lerp_registry.activelist.length > 0) {
         animate();
         render();
@@ -522,6 +468,7 @@ function init(
   triggers,
   constants,
   condi_new,
+  lerp_callbacks,
   matrix_chains,
   springs
 ) {
@@ -563,7 +510,6 @@ function init(
     new Uint8Array(lerps.get("lerp_chain_start")),
     new Uint8Array(lerps.get("loop")),
     (lerps.get("group")),
-    lerps.get("lerp_callbacks")
     )
 //   lerps.forEach((array, name) => {
 //     if (integers.includes(name) == false) {
@@ -668,6 +614,7 @@ function removeTrigger(id, target, step, time) {
 function update(type, values) {
   values.map((x) => {
     if (sequence_registry.lengths[x.id] != x.values.length - 1) {
+      console.log(trigger_registry.get(x.id));
       if (lerp_registry.loop[x.id] == 1) {
         removeTrigger(
           x.id,
@@ -714,37 +661,18 @@ function lambda_call(id, args) {
   }
 }
 // ----------------------------------------> EVENTS <--
-const active_group_indices=new Map()
-var active_lerps=[]
-var target_group
-
 async function render() {
-    active_lerps=[]
-    active_group_indices.clear()
-  
-    lerp_registry.activelist.map((x,i) => {
-        target_group=lerp_registry.group(x)
-        if(target_group){
-            if(!active_group_indices.has(target_group))
-            active_group_indices.set(,x)
-        }
-        else if(lerp_registry.type[x] != 4){
-            active_lerps.push(x)
-        }
-    })
-  
-  if(active_group_indices.size>0) {
-    active_lerps=new Float32Array(active_lerps)
-    postMessage(
+  const active = new Float32Array(
+    lerp_registry.activelist.filter((x) => lerp_registry.type[x] != 4)
+  );
+  postMessage(
     {
       message: "render",
       results: lerp_registry.results,
-      result_indices: active_lerps,
+      result_indices: active,
     },
-    [active_lerps.n.buffer])}
-  if(lerp_registry.active_group_list.size>0){
-
-  }
+    [active.buffer]
+  ); // Transferiere nur den Buffer
 }
 /**
  * This function can be called by the worker when a constant value is changed.
@@ -771,6 +699,7 @@ onmessage = (event) => {
         event.data.trigger_map,
         event.data.constants,
         event.data.callback_map,
+        event.data.lerp_callbacks,
         event.data.matrix_chain_map,
         event.data.spring_map
       );

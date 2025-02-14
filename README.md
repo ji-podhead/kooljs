@@ -216,7 +216,6 @@ import {
   lambda_call,
 } from "kooljs/worker";
 ```
-
 | Method              | Description                                                         | Arguments              |
 | ------------------- | ------------------------------------------------------------------- | ---------------------- |
 | addTrigger          | triggers another animation at a certain step and delta_t value      | id, target, step, time |
@@ -224,6 +223,10 @@ import {
 | get_time            | gets the delta_t value of an animation                              | id                     |
 | set_time            | sets the progress value of an animation                             | id, val                |
 | get_step            | returns the current step of an animation                            | id                     |
+| get_sequence_length | returns the amount steps of an animation sequence.                  | id                     |
+| set_sequence_length | sets the amount steps of an animation sequence.                     | id,val                 |
+| get_sequence_start  | returns the start step of the sequence.                             | id                     |
+| set_sequence_start  | sets the start step of the sequence.                                | id, val                |
 | set_step            | sets the current step of an animation                               | id, val                |
 | is_active           | returns true if an animations is currently running                  | id                     |
 | get_active          | get all avtive animation indices                                    | .                      |
@@ -248,6 +251,7 @@ import {
 | get_delay_delta     | get the delay_delta (delay progress) of an animation                | id                     |
 | set_delay_delta     | set the delay_delta (delay progress) of an animation                | id, val                |
 | lambda_call         | perform a lambda call                                               | id, args               |
+
 #### Debugging custom functions on the worker
 - all you need to do is add the `debugger` flag somewhere in you custon function like this:
 ```js
