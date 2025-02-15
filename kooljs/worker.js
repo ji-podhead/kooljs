@@ -16,9 +16,14 @@ var triggers_step;
 var lerp_registry,constant_registry,sequence_registry,matrix_chain_registry
 const trigger_registry = new Map();
 const callback_map = new Map();
+// ----------------------------------------> Render Maps <-- 
+const group_results=new Map()
+const active_group_indices = new Map()
+const matrix_results=new Map()
+
 // ----------------------------------------> CLASS DEFINITIONS <--
 class Lerp {
-  constructor(sequence_registry,callback_map,type,duration,render_interval,delay,smoothstep,lerp_chain_start,loop,group,lerp_callback_ids) {
+  constructor(results,buffer,callback_map,type,duration,render_interval,delay,smoothstep,lerp_chain_start,loop,group,group_lookup,lerp_callback_ids) {
     this.type=type
     this.duration=duration
     this.render_interval=render_interval
@@ -28,47 +33,24 @@ class Lerp {
     this.smoothstep=smoothstep
     this.lerp_chain_start=lerp_chain_start
     this.loop=loop
-    this.activelist = [];
-    this.active_group_list = [];
-    this.active_timeline_list=[]
-    this.active_group_indices_lst=[]
-    this.results = new Map();
-    this.group_results= new Map();
-    this.lerp_callbacks = new Map();
-    this.group=group
-    group.map((g)=>this.group_results.set(g,new Map()))
-    type.map((t, i) => {
-        //  TODO hier zur vereinfachung interne get funktionen nehmen
-        if (t == 2) {
-            if(!this.group.has(i)){
-            this.results.set(
-                i,
-                sequence_registry.buffer[this.lerp_chain_start[i]]
-            );
-            }
-            else{
-                this.group_results.get(this.group(i)).set(
-                    this.group_results.get(this.group(i)).size,
-                    sequence_registry.buffer[this.lerp_chain_start[i]]
-                );
-            }
-         } else if (t == 3) {
-            if(!this.group.has(i)){
-          this.results.set(
-            i,
-            new Float32Array(sequence_registry.matrix_sequences.get(i).get(0))
-          );
-        }
-        else{
 
-            this.group_results.get(this.group(i)).set(
-                this.group_results.get(this.group(i)).size,
-                (new Float32Array(sequence_registry.matrix_sequences.get(i).get(0)))
-               
-            );
-        }
-        }
-      });
+    this.group=group
+    this.group_lookup=group_lookup
+    
+    this.active_groups = []
+    this.active_group_indices=new Map()
+    this.active_timelines=[]
+    this.active_matrices=[]
+    this.active_numbers=[]
+this.buffer=buffer
+    this.matrix_results = results.get("matrix_results")
+    this.group_results= results.get("group_results")
+    this.group_results.forEach((val, key) => {
+        this.active_group_indices.set(key,[])
+    })
+    this.number_results= results.get("number_results")
+    this.lerp_callbacks = new Map();
+
       lerp_callback_ids.forEach((val, key) => {
         // no shallow copy just copying the pointer
         this.lerp_callbacks.set(key, callback_map.get(val));
@@ -76,29 +58,57 @@ class Lerp {
   }
   activate(id) {
     switch (this.type[id]){
-        case(2 | 3):
+        case(2 ):
+            if (this.active_numbers.includes(id) == false) {
+                this.active_numbers.push(id);
+                }
+            break;
+        case (3):
             if(this.group.has(id)!=true){
-            if (this.activelist.includes(id) == false) {
-                this.activelist.push(id);
+                if(this.active_matrices.includes(id)==false){
+                    this.active_matrices.push(id)
                 }
             }
             else{ 
-                if(this.active_group_indices_lst.includes(id)==false){
-                    this.active_group_indices_lst.push(id)
+                if(this.active_groups.includes(this.group.get(id)==false)){
+                    this.active_groups.push(id)
                 }
-                if(this.active_group_list.includes(this.group.get(id)==false)){
-                    this.active_group_list.push(id)
+                if(this.active_group_indices.get(this.group.get(id))==undefined){
+                    this.active_group_indices.get(this.group.get(id)).push(id)    
                 }
             }
             break
         case(4):
-            if(this.active_timeline_list.includes(id)==false){
-                this.active_timeline_list.push(id)
+            if(this.active_timelines.includes(id)==false){
+                this.active_timelines.push(id)
             }
     }
   }
+  deactivate(id) {
+    switch (this.type[id]){
+        case(2 | 3):
+            if(this.group.has(id)){
+                this.active_group_indices.get(this.group(id)).splice(this.active_group_indices.get(this.group(id)).indexOf(id),1)
+                if(this.active_group_indices.get(this.group(id)).length==0){
+                    this.active_groups.splice(this.active_groups.indexOf(this.group(id)),1)
+                }
+            }
+            this.activelist.splice(this.activelist.indexOf(id), 1);
+            break
+        case(4):
+            this.active_timelines.splice(this.active_timelines.indexOf(id), 1);
+    }
+  }
+    stop_all() {
+        this.active_numbers=[]
+        this.active_matrices=[]
+        this.active_timelines=[]
+        this.active_groups=[]
+        this.active_group_indices.forEach((val, key) => {
+            this.active_group_indices.set(key,[])
+        })
+    }
   get(index) {
-    //this function is for custom callback functions. its used for getting other values via index
     return this.results.get(index);
   }
 }
@@ -157,6 +167,9 @@ class Matrix_Chain {
           lerp_registry.active_group_list.set(this.id,this.indices.length)
           start_animations(this.indices)
       }
+    stop(id) {
+        stop_animations(this.indices[id])
+    }
 }
 class LerpSequence {
   /**
@@ -189,16 +202,25 @@ class LerpSequence {
     this.progress[id] += 1;
   }
   reset(id) {
+    if(!lerp_registry.group.has(id)){
     if (lerp_registry.type[id] == 2) {
-      lerp_registry.results.set(
+      lerp_registry.number_results.set(
         id,
         sequence_registry.buffer[lerp_registry.lerp_chain_start[id]]
       );
     } else if (lerp_registry.type[id] == 3) {
-      lerp_registry.results.set(
+      lerp_registry.maftrix_results.set(
         id,
         sequence_registry.matrix_sequences.get(id).get(0)
       );
+    }
+    }
+    else{
+        lerp_registry.group_results.get(lerp_registry.group.get(id))
+        .set(
+            lerp_registry.group_lookup.get(id),
+            sequence_registry.buffer[lerp_registry.lerp_chain_start[id]]
+        )
     }
     lerp_registry.delay_delta[id] = 0;
     lerp_registry.progress[id] = 0;
@@ -268,8 +290,38 @@ function smoothstep(x) {
   return x * x * (3 - 2 * x);
 }
 //var triggers,triggers_step
-var targets, allow_render, args, delta_t,res,hasgroup
-async function animate(list) {
+var targets, allow_render, args, delta_t,res,lookup
+function animate_matrix(id,delta_t,target){
+    lookup=lerp_registry.group_lookup.get(id)!=undefined?lerp_registry.group_lookup.get(id):id
+    for (let i = 0;i <sequence_registry.matrix_sequences.get(id).get(sequence_registry.progress[id]).length;i++) {
+        target.get(lookup)[i]  = smoothLerp(
+          sequence_registry.matrix_sequences
+            .get(id)
+            .get(sequence_registry.progress[id])[i],
+          sequence_registry.matrix_sequences
+            .get(id)
+            .get(sequence_registry.progress[id] + 1)[i],
+          delta_t,
+          lerp_registry.smoothstep[id]
+        );
+      }
+}
+function animate_number(id,delta_t,target){
+    target[id]=smoothLerp(
+        sequence_registry.buffer[
+          lerp_registry.lerp_chain_start[id] +
+            sequence_registry.progress[id]
+        ],
+        sequence_registry.buffer[
+          lerp_registry.lerp_chain_start[id] +
+            sequence_registry.progress[id] +
+            1
+        ],
+        delta_t,
+        lerp_registry.smoothstep[id]
+      )
+}
+async function animate(list, method,target) {
   finished = [];
   list.map((val, index) => {
     //checking if the element is finished and needs to be deleted
@@ -282,70 +334,26 @@ async function animate(list) {
           lerp_registry.progress[val] % lerp_registry.render_interval[val];
         if (allow_render == 0) {
           delta_t = lerp_registry.progress[val] / lerp_registry.duration[val];
-          switch (lerp_registry.type[val]) {
-            case 2:
-              
-                res=smoothLerp(
-                  sequence_registry.buffer[
-                    lerp_registry.lerp_chain_start[val] +
-                      sequence_registry.progress[val]
-                  ],
-                  sequence_registry.buffer[
-                    lerp_registry.lerp_chain_start[val] +
-                      sequence_registry.progress[val] +
-                      1
-                  ],
-                  delta_t,
-                  lerp_registry.smoothstep[val]
-                )
-                if(lerp_registry.group.has(val))lerp_registry.results.set(val,res);else lerp_registry.group_results.get(lerp_registry.group("val")).set(val,res)
-              break;
-            case 3:
-                hasgroup=lerp_registry.group.get(val)
-              for (
-                let i = 0;
-                i <
-                sequence_registry.matrix_sequences
-                  .get(val)
-                  .get(sequence_registry.progress[val]).length;
-                i++
-              ) {
-                res  = smoothLerp(
-                  sequence_registry.matrix_sequences
-                    .get(val)
-                    .get(sequence_registry.progress[val])[i],
-                  sequence_registry.matrix_sequences
-                    .get(val)
-                    .get(sequence_registry.progress[val] + 1)[i],
-                  delta_t,
-                  lerp_registry.smoothstep[val]
-                );
-                if(hasgroup){
-                    lerp_registry.group_results.get(hasgroup).get(val)[i]=res
-                }else{
-                    lerp_registry.results.get(val)[i]=res
-                }
-              }
-              break;
-            default:
-              break;
-          }
+
+          res=method(val,delta_t,target)
+
           args = {
             id: val,
-            value: lerp_registry.results.get(val),
+            value: res,
             step: sequence_registry.progress[val],
             time: lerp_registry.progress[val],
             step: sequence_registry.progress[val],
-          }; //time war vorther lerp_registry.delta_t[val]
+          };
+          
           if (lerp_registry.lerp_callbacks.has(val)) {
             try{
                 lerp_registry.lerp_callbacks.get(val)(args);
             }
             catch(err){
                 console.log(err)
-            }
-            
+            }  
           }
+
         }
         lerp_registry.progress[val] += 1;
         if (allow_render == 0) {
@@ -372,9 +380,8 @@ async function animate(list) {
       }
     }
   });
-  return finished;
 }
-var startTime, timeoutId;
+var startTime, timeoutId
 async function animateLoop() {
   try {
     loop_resolver = new AbortController();
@@ -383,17 +390,24 @@ async function animateLoop() {
     });
     while (loop_resolver.signal.aborted == false) {
       startTime = performance.now();
-      finished = [];
-      //über die einzelnen 
-      if (lerp_registry.activelist.length > 0) {
-        animate();
+
+        animate(lerp_registry.active_timelines)
+        animate(lerp_registry.active_numbers,animate_number,lerp_registry.number_results)
+        lerp_registry.active_groups.map((id) => {
+            animate(lerp_registry.active_group_indices.get(id),animate_matrix,lerp_registry.group_results.get(id))
+        })
+
+        animate(lerp_registry.active_matrices,animate_matrix,lerp_registry.matrix_results)
+      
+        
+
         render();
-        if (finished.length > 0) {
-          lerp_registry.activelist = lerp_registry.activelist.filter(
-            (active) => !finished.includes(active)
-          );
-        }
-        if (lerp_registry.activelist["length"] > 0) {
+
+        if (   lerp_registry.active_groups.length > 0
+            || lerp_registry.active_timelines.length > 0
+            || lerp_registry.active_matrices.length > 0
+            || lerp_registry.active_numbers.length > 0
+        ) {
           await new Promise((resolve, reject) => {
             timeoutId = setTimeout(() => {
               resolve();
@@ -402,7 +416,6 @@ async function animateLoop() {
         } else {
           return stop_loop();
         }
-      }
     }
   } catch {
     (err) => {
@@ -438,20 +451,12 @@ function start_animations(indices) {
  * stops a list of animations
  * @param {Array<number>|string} indices an array of ids of the animations to stop; if "all", stops all animations
  */
+
 function stop_animations(indices) {
-  if (indices === "all") {
-    stop_loop();
-    lerp_registry.activelist = [];
-  } else {
-    indices.map((id) => {
-      if (lerp_registry.activelist.includes(id)) {
-        lerp_registry.activelist = lerp_registry.activelist.filter(
-          (x) => x != id
-        );
-      }
-    });
-  }
-  if (lerp_registry.activelist.length == 0) {
+    if(indices === "all"){
+        lerp_registry
+    }
+    if (lerp_registry.activelist.length == 0) {
     stop_loop();
   }
 }
@@ -472,7 +477,12 @@ async function reset_animations(indices) {
     indices = lerp_registry.activelist;
   }
   //stop_animations(indices)
-  const stopped = [];
+  const stopped = {
+    number: [],
+    matrix: [],
+    group: [],
+  };
+  sequence_registry.hard_reset(indices);
   indices.map((x) => {
     sequence_registry.reset(x);
     lerp_registry.activate(x);
@@ -481,18 +491,27 @@ async function reset_animations(indices) {
       loop_resolver == null
     ) {
       stopped.push(x);
+
       switch (lerp_registry.type[x]) {
         case 2:
-          lerp_registry.results.set(
+          lerp_registry.number_results.set(
             x,
             sequence_registry.buffer[lerp_registry.lerp_chain_start[x]]
           );
           break;
         case 3:
-          lerp_registry.results.set(
-            x,
-            sequence_registry.matrix_sequences.get(x).get(0)
-          );
+            if(lerp_registry.group_results.has(x)){
+                lerp_registry.group_results.get(x).set(
+                    x,
+                    sequence_registry.matrix_sequences.get(x).get(0)
+                  );
+            }
+            else{
+                lerp_registry.matrix_results.set(
+                    x,
+                    sequence_registry.matrix_sequences.get(x).get(0)
+                  );
+            }
           break;
         default:
           break;
@@ -500,11 +519,14 @@ async function reset_animations(indices) {
     }
   });
   if (stopped.length > 0)
-    postMessage({
-      message: "render",
-      results: lerp_registry.results,
-      result_indices: indices,
-    });
+        postMessage({
+        message: "render",
+        number_results: lerp_registry.number_results,
+        matrix_results: lerp_registry.matrix_results,
+        group_results: lerp_registry.group_results,
+        spring_results: lerp_registry.spring_results,
+        result_indices: indices,
+        });
 }
 /**
  * Changes the framerate of the animation loop.
@@ -519,6 +541,8 @@ function init(
   new_fps,
   lerps,
   lerpChains,
+  results,
+    buffer,
   triggers,
   constants,
   condi_new,
@@ -553,7 +577,8 @@ function init(
    new Uint8Array( lerpChains.get("lengths"))
   )
   lerp_registry=new Lerp(
-    sequence_registry,
+    results,
+    buffer,
     callback_map,
     new Uint8Array(lerps.get("type")),
     new Uint8Array(lerps.get("duration")),
@@ -563,6 +588,7 @@ function init(
     new Uint8Array(lerps.get("lerp_chain_start")),
     new Uint8Array(lerps.get("loop")),
     (lerps.get("group")),
+    (lerps.get("group_lookup")),
     lerps.get("lerp_callbacks")
     )
 //   lerps.forEach((array, name) => {
@@ -714,37 +740,53 @@ function lambda_call(id, args) {
   }
 }
 // ----------------------------------------> EVENTS <--
-const active_group_indices=new Map()
+
 var active_lerps=[]
 var target_group
-
+var number_results,active_numbers,indices,buffer
 async function render() {
-    active_lerps=[]
-    active_group_indices.clear()
-  
-    lerp_registry.activelist.map((x,i) => {
-        target_group=lerp_registry.group(x)
-        if(target_group){
-            if(!active_group_indices.has(target_group))
-            active_group_indices.set(,x)
+    if (!self.crossOriginIsolated) {
+            buffer=new ArrayBuffer(lerp_registry.buffer)
         }
-        else if(lerp_registry.type[x] != 4){
-            active_lerps.push(x)
+        else{
+           buffer=new SharedArrayBuffer(buffer)
         }
-    })
-  
-  if(active_group_indices.size>0) {
-    active_lerps=new Float32Array(active_lerps)
+      group_results.clear()
+      matrix_results.clear()
+      number_results= new Float32Array(lerp_registry.active_numbers.map((x) => lerp_registry.number_results[x]))
+      active_numbers= new Float32Array(lerp_registry.active_numbers)
+      
+      //diese arrays kannst du genausogut bei reset und activate erstellen
+      // du dann einfach die werte übergeben für target in dem animation_loop
+      // den lookup hast du ja eh schon
+      
+      lerp_registry.active_matrices.map((x) => {
+        matrix_results.set(x,lerp_registry.matrix_results.get(x))
+      })
+      lerp_registry.active_groups.map((x) => {
+        active_group_indices.clear()
+        group_results.set(x,new Map())
+
+        lerp_registry.active_group_indices.get(x).map((y) => {
+            indices=[]    
+            group_results.get(x).set(y,lerp_registry.group_results.get(y))
+
+            y.map((z) => {
+                    indices.push(lerp_registry.group_lookup.get(z))    
+                })
+                active_group_indices.set(y,indices)
+        })
+      })
     postMessage(
     {
       message: "render",
-      results: lerp_registry.results,
-      result_indices: active_lerps,
+      number_results: number_results,
+      active_numbers: active_numbers,
+      matrix_results: matrix_results,
+      group_results: group_results,
+      active_group_indices: active_group_indices,
     },
-    [active_lerps.n.buffer])}
-  if(lerp_registry.active_group_list.size>0){
-
-  }
+    [buffer])
 }
 /**
  * This function can be called by the worker when a constant value is changed.
@@ -768,6 +810,8 @@ onmessage = (event) => {
         event.data.fps,
         event.data.data,
         event.data.chain_map,
+        event.data.results,
+        event.data.buffer,
         event.data.trigger_map,
         event.data.constants,
         event.data.callback_map,
