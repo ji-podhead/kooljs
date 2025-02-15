@@ -199,23 +199,7 @@ You can basically create your own statemachine that is running on the worker.
 
 There are a bunch of mehtods you can use in your custom logic to manipulate, start, or stop animations.
 Some of them will just set, or return a value from the registry.
-import them via:
-
-```js
-import {
-  get_time,
-  stop_animations,
-  setMatrix,
-  get_lerp_value,
-  soft_reset,
-  hard_reset,
-  set_duration,
-  get_constant_number,
-  get_constant_row,
-  update_constant,
-  lambda_call,
-} from "kooljs/worker";
-```
+import them via: `"kooljs/worker"`
 | Method              | Description                                                         | Arguments              |
 | ------------------- | ------------------------------------------------------------------- | ---------------------- |
 | addTrigger          | triggers another animation at a certain step and delta_t value      | id, target, step, time |
