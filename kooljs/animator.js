@@ -261,14 +261,16 @@ class Lerp {
         animator.registry_map.get("smoothstep").push(smoothstep)
         animator.active_buffer_bytelength+=1
         const callback_id=callback!=undefined?addCallback(animator,callback.callback,callback.animProps):undefined
-        if(type!=4 && group==-1){
-                animator.results.get("number_results").push(steps[0])
-                animator.result_buffer_bytelength+=1
+        if(type!=4){
+            animator.results.get("number_results").push(steps[0])
+            animator.result_buffer_bytelength+=1
+         if(group==-1){
                 animator.animation_objects.set(this.id, {
                 index: index,
                 prop: new Prop(render_callback),
                 callback_id: callback_id
                 })
+            }
         }
         if(callback_id!=undefined){
             animator.registry_map.get("lerp_callbacks").set(this.id,matrix_lerp_id)
@@ -356,18 +358,17 @@ class Matrix_Lerp {
         animator.registry_map.get("smoothstep").push(smoothstep)
 
         matrix_lerp_id=callback!=undefined?addCallback(animator,callback.callback,callback.animProps):undefined
+        animator.active_buffer_bytelength+=1 // in case of timelines
         if(type!=4){
-            if(group!=-1){
-                animator.results.get("matrix_results").set(this.id,new Float32Array(steps[0]))
-            }
-            animator.animation_objects.set(this.id, {
-                index: index,
-                prop: new Prop(render_callback),
-                callback_id: matrix_lerp_id
-            })
+            animator.results.get("matrix_results").set(this.id,new Float32Array(steps[0]))
             animator.result_buffer_bytelength+=steps[0].length
-            
-            animator.active_buffer_bytelength+=1
+            if(group!=-1){
+                animator.animation_objects.set(this.id, {
+                    index: index,
+                    prop: new Prop(render_callback),
+                    callback_id: matrix_lerp_id
+                })
+            }
         }
         if(matrix_lerp_id!=undefined){
             animator.registry_map.get("lerp_callbacks").set(this.id,matrix_lerp_id)
@@ -431,7 +432,7 @@ class MatrixChain{
             })
             animator.registry_map.get("group").set(mLerp.id,this.id)
             animator.registry_map.get("group_lookup").set(mLerp.id,i)
-            animator.results.get("group_results").get(this.id).set(i,new Float32Array(reference_matrix[i][forward_step]))
+            //animator.results.get("group_results").get(this.id).set(i,new Float32Array(reference_matrix[i][forward_step]))
            this.indices.push(mLerp.id)
         }
     reference_matrix=reference_matrix.flat(1)
@@ -537,16 +538,16 @@ class Animator {
             //console.log(ev)
              if (ev.data.message == "render") {
                 requestAnimationFrame(() => {
-                    
+                    //,console.log(ev.data)
                     ev.data.active_numbers.map((value, index) => {
-                        // console.log(`index: ${value} val: ${ev.data.results[index]}`)
+                        console.log(`index: ${value} val: ${ev.data.number_results[index]}`)
                         try{
                         this.animation_objects.get(value).prop.updater(ev.data.number_results[value], value)
                         }catch(err){
-                           console.log(`could not set value of animation ${ev.data.result_indices[index]} -` + err)
+                           console.log(`could not set value of animation ${ev.data.active_numbers[index]} -` + err)
                       
                            try{
-                            this.stop_animations([ev.data.result_indices[index]])
+                            this.stop_animations([ev.data.active_numbers[index]])
                             }
                             catch(err){
                                 this.stop_animations("all")
