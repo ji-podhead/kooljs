@@ -42,13 +42,10 @@
     ".": "./animator.js",
     "./animator": "./animator.js",
     "./worker": "./worker.js",
-    "./kooljs/worker": "./worker.js"
-  },
-  "cross_origin_embedder_policy": {
-    "value": "require-corp"
-  },
-  "cross_origin_opener_policy": {
-    "value": "same-origin"
+    "./kooljs/worker": "./worker.js",
+    "./kooljs/worker_functions": "./worker_functions.js",
+    "./kooljs/worker_utils": "./worker_utils.js",
+    "./worker_functions": "./worker_functions.js",
+    "./worker_utils": "./worker_utils.js"
   }
-
 }

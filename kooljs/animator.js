@@ -716,7 +716,12 @@ class Animator {
         this.worker.postMessage({ method: 'start_animations', indices: indices });
     }
 
-    
+    start_groups(indices) {
+        this.worker.postMessage({ method: 'start_groups', indices: indices });
+    }
+    stop_groups(indices) {
+        this.worker.postMessage({ method: 'stop_groups', indices: indices });
+    }
     /**
      * Stop animations.
      * @param {number | number[]} indices - the index or indices of the animations to stop. If set to "all", stops all animations.
