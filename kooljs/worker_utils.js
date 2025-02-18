@@ -19,29 +19,28 @@ class Worker_Utils{
  * @param {number} step - The step of the trigger.
  * @param {number} time - The time of the trigger.
  */
- addTrigger(id, target, step, time) {
-     trigger = [];
-    if (trigger_registry.get(id) == undefined) {
-        trigger_registry.set(id, new Map());
+ addTrigger({id, target, step, time}) {
+    if (this.trigger_registry.get(id) == undefined) {
+        this.trigger_registry.set(id, new Map());
     }
-    if (trigger_registry.get(id).get(step) == undefined) {
-        trigger_registry.get(id).set(step, new Map());
-        trigger_registry
+    if (this.trigger_registry.get(id).get(step) == undefined) {
+        this.trigger_registry.get(id).set(step, new Map());
+        this.trigger_registry
             .get(id)
             .get(step)
             .set(time, new Uint8Array([target]));
-    } else if (trigger_registry.get(id).get(step).get(time) == undefined) {
-        trigger_registry
+    } else if (this.trigger_registry.get(id).get(step).get(time) == undefined) {
+        this.trigger_registry
             .get(id)
             .get(step)
             .set(time, new Uint8Array([target]));
     } else {
-        trigger = trigger_registry.get(id).get(step).get(time);
+        trigger = this.trigger_registry.get(id).get(step).get(time);
         if (trigger.includes(target) == false) {
              newtriggers = new Array(trigger);
             newtriggers.push(target);
             newtriggers = new Uint8Array(newtriggers);
-            trigger_registry.get(id).get(step).set(time, newtriggers);
+            this.trigger_registry.get(id).get(step).set(time, newtriggers);
         } else {
             console.warn(
                 `trigger already exists: target ${target} in timeframe ${time} in step ${step} on animation with id ${id}`
@@ -59,8 +58,8 @@ class Worker_Utils{
  * @param {number} step - The step of the trigger.
  * @param {number} time - The time of the trigger.
  */
- removeTrigger(id, target, step, time) {
-    
+ removeTrigger({id, target, step, time}) {
+    trigger = this.trigger_registry.get(id).get(step)
     if (trigger != undefined) {
         if (trigger.get(time) != undefined) {
             trigger = trigger.get(time);
@@ -78,12 +77,12 @@ class Worker_Utils{
         console.log(
             `removed trigger target ${target} in timeframe ${time} in step ${step} from from id ${id}`
         );
-        trigger_registry.get(id).get(step).set(time, newtriggers);
+        this.trigger_registry.get(id).get(step).set(time, newtriggers);
     } else {
-        trigger_registry.get(id).get(step).set(time, undefined);
+        this.trigger_registry.get(id).get(step).set(time, undefined);
     }
     // else{
-    //     trigger_registry.get(id).set(step,undefined)
+    //     this.trigger_registry.get(id).set(step,undefined)
     // }
 }
  update(type, values) {
@@ -102,7 +101,7 @@ class Worker_Utils{
                     x.values.length - 2,
                     this.lerp_registry.duration[x.id]
                 );
-                //trigger_registry.get(x.id).set(lerpChain_registry.lengths[x.id]-1,undefined)
+                //this.trigger_registry.get(x.id).set(lerpChain_registry.lengths[x.id]-1,undefined)
             }
             this.sequence_registry.lengths[x.id] = x.values.length - 1;
         }
@@ -127,10 +126,10 @@ class Worker_Utils{
  */
  lambda_call(id, args) {
     try {
-        callback_map.get(id)(args);
+        this.callback_map.get(id)(args);
     } catch (err) {
         console.error("error in lambda call", id);
-        console.error(callback_map.get(id));
+        console.error(this.callback_map.get(id));
         console.error(err);
     }
 }
@@ -138,14 +137,14 @@ class Worker_Utils{
 
 
  start_loop() {
-    if (loop_resolver == null) {
-        animateLoop();
+    if (this.loop_resolver == null) {
+        this.animateLoop();
     }
 }
-async   stop_loop() {
-    if (loop_resolver != null) {
-        loop_resolver.abort();
-        loop_resolver = null;
+stop_loop() {
+    if (this.loop_resolver != null) {
+        this.loop_resolver.abort();
+        this.loop_resolver = null;
     }
 }
 /**
@@ -157,7 +156,7 @@ async   stop_loop() {
         this.lerp_registry.delete_group_member(id)
         this.sequence_registry.soft_reset(id);
     });
-    start_loop();
+    this.start_loop();
 }
 /**
  * stops a list of animations
@@ -167,7 +166,7 @@ async   stop_loop() {
   stop_animations(indices) {
     if (indices === "all") {
         this.lerp_registry.stop_all();
-        stop_loop();
+        this.stop_loop();
     }
     else {
         indices.map((id) => {
@@ -180,7 +179,7 @@ async   stop_loop() {
         this.lerp_registry.active_matrices.size == 0&&
         this.lerp_registry.active_groups.size == 0
     ) {
-        stop_loop();
+        this.stop_loop();
     }
 }
 }
@@ -195,9 +194,9 @@ async   stop_loop() {
  * @param {Array<number>|string} indices - An array of animation IDs to reset, or "all" to reset all animations.
  */
 
-async    reset_animations(indices) {
+    reset_animations(indices) {
     if (indices == "all") {
-        stop_loop();
+        this.stop_loop();
         indices = this.lerp_registry.activelist;
     }
     //stop_animations(indices)
@@ -212,7 +211,7 @@ async    reset_animations(indices) {
         this.lerp_registry.activate(x);
         if (
             this.lerp_registry.activelist.includes(x) == false ||
-            loop_resolver == null
+            this.loop_resolver == null
         ) {
             stopped.push(x);
 
@@ -255,7 +254,7 @@ async    reset_animations(indices) {
  * @param {number} fps_new - The new framerate in frames per second.
  */
   change_framerate(fps_new) {
-    fps = fps_new;
+    this.fps = fps_new;
 }
 /**
  * This  can be called by the worker when a constant value is changed.
@@ -263,7 +262,7 @@ async    reset_animations(indices) {
  * @param {number} id - the id of the constant
  * @param {number} type - the type of the constant (0 = number, 1 = matrix)
  */
-async  render_constant(id, type) {
+  render_constant(id, type) {
     postMessage({
         message: "render_constant",
         id: id,
@@ -523,7 +522,7 @@ async  render_constant(id, type) {
  * @returns {boolean} - true if the animation loop is currently running, false otherwise.
  */
  get_status() {
-    return loop_resolver != null;
+    return this.loop_resolver != null;
 }
 
 /**
@@ -553,11 +552,11 @@ async  render_constant(id, type) {
 }) {
     verbose && console.log("replacing indices " + index);
     if (this.lerp_registry.type[index] != 2) {
-        setMatrix(index, step, get_lerp_value(index));
-        setMatrix(index, step + direction, reference, matrix_row);
+        this.setMatrix(index, step, this.get_lerp_value(index));
+        this.setMatrix(index, step + direction, reference, matrix_row);
     } else {
-        setLerp(index, step, reference);
-        setLerp(index, step + direction, matrix_row);
+        this.setLerp(index, step, reference);
+        this.setLerp(index, step + direction, matrix_row);
     }
 //    verbose && console.log("reoriented animation with index " + index);
 }
@@ -579,11 +578,11 @@ async  render_constant(id, type) {
     verbose = false,
 }) {
     if (min_duration != undefined) {
-        soft_reset(index);
-        const time = is_active(index) ? get_time(index) : 0;
+        this.soft_reset(index);
+        const time = is_active(index) ? this.get_time(index) : 0;
         const duration =
             time < min_duration ? Math.floor(max_duration - time) : max_duration;
-        set_duration(index, duration);
+        this.set_duration(index, duration);
         verbose &&
             console.log("new start_duration for " + index + " is " + duration);
     }
@@ -624,7 +623,7 @@ async  render_constant(id, type) {
     max_duration,
     mode = "max_distance",
 }) {
-    const current = get_lerp_value(index);
+    const current = this.get_lerp_value(index);
 
     if (this.lerp_registry.type[index] != 2) {
         switch (mode) {
@@ -669,17 +668,17 @@ async  render_constant(id, type) {
     duration =
         min_duration + (distance / max_distance) * (max_duration - min_duration);
     //Math.min(max_duration, Math.max(min_duration, distance * max_distance));
-    soft_reset(index);
-    set_duration(index, duration);
+    this.soft_reset(index);
+    this.set_duration(index, duration);
     return duration;
 }
  reorient_duration_by_progress({ index, min_duration, max_duration }) {
-    const progress = get_time(index) / max_duration;
+    const progress = this.get_time(index) / max_duration;
 
     duration = min_duration + progress * (max_duration - min_duration);
     //Math.min(max_duration, Math.max(min_duration, distance * max_distance));
-    soft_reset(index);
-    set_duration(index, duration);
+    this.soft_reset(index);
+    this.set_duration(index, duration);
     return duration;
 }
 /**

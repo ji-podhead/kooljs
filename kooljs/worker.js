@@ -8,9 +8,9 @@
 import { Worker_Utils } from "kooljs/worker_utils";
 
 
-var fps = 10.33;
-var loop_resolver = null;
-var triggers_step,animator
+
+
+var triggers_step,animator,active_index,triggers_step
 
 // ----------------------------------------> Render Maps <-- 
 const group_results = new Map()
@@ -42,7 +42,7 @@ class Lerp {
         this.matrix_results = results.get("matrix_results")
         this.number_results = results.get("number_results")
         this.lerp_callbacks = new Map();
-
+        this.loop_resolver = null;
         lerp_callback_ids.forEach((val, key) => {
             // no shallow copy just copying the pointer
             this.lerp_callbacks.set(key, callback_map.get(val));
@@ -149,10 +149,11 @@ class LerpSequence {
         this.progress = progress
         this.lengths = lengths
         this.lerp_registry=animator.lerp_registry
+        this.animator=animator
     }
     update_progress(id) {
         if (this.progress[id] == this.lengths[id] - 1) {
-            stop_animations([id])
+            this.animator.stop_animations([id])
         } else {
             this.reset_and_update(id);
             return false;
@@ -309,15 +310,14 @@ function smoothLerp(min, max, v, amount) {
 function smoothstep(x) {
     return x * x * (3 - 2 * x);
 }
-class Animator extends {Worker_Utils} {
-    
-
+class Animator extends Worker_Utils {
     constructor(new_fps, lerps, lerpChains, results, buffer, triggers, constants, condi_new, matrix_chains, springs) {
+        super()
         this.fps = new_fps;
         this.callback_map = new Map();
         this.trigger_registry = new Map();
         this.callback_map = new Map();
-        triggers.forEach((trigger, key) => trigger_registry.set(key, trigger));
+        triggers.forEach((trigger, key) => this.trigger_registry.set(key, trigger));
         condi_new.forEach((val, key) => {
             try {
                 this.callback_map.set(key, eval(val));
@@ -329,16 +329,11 @@ class Animator extends {Worker_Utils} {
                 console.error(err);
             }
         });
-        this.sequence_registry = new LerpSequence(
-            new Float32Array(lerpChains.get("buffer")),
-            (lerpChains.get("matrix_buffer")),
-            new Uint8Array(lerpChains.get("progress")),
-            new Uint8Array(lerpChains.get("lengths"))
-        )
+
         this.lerp_registry = new Lerp(
             results,
             buffer,
-            callback_map,
+            this.callback_map,
             new Uint8Array(lerps.get("type")),
             new Uint8Array(lerps.get("duration")),
             new Uint8Array(lerps.get("render_interval")),
@@ -348,7 +343,15 @@ class Animator extends {Worker_Utils} {
             new Uint8Array(lerps.get("loop")),
             (lerps.get("group")),
             (lerps.get("group_lookup")),
-            lerps.get("lerp_callbacks")
+            lerps.get("lerp_callbacks"),
+            this
+        )
+        this.sequence_registry = new LerpSequence(
+            new Float32Array(lerpChains.get("buffer")),
+            (lerpChains.get("matrix_buffer")),
+            new Uint8Array(lerpChains.get("progress")),
+            new Uint8Array(lerpChains.get("lengths")),
+            this
         )
         this.matrix_chain_registry = new Matrix_Chain(
             matrix_chains.get("indices"),
@@ -357,11 +360,50 @@ class Animator extends {Worker_Utils} {
             new Uint8Array(matrix_chains.get("max_duration")),
             new Uint8Array(matrix_chains.get("min_duraiton")),
             new Uint8Array(matrix_chains.get("delay_invert")),
-            new Uint8Array(matrix_chains.get("max_length"))
+            new Uint8Array(matrix_chains.get("max_length")),
+            this
         )
-        this.this.constant_registry = new Constant(constants)
+        this.constant_registry = new Constant(constants,this)
+    
+
+   this.animateLoop = async function() {
+        try {
+            this.loop_resolver = new AbortController();
+            this.loop_resolver.signal.addEventListener("abort", () => {
+                clearTimeout(timeoutId);
+            });
+            while (this.loop_resolver.signal.aborted == false) {
+                startTime = performance.now();
+                this.lerp_registry.active_timelines.forEach((id) => this.animate(id))
+                this.lerp_registry.active_numbers.map((id) => this.animate(id, this.animate_number, this.lerp_registry.number_results))
+                this.lerp_registry.active_matrices.forEach((id) => this.animate(id, this.animate_matrix, this.lerp_registry.matrix_results))
+                this.lerp_registry.active_groups.forEach((group_id) => {
+                    this.lerp_registry.active_group_indices.get(group_id).forEach((id) => animate(id, this.animate_matrix, this.lerp_registry.matrix_results))
+                })
+                this.render();
+                if (this.lerp_registry.active_groups.size > 0
+                    || this.lerp_registry.active_timelines.size > 0
+                    || this.lerp_registry.active_matrices.size > 0
+                    || this.lerp_registry.active_numbers.length > 0
+                ) {
+                    await new Promise((resolve, reject) => {
+                        timeoutId = setTimeout(() => {
+                            resolve();
+                        }, Math.max(0, this.fps - (performance.now() - startTime)));
+                    });
+                } else {
+                    return this.stop_loop();
+                }
+            }
+        } catch {
+            (err) => {
+                this.stop_loop();
+                this.stop_animations("all");
+                return Error("had a error during animation. stoppingloop! " + err);
+            };
+        }
     }
-     animate_matrix(id, delta_t, target) {
+     this.animate_matrix=((id, delta_t, target)=>{
         //lookup = this.lerp_registry.a.get(id) != undefined ? this.lerp_registry.group_lookup.get(id) : id
         for (let i = 0; i < this.sequence_registry.matrix_sequences.get(id).get(this.sequence_registry.progress[id]).length; i++) {
             target.get(id)[i] = smoothLerp(
@@ -375,9 +417,9 @@ class Animator extends {Worker_Utils} {
                 this.lerp_registry.smoothstep[id]
             );
         }
-    }
-     animate_number(id, delta_t, target) {
-         
+    })
+    
+     this.animate_number=((id, delta_t, target)=> {
         target[id] = smoothLerp(
             this.sequence_registry.buffer[
             this.lerp_registry.lerp_chain_start[id] +
@@ -391,8 +433,8 @@ class Animator extends {Worker_Utils} {
             delta_t,
             this.lerp_registry.smoothstep[id]
         )
-    }
-    async  animate(index, method, target) {
+    })
+    this.animate=async function(index, method, target){
             if (this.lerp_registry.progress[index] <= this.lerp_registry.duration[index]) {
                 if (this.lerp_registry.delay_delta[index] < this.lerp_registry.delay[index]) {
                     this.lerp_registry.delay_delta[index] += 1;
@@ -419,15 +461,15 @@ class Animator extends {Worker_Utils} {
                     this.lerp_registry.progress[index] += 1;
                     if (allow_render == 0) {
                         triggers_step =
-                            trigger_registry.get(index) != undefined
-                                ? trigger_registry.get(index).get(this.sequence_registry.progress[index])
+                            this.trigger_registry.get(index) != undefined
+                                ? this.trigger_registry.get(index).get(this.sequence_registry.progress[index])
                                 : undefined;
                         if (triggers_step != undefined) {
                             targets = triggers_step.get(this.lerp_registry.progress[index] - 1);
                             targets &&
                                 targets.map((target) => {
-                                    if (target == index) hard_reset(target);
-                                    else soft_reset(target);
+                                    if (target == index) this.hard_reset(target);
+                                    else this.soft_reset(target);
                                 });
                         }
                     }
@@ -436,44 +478,8 @@ class Animator extends {Worker_Utils} {
                     this.sequence_registry.update_progress(index)
             }
     }
-    async  animateLoop() {
-        try {
-            loop_resolver = new AbortController();
-            loop_resolver.signal.addEventListener("abort", () => {
-                clearTimeout(timeoutId);
-            });
-            while (loop_resolver.signal.aborted == false) {
-                startTime = performance.now();
-                this.lerp_registry.active_timelines.forEach((id) => animate(id))
-                this.lerp_registry.active_numbers.map((id) => animate(id, animate_number, this.lerp_registry.number_results))
-                this.lerp_registry.active_matrices.forEach((id) => animate(id, animate_matrix, this.lerp_registry.matrix_results))
-                this.lerp_registry.active_groups.forEach((group_id) => {
-                    this.lerp_registry.active_group_indices.get(group_id).forEach((id) => animate(id, animate_matrix, this.lerp_registry.matrix_results))
-                })
-                render();
-                if (this.lerp_registry.active_groups.size > 0
-                    || this.lerp_registry.active_timelines.size > 0
-                    || this.lerp_registry.active_matrices.size > 0
-                    || this.lerp_registry.active_numbers.length > 0
-                ) {
-                    await new Promise((resolve, reject) => {
-                        timeoutId = setTimeout(() => {
-                            resolve();
-                        }, Math.max(0, fps - (performance.now() - startTime)));
-                    });
-                } else {
-                    return stop_loop();
-                }
-            }
-        } catch {
-            (err) => {
-                stop_loop();
-                stop_animations("all");
-                return Error("had a error during animation. stoppingloop! " + err);
-            };
-        }
-    }
-    async render() {
+    
+    this.render=()=>{
         if (!self.crossOriginIsolated) {
             buffer = new ArrayBuffer(this.lerp_registry.buffer)
         }
@@ -491,47 +497,49 @@ class Animator extends {Worker_Utils} {
             },
             [buffer])
     }
-    addTrigger (args){super.addTrigger(...args)}
-    get_status(args){super.get_status(...args)}
-    addTrigger(args){super.addTrigger(...args)}
-    removeTrigger(args){super.removeTrigger(...args)}
-    get_active_group_indices(args){super.get_active_group_indices(...args)}
-    get_time(args){super.get_time(...args)}
-    set_time(args){super.set_time(...args)}
-    get_step(args){super.get_step(...args)}
-    set_step(args){super.set_step(...args)}
-    get_sequence_length(args){super.get_sequence_length(...args)}
-    set_sequence_start(args){super.set_sequence_start(...args)}
-    get_sequence_start(args){super.get_sequence_start(...args)}
-    set_sequence_length(args){super.set_sequence_length(...args)}
-    is_active(args){super.is_active(...args)}
-    get_active(args){super.get_active(...args)}
-    start_animations(args){super.start_animations(...args)}
-    stop_animations(args){super.stop_animations(...args)}
-    setLerp(args){super.setLerp(...args)}
-    setMatrix(args){super.setMatrix(...args)}
-    get_lerp_value(args){super.get_lerp_value(...args)}
-    soft_reset(args){super.soft_reset(...args)}
-    hard_reset(args){super.hard_reset(...args)}
-    get_duration(args){super.get_duration(...args)}
-    set_duration(args){super.set_duration(...args)}
-    change_framerate(args){super.change_framerate(...args)}
-    get_constant(args){super.get_constant(...args)}
-    get_constant_number(args){super.get_constant_number(...args)}
-    get_constant_row(args){super.get_constant_row(...args)}
-    render_constant(args){super.render_constant(...args)}
-    update_constant(args){super.update_constant(...args)}
-    set_delay(args){super.set_delay(...args)}
-    get_delay(args){super.get_delay(...args)}
-    get_delay_delta(args){super.get_delay_delta(...args)}
-    set_delay_delta(args){super.set_delay_delta(...args)}
-    lambda_call(args){super.lambda_call(...args)}
-    get_step_lerp_target_value(args){super.get_step_lerp_target_value(...args)}
-    reorient_duration(args){super.reorient_duration(...args)}
-    reorient_duration_by_distance(args){super.reorient_duration_by_distance(...args)}
-    reverse(args){super.reverse(...args)}
-    reorient_target(args){super.reorient_target(...args)}
-    reorient_duration_by_progress(args){super.reorient_duration_by_progress(...args)}
+}
+    addTrigger (args){super.addTrigger(args)}
+    stop_loop (args){super.stop_loop(args)}
+    get_status(args){super.get_status(args)}
+    addTrigger(args){super.addTrigger(args)}
+    removeTrigger(args){super.removeTrigger(args)}
+    get_active_group_indices(args){super.get_active_group_indices(args)}
+    get_time(args){super.get_time(args)}
+    set_time(args){super.set_time(args)}
+    get_step(args){super.get_step(args)}
+    set_step(args){super.set_step(args)}
+    get_sequence_length(args){super.get_sequence_length(args)}
+    set_sequence_start(args){super.set_sequence_start(args)}
+    get_sequence_start(args){super.get_sequence_start(args)}
+    set_sequence_length(args){super.set_sequence_length(args)}
+    is_active(args){super.is_active(args)}
+    get_active(args){super.get_active(args)}
+    start_animations(args){super.start_animations(args)}
+    stop_animations(args){super.stop_animations(args)}
+    setLerp(args){super.setLerp(args)}
+    setMatrix(args){super.setMatrix(args)}
+    get_lerp_value(args){super.get_lerp_value(args)} 
+    soft_reset(args){super.soft_reset(args)}
+    hard_reset(args){super.hard_reset(args)}
+    get_duration(args){super.get_duration(args)}
+    set_duration(args){super.set_duration(args)}
+    change_framerate(args){super.change_framerate(args)}
+    get_constant(args){super.get_constant(args)}
+    get_constant_number(args){super.get_constant_number(args)}
+    get_constant_row(args){super.get_constant_row(args)}
+    render_constant(args){super.render_constant(args)}
+    update_constant(args){super.update_constant(args)}
+    set_delay(args){super.set_delay(args)}
+    get_delay(args){super.get_delay(args)}
+    get_delay_delta(args){super.get_delay_delta(args)}
+    set_delay_delta(args){super.set_delay_delta(args)}
+    lambda_call(args){super.lambda_call(args)}
+    get_step_lerp_target_value(args){super.get_step_lerp_target_value(args)}
+    reorient_duration(args){super.reorient_duration(args)}
+    reorient_duration_by_distance(args){super.reorient_duration_by_distance(args)}
+    reverse(args){super.reverse(args)}
+    reorient_target(args){super.reorient_target(args)}
+    reorient_duration_by_progress(args){super.reorient_duration_by_progress(args)}
 }
 var const_map_new;
 onmessage = (event) => {
@@ -602,19 +610,19 @@ onmessage = (event) => {
             animator.reset_animations(event.data.indices);
             break;
         case "addTrigger":
-            animator.addTrigger(
-                event.data.id,
-                event.data.target,
-                event.data.step,
-                event.data.time
+            animator.addTrigger({
+                id:event.data.id,
+                target:event.data.target,
+                step:event.data.step,
+                time:event.data.time}
             );
             break;
         case "removeTrigger":
-            animator.removeTrigger(
-                event.data.id,
-                event.data.target,
-                event.data.step,
-                event.data.time
+            animator.removeTrigger({
+                id:event.data.id,
+                target:event.data.target,
+                step:event.data.step,
+                time:event.data.time}
             );
             break;
         default:

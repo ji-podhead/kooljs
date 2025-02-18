@@ -389,9 +389,9 @@ class Group{
 class MatrixChain{
     set_reference_index(step,invert_step){
         if(invert_step==undefined) invert_step==start_step+1
-        if(step>=0&&step<this.this.animator.matrix_chain_map.max_length.value&&invert_step>=0&&step<=this.this.animator.matrix_chain_map.max_length.value)
-        {this.animator.update_constant(this.this.animator.matrix_chain_map.orientation_step.id,"matrix",[step,invert_step])}
-        else{console.error("step out of bounds! max length is: " + this.this.animator.matrix_chain_map.max_length.value)}
+        if(step>=0&&step<this.animator.matrix_chain_map.max_length.value&&invert_step>=0&&step<=this.animator.matrix_chain_map.max_length.value)
+        {this.animator.update_constant(this.animator.matrix_chain_map.orientation_step.id,"matrix",[step,invert_step])}
+        else{console.error("step out of bounds! max length is: " + this.animator.matrix_chain_map.max_length.value)}
     }
     constructor(animator,{reference_matrix,min_duration,max_duration,delay,delay_spread,delay_invert=false, loop=false,forward_step=0, reverse_step=1,id_prefix="",callback,group_index=undefined}){
         const length=reference_matrix.length
@@ -442,8 +442,8 @@ class MatrixChain{
     this.animator.matrix_chain_map.get("indices").set(this.id,this.indices)
     }
     // start_forward(){    
-    //     if(typeof(this.this.animator.matrix_chain_map.orientation_step)!="Constant"){
-    //         this.this.animator.matrix_chain_map.start_matrix_chain.call(0,this.this.animator.matrix_chain_map.reference_matrix.id,this.this.animator.matrix_chain_map.indices.id,this.this.animator.matrix_chain_map.orientation_step.value)
+    //     if(typeof(this.animator.matrix_chain_map.orientation_step)!="Constant"){
+    //         this.animator.matrix_chain_map.start_matrix_chain.call(0,this.animator.matrix_chain_map.reference_matrix.id,this.animator.matrix_chain_map.indices.id,this.animator.matrix_chain_map.orientation_step.value)
     //     }
     // }
 }
