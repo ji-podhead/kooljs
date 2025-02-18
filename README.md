@@ -213,6 +213,32 @@ You can see the docs and the required constructor arguments when hovering over w
 
 
 
+#### Debugging custom functions on the worker
+- all you need to do is add the `debugger` flag somewhere in you custon function like this:
+```js
+  animProps.stop_active = animator.Lambda({
+    callback: (() => {
+      get_constant_row(`${animProps.indices.id}`, 0).map((i) => {
+        debugger
+        if (get_constant_number(`${animProps.selected.id}`) != i) {
+          if (get_constant_row(`${animProps.reference_matrix.id}`, 0) != get_lerp_value(i)) {
+            lambda_call(`${animProps.replace_indices.id}`, { index: i, ref_step: 0 })
+            set_duration(i, get_time(i) < 3 ? 3 : get_time(i))
+            soft_reset(i)
+          }
+        }
+      })
+    }),
+    animProps: animProps
+  })
+```
+- when debugging your webapp, you should hit a breakpoint, which looks like this:
+![debug_custom](https://github.com/ji-podhead/kooljs/blob/main/debug_custom.png?raw=true)
+
+#### Basic Worker Functions
+- those are the worker functions that most likely have lts, but pls check the docs!
+  - those are really just a few of the given functions
+
 
 | Method              | Description                                                         | Arguments              |
 | ------------------- | ------------------------------------------------------------------- | ---------------------- |
@@ -249,28 +275,7 @@ You can see the docs and the required constructor arguments when hovering over w
 | get_delay_delta     | get the delay_delta (delay progress) of an animation                | id                     |
 | set_delay_delta     | set the delay_delta (delay progress) of an animation                | id, val                |
 | lambda_call         | perform a lambda call                                               | id, args               |
-
-#### Debugging custom functions on the worker
-- all you need to do is add the `debugger` flag somewhere in you custon function like this:
-```js
-  animProps.stop_active = animator.Lambda({
-    callback: (() => {
-      get_constant_row(`${animProps.indices.id}`, 0).map((i) => {
-        debugger
-        if (get_constant_number(`${animProps.selected.id}`) != i) {
-          if (get_constant_row(`${animProps.reference_matrix.id}`, 0) != get_lerp_value(i)) {
-            lambda_call(`${animProps.replace_indices.id}`, { index: i, ref_step: 0 })
-            set_duration(i, get_time(i) < 3 ? 3 : get_time(i))
-            soft_reset(i)
-          }
-        }
-      })
-    }),
-    animProps: animProps
-  })
-```
-- when debugging your webapp, you should hit a breakpoint, which looks like this:
-![debug_custom](https://github.com/ji-podhead/kooljs/blob/main/debug_custom.png?raw=true)
+> a lot of those derived from lambdas or custom functions, so feel free to add your issue when you wanna see your custom function in the list here
 
 ### Examples
 
