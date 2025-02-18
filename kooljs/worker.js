@@ -134,9 +134,6 @@ class Lerp {
         //     this.active_group_indices.set(key, [])
         // })
     }
-    get(index) {
-        return this.results.get(index);
-    }
 }
 const default_target_step = [0, 1]
 var final_step, final_sub_step;
@@ -176,7 +173,7 @@ class LerpSequence {
                 lerp_registry.number_results[id]=this.buffer[lerp_registry.lerp_chain_start[id]]
                 break
             case(3):
-                lerp_registry.maftrix_results.set(
+                lerp_registry.matrix_results.set(
                     id,
                     this.matrix_sequences.get(id).get(0)
                 );
@@ -355,7 +352,7 @@ async function animate(index, method, target) {
                     lerp_registry.progress[index] % lerp_registry.render_interval[index];
                 if (allow_render == 0) {
                     delta_t = lerp_registry.progress[index] / lerp_registry.duration[index];
-                    res = method(index, delta_t, target)
+                    if(method!=undefined)res = method(index, delta_t, target)
                     args = {
                         id: index,
                         value: res,
@@ -929,8 +926,18 @@ function get_time(id) {
  * @param {number} id - The identifier for the animation.
  * @returns {boolean} - true if the animation is currently running, false otherwise.
  */
+var type
 function is_active(id) {
-    return lerp_registry.activelist.includes(id);
+    if(!lerp_registry.active_groups.has(lerp_registry.group.has(id)) || !lerp_registry.active_group_indices.get(lerp_registry.group.get(id)).has(id)){
+    type=lerp_registry.type[id]
+    switch(type){
+        case(2 | 3):
+        return lerp_registry.active_numbers.includes(id);
+        case(3):
+        return lerp_registry.active_matrices.has(id)
+    }
+} else {return lerp_registry.active_group_indices.get(lerp_registry.group.get(id)).has(id)}
+    
 }
 /**
  * Gets the current step of the animation.
@@ -945,8 +952,19 @@ function get_step(id) {
  * @param {number} id - The identifier for the animation.
  * @returns {number} - The lerp result value of the animation.
  */
+var group
 function get_lerp_value(id) {
-    return lerp_registry.results.get(id);
+    type=lerp_registry.type[id]
+    group=lerp_registry.group.get(id)
+    if(!group || !lerp_registry.active_groups.has(id))
+    switch(type){
+        case(2):  return lerp_registry.number_results.get(id);
+        case(3): return lerp_registry.matrix_results.get(id)
+    }
+    else{
+        return lerp_registry.active_group_indices.get(group).has(id)
+    }
+    
 }
 /**
  * Starts and resets an animation if its finished, or not playing.
@@ -1086,8 +1104,16 @@ function get_constant_number(id) {
  * Retrieves an array of all active animation identifiers.
  * @returns {Array<number>} - An array of active animation identifiers.
  */
-function get_active(id) {
-    return lerp_registry.activelist;
+function get_active_group_indices(group){
+    return lerp_registry.active_groups.get(group)
+}
+function get_active(type) {
+    switch(type){
+        case(2):
+            return lerp_registry.active_numbers
+        case(3):return lerp_registry.active_matrices;
+        case(4): return lerp_registry.active_timelines
+}
 }
 /**
  * Retrieves a boolean indicating whether the animation loop is currently running.
@@ -1130,9 +1156,21 @@ function reorient_target({
         setLerp(index, step, reference);
         setLerp(index, step + direction, matrix_row);
     }
-    verbose && console.log("reoriented animation with index " + index);
+//    verbose && console.log("reoriented animation with index " + index);
 }
-function reorient_duration({
+/*************  ✨ Codeium Command ⭐  *************/
+/**
+ * Reorients the duration of an animation.
+ *
+ * If min_duration is given, the function will soft_reset the animation and set its duration to the minimum of max_duration and max_duration - current_time + min_duration.
+ *
+ * @param {object} opts - An object containing the following properties:
+ * @param {number} opts.index - The index of the animation to reorient.
+ * @param {number} opts.min_duration - The minimum duration of the animation.
+ * @param {number} opts.max_duration - The maximum duration of the animation.
+ * @param {boolean} opts.verbose - Whether to log information about the reorientation process.
+ */
+/******  047b546f-7a57-45eb-bacd-13e5f6325939  *******/function reorient_duration({
     index,
     min_duration,
     max_duration,
@@ -1288,7 +1326,7 @@ function spring() { }
 export {
     get_status,
     addTrigger,
-    removeTrigger,
+    removeTrigger,get_active_group_indices,
     get_time,
     set_time,
     get_step,

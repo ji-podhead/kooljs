@@ -362,7 +362,7 @@ class Matrix_Lerp {
         if(type!=4){
             animator.results.get("matrix_results").set(this.id,new Float32Array(steps[0]))
             animator.result_buffer_bytelength+=steps[0].length
-            if(group!=-1){
+            if(group==-1){
                 animator.animation_objects.set(this.id, {
                     index: index,
                     prop: new Prop(render_callback),
@@ -536,25 +536,38 @@ class Animator {
         //      --> WORKER MESSAGES <--
         this.worker.onmessage = ev => {
             //console.log(ev)
+            function try_to_set(index,value,setter){
+                try{
+                   // console.log(`index: ${index} val: ${value}`)
+                    setter.prop.updater(value, index)
+                    }catch(err){
+                       console.log(`could not set value of animation ${index} -` + err)
+                        this.stop_animations([[index]])
+                }
+            }
              if (ev.data.message == "render") {
                 requestAnimationFrame(() => {
-                    //,console.log(ev.data)
-                    ev.data.active_numbers.map((value, index) => {
-                        console.log(`index: ${value} val: ${ev.data.number_results[index]}`)
-                        try{
-                        this.animation_objects.get(value).prop.updater(ev.data.number_results[value], value)
-                        }catch(err){
-                           console.log(`could not set value of animation ${ev.data.active_numbers[index]} -` + err)
-                      
-                           try{
-                            this.stop_animations([ev.data.active_numbers[index]])
-                            }
-                            catch(err){
-                                this.stop_animations("all")
-                                console.error("stopping all animations. There was am Error while stopping animations: "+ err);
-                        }
-                    }
+                    try{
+                    ev.data.active_numbers.map((index, i,) => {
+                        try_to_set(index, ev.data.number_results[i],this.animation_objects.get(index))
                     })
+                    ev.data.matrix_results.forEach((value, index) => {
+                        
+                        try_to_set(index, value,this.animation_objects.get(index))
+                    })
+                    ev.data.group_results.forEach((value, key) => {
+                        try{
+                        this.grouped_animation_objects.get(key).prop.updater(value, key, ev.data.acttive_group_indices.get(key))
+                        }catch(err){
+                            console.log(err)
+                            //this.stop_group.
+                        }
+                    })
+                }
+                catch(err){
+                    this.stop_animations("all")
+                    console.error("stopping all animations. There was am Error while stopping animations: "+ err); 
+                }
                 })
             }
             else if (ev.data.message == "render_constant") {
