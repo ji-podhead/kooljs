@@ -200,19 +200,20 @@ You can basically create your own statemachine that is running on the worker.
 There are a bunch of mehtods you can use in your custom logic to manipulate, start, or stop animations.
 
 ##### import
-import the functions via:
+***import them via: `"kooljs/worker_funcions"`***
+- for example
 ```js
-import {  hard_reset, reorient_target ,get_constant_number, get_constant_row, lambda_call, reorient_duration, start_animations, stop_animations, update_constant } from "kooljs/worker_functions"
+import {  hard_reset, reorient_target  } from "kooljs/worker_functions"
 ```
 
 ##### documentation
 You can see the docs and the required constructor arguments when hovering over with the mouse, or when entering the args:
 
-![debug_custom](https://github.com/ji-podhead/kooljs/blob/main/callback_docs_strings.png?raw=true)
+![docsstrings](https://github.com/ji-podhead/kooljs/blob/main/callback_doc_strings.png?raw=true)
 
 
 
-import them via: `"kooljs/worker"`
+
 | Method              | Description                                                         | Arguments              |
 | ------------------- | ------------------------------------------------------------------- | ---------------------- |
 | addTrigger          | triggers another animation at a certain step and delta_t value      | id, target, step, time |
