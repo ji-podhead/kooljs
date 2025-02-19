@@ -105,7 +105,7 @@ function addCallback(animator,callback, animProps){
     if(typeof(callback)=="function"){
         callback=(callback.toString())
         callback = worker_functions.reduce((str, func) => {  // eg (0,kooljs_worker__WEBPACK_IMPORTED_MODULE_0__.get_constant_row) where the second 0 can be any number
-            return str.replace(new RegExp(`\\(0,kooljs_worker__WEBPACK_IMPORTED_MODULE_(\\d+?)__.${func}\\)`, 'g'), func);
+            return str.replace(new RegExp(`\\(0,kooljs_worker_functions__WEBPACK_IMPORTED_MODULE_(\\d+?)__.${func}\\)`, 'g'), "this."+func);
         }, callback);
         var val
         callback = callback.replace(/`\$\{([^}]+)\}`/g, (match, group) => {
@@ -396,7 +396,7 @@ class MatrixChain{
     constructor(animator,{reference_matrix,min_duration,max_duration,delay,delay_spread,delay_invert=false, loop=false,forward_step=0, reverse_step=1,id_prefix="",callback,group_index=undefined}){
         const length=reference_matrix.length
         this.animator=animator
-        this.group=new Group(animator,((val) => callback(id_prefix+i, val)),3)
+        this.group=new Group(animator,((val) => callback(val,id_prefix)),3)
         this.id=this.group.id
         animator.results.get("group_results").set(this.id,new Map())
         animator.active_buffer_bytelength+=1+length
@@ -436,8 +436,10 @@ class MatrixChain{
            this.indices.push(mLerp.id)
         }
     reference_matrix=reference_matrix.flat(1)
-    reference_matrix = reference_matrix.map((x,i)=>new Float32Array(x))
-    this.animator.matrix_chain_map.get("ref_matrix").set(this.id,reference_matrix)
+    const new_ref=new Map()
+    reference_matrix.map((x,i)=>new_ref.set(i,new Float32Array(x)))
+
+    this.animator.matrix_chain_map.get("ref_matrix").set(this.id,new_ref)
     this.indices=new Float32Array(this.indices)
     this.animator.matrix_chain_map.get("indices").set(this.id,this.indices)
     }
@@ -557,7 +559,8 @@ class Animator {
                     })
                     ev.data.group_results.forEach((value, key) => {
                         try{
-                        this.grouped_animation_objects.get(key).prop.updater(value, key, ev.data.acttive_group_indices.get(key))
+                        const prop=this.grouped_animation_objects.get(key).prop
+                        prop.updater(value, key)
                         }catch(err){
                             console.log(err)
                             //this.stop_group.
@@ -716,8 +719,8 @@ class Animator {
         this.worker.postMessage({ method: 'start_animations', indices: indices });
     }
 
-    start_groups(indices) {
-        this.worker.postMessage({ method: 'start_groups', indices: indices });
+    start_groups(indices,directions) {
+        this.worker.postMessage({ method: 'start_groups', indices: indices, directions: directions });
     }
     stop_groups(indices) {
         this.worker.postMessage({ method: 'stop_groups', indices: indices });

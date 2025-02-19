@@ -126,6 +126,8 @@ class Worker_Utils{
  */
  lambda_call(id, args) {
     try {
+        console.log(args)
+        console.log(id)
         this.callback_map.get(id)(args);
     } catch (err) {
         console.error("error in lambda call", id);
@@ -579,7 +581,7 @@ stop_loop() {
 }) {
     if (min_duration != undefined) {
         this.soft_reset(index);
-        const time = is_active(index) ? this.get_time(index) : 0;
+        const time = this.is_active(index) ? this.get_time(index) : 0;
         const duration =
             time < min_duration ? Math.floor(max_duration - time) : max_duration;
         this.set_duration(index, duration);
@@ -672,12 +674,17 @@ stop_loop() {
     this.set_duration(index, duration);
     return duration;
 }
- reorient_duration_by_progress({ index, min_duration, max_duration }) {
+ reorient_duration_by_progress({ index, min_duration, max_duration,soft_reset=true }) {
     const progress = this.get_time(index) / max_duration;
 
     duration = min_duration + progress * (max_duration - min_duration);
     //Math.min(max_duration, Math.max(min_duration, distance * max_distance));
-    this.soft_reset(index);
+    if(soft_reset){
+        this.soft_reset(index);
+    }
+    else{
+        
+    }
     this.set_duration(index, duration);
     return duration;
 }
@@ -706,8 +713,28 @@ stop_loop() {
         this.sequence_registry.matrix_sequences.set(id, newMap);
     }
 }
- start_groups(idnices){indices.map(x=>Matrix_Chain)}
-
+/**
+ * Starts an animation sequence for a matrix chain.
+ *
+ * @param {number[]} directions - The directions for the animation sequence.
+ * @param {number[]} indices - The indices for the animation sequence.
+ *
+ * @category Animation
+ */
+start_group(directions, indices) {
+    indices.map((indices2,i)=>{
+        this.matrix_chain_registry.start_matrix_chain(directions[i],indices2)
+        // this.start_animations(this.matrix_chain_registry.indices.get(indices2))
+    })
+    this.start_loop();
+}
+stop_group(indices) {
+    indices.map((id,i)=>{
+    this.lerp_registry.active_groups.delete(this.id)
+    this.lerp_registry.active_group_indices.get(this.id).clear()
+    this.stop_animations(this.matrix_chains.indices.get(id))
+    })
+}
 }
 export{
 Worker_Utils
