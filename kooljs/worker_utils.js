@@ -126,8 +126,8 @@ class Worker_Utils{
  */
  lambda_call(id, args) {
     try {
-        console.log(args)
-        console.log(id)
+        // console.log(args)
+        // console.log(id)
         this.callback_map.get(id)(args);
     } catch (err) {
         console.error("error in lambda call", id);
