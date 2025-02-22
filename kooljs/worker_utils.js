@@ -545,8 +545,8 @@ stop_loop() {
  */
  reorient_target({
     index,
-    step,
-    direction,
+    step=0,
+    direction=1,
     reference,
     matrix_row = 0,
     verbose = false,
@@ -712,7 +712,10 @@ stop_loop() {
         this.sequence_registry.matrix_sequences.set(id, newMap);
     }
 }
-/**
+set_group_orientation(id,orientation){  
+    this.matrix_chain_registry.orientation_step.set(id,orientation)
+}
+    /**
  * Starts an animation sequence for a matrix chain.
  *
  * @param {number[]} directions - The directions for the animation sequence.
@@ -727,6 +730,7 @@ start_group(directions, indices) {
     })
     this.start_loop();
 }
+
 stop_group(indices) {
     indices.map((id,i)=>{
     this.lerp_registry.active_groups.delete(this.id)

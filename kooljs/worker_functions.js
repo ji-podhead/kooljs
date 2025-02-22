@@ -1,9 +1,14 @@
 // tis scripts purpose is to supply the corresponding worker functions and their docstrings for the users lambda and callback functions
 import { Worker_Utils } from "kooljs/worker_utils";
 
-
+/**
+ * @inheritdoc
+ */
 const get_status = Worker_Utils.prototype.get_status
-
+/**
+ * @inheritdoc
+ */
+const  set_group_orientation=Worker_Utils.prototype.set_group_orientation
 
 /**
  * @inheritdoc
@@ -202,5 +207,6 @@ reorient_duration,
 reorient_duration_by_distance,
 reverse,
 reorient_target,
+set_group_orientation,
 reorient_duration_by_progress,
 }

@@ -6,9 +6,7 @@
 // 2. The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. 
 // import { parse } from "@babel/parser"
 // import * as recast from "recast";
-
 import   {start_animations,setMatrix,get_lerp_value, get_constant_row,set_duration, hard_reset, lambda_call, get_constant_number, reorient_duration, reorient_target, reorient_duration_by_distance, get_constant, reorient_duration_by_progress, get_delay, set_delay} from 'kooljs/worker'
-
 const worker_functions =
 [ 
   "get_status",
@@ -19,8 +17,8 @@ const worker_functions =
   "get_step",
   "get_sequence_length",
   "set_sequence_start",
-    "get_sequence_start",
-    "set_sequence_length",
+  "get_sequence_start",
+  "set_sequence_length",
   "set_step",
   "is_active",
   "get_active",
@@ -45,11 +43,12 @@ const worker_functions =
   "set_delay_delta",
   "lambda_call",
   "get_step_lerp_target_value",
-    "reorient_duration",
-    "reverse",
-    "reorient_target",
-    "reorient_duration_by_distance",
-    "reorient_duration_by_progress"
+  "reorient_duration",
+  "reverse",
+  "reorient_target",
+  "reorient_duration_by_distance",
+  "reorient_duration_by_progress",
+  "set_group_orientation"
 ]
 class Prop {
     update_callback(value, id) {
@@ -66,7 +65,6 @@ class Prop {
         this.updater = this.update_callback
     }
 }
-
 var index
 class Constant {
     /**
@@ -119,7 +117,6 @@ function addCallback(animator,callback, animProps){
                         console.warn("error in callback: " +callback)
                         console.error("animProps is missing the entry: " + x + " in " + group)
                     }
-                    
                 }
                 else{
                     val=animProps
@@ -130,9 +127,7 @@ function addCallback(animator,callback, animProps){
             }
             return match;
         });
-        //console.log((callback))
     }
-    
     else if(typeof(callback)!="string"){ 
          return console.log("callback is not a string and animProps is undefined")
     }
@@ -207,7 +202,6 @@ function addTiggers(index,animator,animationTriggers,stepLength,loop,loop_start_
     animator.trigger_map.set(index,stepMap)
     }
 }
-
 class Lerp {
     /**
      * Creates a new Lerp object.
@@ -278,7 +272,6 @@ class Lerp {
     }
 }
 class Timeline{
-
 /**
  * Creates a new Timeline object.
  * A Timeline is a type of animation similar to Lerp, but it does not fire a callback after each animation frame.
@@ -307,7 +300,6 @@ class Timeline{
 }
 var matrix_lerp_id
 class Matrix_Lerp {
-
     /**
      * Creates a new MatrixLerp object.
      * @param {Animator} animator - the animator object
@@ -326,7 +318,6 @@ class Matrix_Lerp {
      */
     constructor(animator, { type=3, group=-1, render_callback, duration = 10, render_interval = 1, smoothstep = 1, delay = 0, animationTriggers, callback, steps = undefined, loop=false, steps_max_length}) {
         //currentValue = currentValue;
-
         index =animator.registry_map.get("type").length
         this.id = index
         animator.count+=1
@@ -345,7 +336,6 @@ class Matrix_Lerp {
                 animator.registry_map.get("loop").push(0)
             }
         animator.chain_map.get("matrix_buffer").set(index, matrix_map)
-
         animator.chain_map_points_length += 1
         animator.chain_map.get("lengths").push(1)
         animator.chain_map.get("progress").push(0)
@@ -356,7 +346,6 @@ class Matrix_Lerp {
         animator.registry_map.get("delay").push(delay)
         animator.registry_map.get("progress").push(0)
         animator.registry_map.get("smoothstep").push(smoothstep)
-
         matrix_lerp_id=callback!=undefined?addCallback(animator,callback.callback,callback.animProps):undefined
         animator.active_buffer_bytelength+=1 // in case of timelines
         if(type!=4){
@@ -377,7 +366,7 @@ class Matrix_Lerp {
 }
 class Group{
     constructor(animator,callback,type){
-        this.id=animator.registry_map.get("group").size
+        this.id=animator.grouped_animation_objects.size
         this.type=type
         animator.grouped_animation_objects.set(this.id, {
             prop: new Prop(callback),
@@ -393,7 +382,9 @@ class MatrixChain{
         {this.animator.update_constant(this.animator.matrix_chain_map.orientation_step.id,"matrix",[step,invert_step])}
         else{console.error("step out of bounds! max length is: " + this.animator.matrix_chain_map.max_length.value)}
     }
-    constructor(animator,{reference_matrix,min_duration,max_duration,custom_delay=-1,loop=false, start_step=0, target_step=1,id_prefix="",callback,group_index=undefined}){
+    constructor(animator,{reference_matrix,min_duration,max_duration,custom_delay=-1,loop, group_loop,start_step=0, target_step=1,sequence_length=1,id_prefix="",callback,group_index=undefined}){
+        group_loop=group_loop=undefined?false:group_loop
+        loop=loop=undefined?false:loop
         const length=reference_matrix.length
         this.animator=animator
         this.group=new Group(animator,((val) => callback(val,id_prefix)),3)
@@ -404,6 +395,9 @@ class MatrixChain{
         this.animator.matrix_chain_map.get("max_length").push(reference_matrix[0].length)
         this.animator.matrix_chain_map.get("min_duration").push(min_duration)
         this.animator.matrix_chain_map.get("max_duration").push(max_duration)
+        this.animator.matrix_chain_map.get("sequence_length").push(sequence_length)
+        group_loop=group_loop==false?0:1
+        this.animator.matrix_chain_map.get("group_loop").push(group_loop)
 
         if(typeof(custom_delay)=="object" && custom_delay.callback!=undefined){
             const lambda=new Lambda(animator,custom_delay)
@@ -465,16 +459,10 @@ class MatrixChain{
     reference_matrix=reference_matrix.flat(1)
     const new_ref=new Map()
     reference_matrix.map((x,i)=>new_ref.set(i,new Float32Array(x)))
-
     this.animator.matrix_chain_map.get("ref_matrix").set(this.id,new_ref)
     this.indices=new Float32Array(this.indices)
     this.animator.matrix_chain_map.get("indices").set(this.id,this.indices)
     }
-    // start_forward(){    
-    //     if(typeof(this.animator.matrix_chain_map.orientation_step)!="Constant"){
-    //         this.animator.matrix_chain_map.start_matrix_chain.call(0,this.animator.matrix_chain_map.reference_matrix.id,this.animator.matrix_chain_map.indices.id,this.animator.matrix_chain_map.orientation_step.value)
-    //     }
-    // }
 }
 class Animator {
     /**
@@ -495,24 +483,21 @@ class Animator {
         this.spring_map = new Map()
         this.matrix_chain_map = new Map()
         //-->Matrix_chains<<--
-
         this.matrix_chain_map.set("ref_matrix",new Map())
         this.matrix_chain_map.set("orientation_step",new Map())
         this.matrix_chain_map.set("indices",new Map())
         this.matrix_chain_map.set("custom_delay",[])
+        this.matrix_chain_map.set("sequence_length",[])
+        this.matrix_chain_map.set("group_loop",[])
         this.matrix_chain_map.set("min_duration",[])
         this.matrix_chain_map.set("max_duration",[])
         this.matrix_chain_map.set("max_length",[])
-
-        
         //--> constant <--
-        //this.constant_buffer=new SharedArrayBuffer(20);
         this.constant_map = new Map()
         this.constant_map.set("number", new Map())
         this.constant_map.set("matrix", new Map())
         this.constant_map.set("render_callbacks",new Map())
         this.constant_map.set("render_triggers",new Map())
-        
         //--> animation objects (Lerp...) <--
         this.registry_map.set('type', []);
         this.registry_map.set('duration', []);
@@ -544,11 +529,6 @@ class Animator {
         this.results.set("group_results",new Map())
         this.results.set("matrix_results",new Map())
         this.results.set("number_results",[])
-        
-        // worker returns 4 activelists: 
-        //    groups           active_group_indices        matrix_results      number_results
-        // [index,index...],[[index,index],[],[],...],[index,index,index],[index,index,index]
-
         //      --> UTIL <--
         this.fps = fps
         this.constant_count=0
@@ -562,7 +542,6 @@ class Animator {
         this.worker = new Worker(new URL('./worker.js', import.meta.url));
         //      --> WORKER MESSAGES <--
         this.worker.onmessage = ev => {
-            //console.log(ev)
             function try_to_set(index,value,setter){
                 try{
                    // console.log(`index: ${index} val: ${value}`)
@@ -604,7 +583,6 @@ class Animator {
             }
         }
     }
-
     clear_cache(){
         this.registry_map.clear()    
         this.chain_map.clear()
@@ -619,7 +597,6 @@ class Animator {
     kill(){
         this.worker.terminate()
         this.clear_cache()
-
     }
     /**
      * Initializes the animator and sends all data to the worker. If autostart is true, it also starts the animation.
@@ -630,7 +607,6 @@ class Animator {
         // buffer
         var buffer,active_buffer
         const bytelength=4
-
         this.results.set("number_results", new Float32Array(this.results.get("number_results")));
        this.worker.postMessage({
             method: 'init', 
@@ -646,7 +622,6 @@ class Animator {
             matrix_chain_map:this.matrix_chain_map
         })
         this.clear_cache()
-
     }
     /**
      * Updates the values of the lerp animations. The data is an array of objects with the following properties:
@@ -670,7 +645,6 @@ class Animator {
  * Sends a message to the worker to update animations of type 3.
  * @param {Array<Object>} data - An array of objects with the properties id and values for the matrix lerp animation.
  */
-
     update_matrix_lerp(data) {
         this.worker.postMessage({ method: 'update', type: 3, data: data })
     }
@@ -687,7 +661,6 @@ class Animator {
     }
     set_lambda(id,callback,condition=true){
         this.worker.postMessage({ method: 'set_lambda', id: id, callback: callback,condition:condition })
-
     }
     /**
      * Creates a new Lerp object.
@@ -732,7 +705,6 @@ class Animator {
      */
     update_constant(data) {
         data.map((x) => {
-
             this.worker.postMessage({ method: 'update_constant', type: x.type, id: x.id, value: x.value });
         })
     }
@@ -743,12 +715,14 @@ class Animator {
     start_animations(indices) {
         this.worker.postMessage({ method: 'start_animations', indices: indices });
     }
-
     start_groups(indices,directions) {
         this.worker.postMessage({ method: 'start_groups', indices: indices, directions: directions });
     }
     stop_groups(indices) {
         this.worker.postMessage({ method: 'stop_groups', indices: indices });
+    }
+    set_group_orientation(index,orientation) {
+        this.worker.postMessage({ method: 'set_group_orientation', index: index, orientation: orientation });
     }
     /**
      * Stop animations.
@@ -757,12 +731,10 @@ class Animator {
     stop_animations(indices) {
         this.worker.postMessage({ method: 'stop_animations', indices: indices });
     }
-    
     /**
      * Reset animations.
      * @param {number | number[]} indices - the index or indices of the animations to reset. If set to "all", resets all animations.
      */
-
     reset_animations(indices) {
         this.worker.postMessage({ method: 'reset_animations', indices: indices });
     }
@@ -813,7 +785,6 @@ class Animator {
         this.worker.postMessage({ method: 'removeTrigger', id: id,target: target,step: step,time: time });
     }
 }
-
 export { Prop, Animator, Lerp, Constant }
 
 
