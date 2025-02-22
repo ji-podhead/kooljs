@@ -393,7 +393,7 @@ class MatrixChain{
         {this.animator.update_constant(this.animator.matrix_chain_map.orientation_step.id,"matrix",[step,invert_step])}
         else{console.error("step out of bounds! max length is: " + this.animator.matrix_chain_map.max_length.value)}
     }
-    constructor(animator,{reference_matrix,min_duration,max_duration,delay,delay_spread,delay_invert=false, loop=false,forward_step=0, reverse_step=1,id_prefix="",callback,group_index=undefined}){
+    constructor(animator,{reference_matrix,min_duration,max_duration,custom_delay=-1,loop=false, start_step=0, target_step=1,id_prefix="",callback,group_index=undefined}){
         const length=reference_matrix.length
         this.animator=animator
         this.group=new Group(animator,((val) => callback(val,id_prefix)),3)
@@ -402,16 +402,34 @@ class MatrixChain{
         animator.active_buffer_bytelength+=1+length
         this.indices=[]
         this.animator.matrix_chain_map.get("max_length").push(reference_matrix[0].length)
-        this.animator.matrix_chain_map.get("delay").push(delay)
-        this.animator.matrix_chain_map.get("delay_spread").push(delay_spread)
-        this.animator.matrix_chain_map.get("delay_invert").push(delay_invert)
         this.animator.matrix_chain_map.get("min_duration").push(min_duration)
         this.animator.matrix_chain_map.get("max_duration").push(max_duration)
+
+        if(typeof(custom_delay)=="object" && custom_delay.callback!=undefined){
+            const lambda=new Lambda(animator,custom_delay)
+            this.animator.matrix_chain_map.get("custom_delay").push(lambda.id)
+        }
+        else 
+        {
+            this.animator.matrix_chain_map.get("custom_delay").push(-1)
+            if(typeof(custom_delay)=="object"){
+                if(custom_delay.length!=length){
+                    return Error("MatrixChain failed! your delay list has not the right length! This would break the Registry, so pls fix that!")
+                }
+            }
+            else if(typeof(custom_delay)!="number"){
+                return Error("MatrixChain failed! your delay is not a number, list! This would break the Registry, so pls fix that!")
+            }
+            else{
+                console.warn("no valid delay given, setting it to 0")
+                custom_delay=0
+            }
+        }
         if(reference_matrix[0].length>2){
-            if(reverse_step==undefined) reverse_step==forward_step+1
-            if(forward_step>=0&&forward_step<reference_matrix[0].length&&reverse_step>=0&&forward_step<=reference_matrix[0].length)
+            if(target_step==undefined) target_step==start_step+1
+            if(start_step>=0&&start_step<reference_matrix[0].length&&target_step>=0&&start_step<=reference_matrix[0].length)
             {
-                this.animator.matrix_chain_map.get("orientation_step").set(this.id,[forward_step,reverse_step])
+                this.animator.matrix_chain_map.get("orientation_step").set(this.id,[start_step,target_step])
             }
             else{
                 console.error("step out of bounds! max length is: " + reference_matrix[0].length);return Error("MatrixChain failed!")
@@ -420,12 +438,21 @@ class MatrixChain{
         else{
             this.animator.matrix_chain_map.get("orientation_step").set(this.id,[0,1])
         }
-        var mLerp
+        var mLerp,delay_temp
         for (let i = 0; i < length; i++) {
-           mLerp= new Matrix_Lerp(animator,{
+                if(typeof(custom_delay)=="object" && custom_delay.callback!=undefined){
+                    delay_temp= 0
+                }
+                else if(typeof(custom_delay)=="object"){
+                    delay_temp= custom_delay[i]
+                }
+                else{
+                    delay_temp= custom_delay
+                }
+            mLerp= new Matrix_Lerp(animator,{
                 duration:min_duration,
-                steps: [reference_matrix[i][forward_step],reference_matrix[i][reverse_step]],
-                delay:delay+(i*delay_spread),
+                steps: [reference_matrix[i][start_step],reference_matrix[i][target_step]],
+                delay:delay_temp,
                 loop: loop,
                 group:this.id,
                 type:3
@@ -472,9 +499,7 @@ class Animator {
         this.matrix_chain_map.set("ref_matrix",new Map())
         this.matrix_chain_map.set("orientation_step",new Map())
         this.matrix_chain_map.set("indices",new Map())
-        this.matrix_chain_map.set("delay",[])
-        this.matrix_chain_map.set("delay_spread",[])
-        this.matrix_chain_map.set("delay_invert",[])
+        this.matrix_chain_map.set("custom_delay",[])
         this.matrix_chain_map.set("min_duration",[])
         this.matrix_chain_map.set("max_duration",[])
         this.matrix_chain_map.set("max_length",[])

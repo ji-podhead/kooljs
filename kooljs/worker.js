@@ -111,7 +111,7 @@ class Lerp extends Worker_Utils {
             case (2):
                 active_index=this.active_numbers.indexOf(id)
                 this.active_numbers=Float32Array.from([...this.active_numbers.slice(0,active_index),...this.active_numbers.slice(active_index+1,this.active_numbers.length)])
-                this.number_results_render=Float32Array.from(this.active_numbers)
+                this.number_results_render=Float32Array.from(this.active_numbers.map((val) => this.number_results.get(val)))
                 break
             case (4):
                 this.active_timelines.delete(id);
@@ -200,19 +200,20 @@ class LerpSequence extends Worker_Utils{
 }
 var indices
 class Matrix_Chain extends Worker_Utils{
-    constructor(indices, ref_matrix, orientation_step, max_duration, min_duration, delay_invert, max_length,animator) {
+    constructor(indices, ref_matrix, orientation_step, max_duration, min_duration, custom_delay, max_length,animator) {
         super()
         this.indices = indices;
         this.ref_matrix = ref_matrix;
         this.orientation_step = orientation_step
         this.max_duration = max_duration;
         this.min_duration = min_duration;
-        this.delay_invert = delay_invert;
+        this.custom_delay =custom_delay;
         this.max_length = max_length
         this.lerp_registry=animator.lerp_registry
         this.sequence_registry=animator.sequence_registry
         this.constant_registry=animator.constant_registry
         this.start_loop=animator.start_loop
+        this.callback_map=animator.callback_map
         this.result_map=new Map()
         indices.forEach((val,i)=>
         {
@@ -244,10 +245,9 @@ class Matrix_Chain extends Worker_Utils{
                 verbose: false,
                 reference: ref,
             });
-            if (this.delay_invert[id] && direction == 0) {
-                const target = this.get_delay(indices[(indices.length-1) - i]);
-                this.set_delay(indices[(indices.length-1)- i] , this.get_delay(index));
-                this.set_delay(index, target);
+            if (this.custom_delay[id] >=0) {
+                const delay=(this.lambda_call(this.custom_delay[id],{animation_index:index,index:i,indices:indices,direction:direction,target_step:target_step}) ||0)
+                this.set_delay(index, delay);
             }
             this.reorient_duration_by_progress({
                 index: index,
@@ -384,7 +384,7 @@ class Animator extends Worker_Utils {
             matrix_chains.get("orientation_step"),
             new Uint8Array(matrix_chains.get("max_duration")),
             new Uint8Array(matrix_chains.get("min_duration")),
-            new Uint8Array(matrix_chains.get("delay_invert")),
+            new Uint8Array(matrix_chains.get("custom_delay")),
             new Uint8Array(matrix_chains.get("max_length")),
             this
         )
@@ -397,8 +397,9 @@ class Animator extends Worker_Utils {
             });
             while (this.loop_resolver.signal.aborted == false) {
                 startTime = performance.now();
-                this.lerp_registry.active_timelines.forEach((id) => this.animate(id, false))
-                this.lerp_registry.active_numbers.map((id) => this.animate(id, this.animate_number, this.lerp_registry.number_results),2)
+                this.lerp_registry.active_timelines.forEach((id) => this.animate(id))
+                this.lerp_registry.active_numbers.map((id,i) =>
+                     this.animate(id, this.animate_number, this.lerp_registry.number_results,2,i))
                 this.lerp_registry.active_matrices.forEach((id) => this.animate(id, this.animate_matrix, this.lerp_registry.matrix_results,3))
                 this.lerp_registry.active_groups.forEach((group_id) => {
                     this.lerp_registry.active_group_indices.get(group_id).forEach((id,i) => {this.animate(id,  this.animate_matrix, this.lerp_registry.matrix_results,0,group_id,i)})
@@ -445,8 +446,8 @@ class Animator extends Worker_Utils {
         
     })
     
-     this.animate_number=((id, delta_t, target,)=> {
-        target[id] = smoothLerp(
+     this.animate_number=((id, delta_t, target, render_index)=> {
+        this.lerp_registry.number_results_render[render_index]=target[id] = smoothLerp(
             this.sequence_registry.buffer[
             this.lerp_registry.lerp_chain_start[id] +
             this.sequence_registry.progress[id]
@@ -460,31 +461,31 @@ class Animator extends Worker_Utils {
             this.lerp_registry.smoothstep[id]
         )
     })
-    this.animate=async function(index, method, target,type,group){
+    this.animate=async function(index, method, target,type,reference){
             if (this.lerp_registry.progress[index] <= this.lerp_registry.duration[index]) {
                 if (this.lerp_registry.delay_delta[index] < this.lerp_registry.delay[index]-1) {
                     this.lerp_registry.delay_delta[index] += 1;
                 }
                 else if(this.lerp_registry.delay_delta[index]==0||(this.lerp_registry.delay_delta[index] < this.lerp_registry.delay[index])){
                     this.lerp_registry.delay_delta[index] += 1;
-                    switch(type){
+                 if(method!=undefined){ switch(type){
                         case(0):
-                        this.lerp_registry.group_results_render.get(group).set(this.lerp_registry.group_lookup.get(index),this.lerp_registry.matrix_results.get(index))
+                        this.lerp_registry.group_results_render.get(reference).set(this.lerp_registry.group_lookup.get(index),this.lerp_registry.matrix_results.get(index))
                         break
                         case(2):
-                                this.lerp_registry.number_results_render = Float32Array.from([this.lerp_registry.number_results_render,index])
+                               this.lerp_registry.number_results_render = Float32Array.from([this.lerp_registry.number_results_render,this.lerp_registry.number_results[index]])
                                 break;
                         case(3):
-                            this.lerp_registry.matrix_results_render.set(id, this.lerp_registry.matrix_results.get(index))
+                            this.lerp_registry.matrix_results_render.set(index, this.lerp_registry.matrix_results.get(index))
                         break
                     }
                 }
+                }
                  else {
-                    allow_render =
-                        this.lerp_registry.progress[index] % this.lerp_registry.render_interval[index];
+                    allow_render = this.lerp_registry.progress[index] % this.lerp_registry.render_interval[index];
                     if (allow_render == 0) {
                         delta_t = this.lerp_registry.progress[index] / this.lerp_registry.duration[index];
-                        if(method!=undefined)res = method(index, delta_t, target)
+                        if(method!=undefined)res = method(index, delta_t, target,reference)
                         args = {
                             id: index,
                             value: res,
@@ -530,7 +531,7 @@ class Animator extends Worker_Utils {
         postMessage(
             {
                 message: "render",
-                number_results: this.number_results_render,
+                number_results: this.lerp_registry.number_results_render,
                 active_numbers: this.lerp_registry.active_numbers,
                 matrix_results: this.lerp_registry.matrix_results_render,
                 group_results: this.lerp_registry.group_results_render,

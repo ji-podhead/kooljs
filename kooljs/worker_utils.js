@@ -128,7 +128,7 @@ class Worker_Utils{
     try {
         // console.log(args)
         // console.log(id)
-        this.callback_map.get(id)(args);
+        return this.callback_map.get(id)(args);
     } catch (err) {
         console.error("error in lambda call", id);
         console.error(this.callback_map.get(id));
@@ -172,7 +172,6 @@ stop_loop() {
     }
     else {
         indices.map((id) => {
-            this.lerp_registry.delete_group_member(id)
             this.lerp_registry.deactivate(id);
         });
     
