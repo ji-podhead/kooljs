@@ -50,6 +50,31 @@ const worker_functions =
   "reorient_duration_by_progress",
   "set_group_orientation"
 ]
+var old_length,newlength,ofset,temp
+function add_to_buffer(animator,target,array){
+    old_length=animator[target].byteLength
+    newlength=old_length + (array.byteLength!=undefined?array.byteLength:array.length*4)
+    if(newlength%4==0){
+        ofset=0
+    }
+    else{
+        ofset=4-(newlength%4)
+    }
+    newlength+=ofset
+    animator[target].resize(newlength);  
+    if( array.byteLength==undefined || array.byteLength/4==array.length ){
+        temp=new Float32Array(animator[target],old_length+ofset,array.length)    
+    }
+    else if(array.byteLength/2==array.length){
+        temp=new Uint16Array(animator[target],old_length+ofset,array.length)    
+    }
+    else if(array.byteLength/1==array.length){
+        temp=new Uint8Array(animator[target],old_length+ofset,array.length)
+    }
+ Object.assign(temp,array)
+ return temp     
+    
+}
 class Prop {
     update_callback(value, id) {
         this.setter(value, id)
@@ -87,14 +112,22 @@ class Constant {
     constructor(animator, {type, value,render_callbacks,render_triggers}) {
         this.id = animator.constant_count
         animator.constant_count+=1
+        if(type=="matrix"){
+            value.map((row,index)=>{
+                value[index]= add_to_buffer(animator,"buffer",value[index])
+            })
+       }
         animator.constant_map.get(type).set(this.id, value)
         this.value=animator.constant_map.get(type).get(this.id)
-        if(render_callbacks!=undefined){
-            animator.constant_map.get("render_callbacks").set(this.id,render_callbacks)
+        if(render_triggers!=undefined||render_callbacks!=undefined){
+            if(render_callbacks!=undefined){
+                animator.constant_map.get("render_callbacks").set(this.id, add_to_buffer(animator,"buffer",new Uint8Array(render_callbacks)))
+            }
+            if(render_triggers!=undefined){
+                animator.constant_map.get("render_triggers").set(this.id, add_to_buffer(animator,"buffer",new Uint8Array(render_triggers)))
+
+            }   
         }
-        if(render_triggers!=undefined){
-            animator.constant_map.get("render_triggers").set(this.id, render_triggers)
-        }   
     }
 }
 var lambda_index
@@ -192,8 +225,7 @@ function addTiggers(index,animator,animationTriggers,stepLength,loop,loop_start_
                 })
                 
                 frames.forEach((targets, frame) => {
-                    const idArray = new Uint16Array(targets); // 2x schneller als normale Arrays
-                    frames.set(frame, idArray);
+                    frames.set(frame, add_to_buffer(animator,"buffer",new Uint8Array(targets)));
                 });
                 
             stepMap.set(i,(frames))
@@ -257,7 +289,6 @@ class Lerp {
         const callback_id=callback!=undefined?addCallback(animator,callback.callback,callback.animProps):undefined
         if(type!=4){
             animator.results.get("number_results").push(steps[0])
-            animator.result_buffer_bytelength+=1
          if(group==-1){
                 animator.animation_objects.set(this.id, {
                 index: index,
@@ -323,9 +354,11 @@ class Matrix_Lerp {
         animator.count+=1
         animator.registry_map.get("lerp_chain_start").push(0)
         const matrix_map= new Map()
+        var old_length,temp,newlength
         if (steps != undefined) {
             steps.map((step,index)=>{
-                matrix_map.set(index,new Float32Array(step))
+                const res=add_to_buffer(animator,"buffer",step)
+                matrix_map.set(index,res)
             })
         }
              const step_length=steps!=undefined?steps.length:steps_max_length!=undefined?steps_max_length:0
@@ -347,10 +380,8 @@ class Matrix_Lerp {
         animator.registry_map.get("progress").push(0)
         animator.registry_map.get("smoothstep").push(smoothstep)
         matrix_lerp_id=callback!=undefined?addCallback(animator,callback.callback,callback.animProps):undefined
-        animator.active_buffer_bytelength+=1 // in case of timelines
         if(type!=4){
-            animator.results.get("matrix_results").set(this.id,new Float32Array(steps[0]))
-            animator.result_buffer_bytelength+=steps[0].length
+            animator.results.get("matrix_results").set(this.id,add_to_buffer(animator,"buffer",steps[0]))
             if(group==-1){
                 animator.animation_objects.set(this.id, {
                     index: index,
@@ -386,11 +417,20 @@ class MatrixChain{
         group_loop=group_loop=undefined?false:group_loop
         loop=loop=undefined?false:loop
         const length=reference_matrix.length
+        this.uni_reference=false
+        if(reference_matrix.length!=length){
+            if(reference_matrix.length==1){
+                this.uni_reference=true
+            }
+            else{
+                return error("ref matrix either needs to have a length of 1 or " + length)
+            }
+        }
+        
         this.animator=animator
         this.group=new Group(animator,((val) => callback(val,id_prefix)),3)
         this.id=this.group.id
         animator.results.get("group_results").set(this.id,new Map())
-        animator.active_buffer_bytelength+=1+length
         this.indices=[]
         this.animator.matrix_chain_map.get("max_length").push(reference_matrix[0].length)
         this.animator.matrix_chain_map.get("min_duration").push(min_duration)
@@ -458,9 +498,14 @@ class MatrixChain{
         }
     reference_matrix=reference_matrix.flat(1)
     const new_ref=new Map()
-    reference_matrix.map((x,i)=>new_ref.set(i,new Float32Array(x)))
+    var old_length
+    reference_matrix.map((r,i)=>{
+        new_ref.set(i,add_to_buffer(animator,"buffer",r)) 
+    })
+
+    //reference_matrix.map((x,i)=>new_ref.set(i,new Float32Array(x)))
     this.animator.matrix_chain_map.get("ref_matrix").set(this.id,new_ref)
-    this.indices=new Float32Array(this.indices)
+    this.indices= add_to_buffer(animator,"buffer",new Uint8Array(this.indices))
     this.animator.matrix_chain_map.get("indices").set(this.id,this.indices)
     }
 }
@@ -472,7 +517,7 @@ class Animator {
      * @class
      * @author JI-Podhead
      */
-    constructor(fps=45) {
+    constructor(fps=45,max_byte_length=100000) {
         this.count=0
         //      --> REGRISTRIES <-- 
         this.registry_map = new Map()
@@ -532,14 +577,17 @@ class Animator {
         //      --> UTIL <--
         this.fps = fps
         this.constant_count=0
-        this.result_buffer_bytelength=0
+        this.buffer= new ArrayBuffer(0,{ maxByteLength: max_byte_length });
         this.active_buffer_bytelength=0
         this.animation_objects = new Map()
         this.grouped_animation_objects=new Map()
-        this.indexlist = new Map()
-        this.obj = undefined
-        this.chain_buffer = undefined
         this.worker = new Worker(new URL('./worker.js', import.meta.url));
+        window.addEventListener('unload', () => {
+            this.worker.terminate();
+          });
+        window.addEventListener('beforeunload', () => {
+        this.worker.terminate();
+        });
         //      --> WORKER MESSAGES <--
         this.worker.onmessage = ev => {
             function try_to_set(index,value,setter){
@@ -554,8 +602,8 @@ class Animator {
              if (ev.data.message == "render") {
                 requestAnimationFrame(() => {
                     try{
-                    ev.data.active_numbers.map((index, i,) => {
-                        try_to_set(index, ev.data.number_results[i],this.animation_objects.get(index))
+                    ev.data.number_results.forEach((value, index,) => {
+                        try_to_set(index, value,this.animation_objects.get(index))
                     })
                     ev.data.matrix_results.forEach((value, index) => {
                         
@@ -604,23 +652,40 @@ class Animator {
      * sends the data to the worker.
      */
     init() {
-        // buffer
-        var buffer,active_buffer
-        const bytelength=4
-        this.results.set("number_results", new Float32Array(this.results.get("number_results")));
-       this.worker.postMessage({
+        var ints=["type","duration","render_interval","delay","smoothstep","lerp_chain_start","loop"]
+        this.registry_map.forEach((value,key) => {
+            if (ints.includes(key)) {
+                this.registry_map.set(key, add_to_buffer(this,"buffer",new Uint8Array(value)))                
+            }
+        })
+        this.registry_map.set("delay_delta", add_to_buffer(this,"buffer",new Uint8Array(this.registry_map.get("delay").length)))
+        this.registry_map.set("progress", add_to_buffer(this,"buffer",new Uint8Array(this.registry_map.get("delay").length)))
+        this.chain_map.forEach((value,key) => {
+            if(key=="buffer"||key=="progress" || key== "lengths"){
+                this.chain_map.set(key, add_to_buffer(this,"buffer",new Uint8Array(value)))
+            }
+        })
+        ints=["custom_delay","sequence_length","group_loop","min_duration","max_duration","max_length"]
+        this.matrix_chain_map.forEach((value,key) => {
+            if (ints.includes(key)) {
+                this.matrix_chain_map.set(key, add_to_buffer(this,"buffer",new Uint8Array(value)))
+            }
+        })
+        
+        this.results.set("number_results", add_to_buffer(this,"buffer",new Float32Array(this.results.get("number_results"))))
+        console.log(this.buffer.detached)
+        this.worker.postMessage({
             method: 'init', 
             fps: this.fps,
             data: this.registry_map, 
             chain_map: this.chain_map, 
             results:this.results,
-            buffer:(this.result_buffer_bytelength+ this.active_buffer_bytelength)*bytelength,
             trigger_map:this.trigger_map,
             constants: this.constant_map,  
             callback_map: this.callback_map,
             spring_map: this.spring_map,
             matrix_chain_map:this.matrix_chain_map
-        })
+        },)
         this.clear_cache()
     }
     /**
