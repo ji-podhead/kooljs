@@ -413,11 +413,19 @@ class MatrixChain{
         {this.animator.update_constant(this.animator.matrix_chain_map.orientation_step.id,"matrix",[step,invert_step])}
         else{console.error("step out of bounds! max length is: " + this.animator.matrix_chain_map.max_length.value)}
     }
-    constructor(animator,{length,reference_matrix,min_duration,max_duration,custom_delay=-1,loop, group_loop,start_step=0, target_step=1,sequence_length=2,id_prefix="",callback,group_index=undefined}){
+    constructor(animator,{length,reference_matrix,min_duration,max_duration,custom_delay=-1,loop, group_loop,start_step=0, target_step=1,sequence_length,id_prefix="",callback,group_index=undefined}){
         group_loop=group_loop=undefined?false:group_loop
         loop=loop=undefined?false:loop
         // const length=reference_matrix.length
         this.uni_reference=false
+        if(loop==true){
+            if(sequence_length==undefined)sequence_length=2
+        }
+        else if(sequence_length==undefined){ 
+
+            sequence_length=reference_matrix[0].length
+        }
+        
         this.animator=animator
         if(reference_matrix.length!=length){
             if(reference_matrix.length==1){
@@ -857,6 +865,9 @@ class Animator {
      */
     removeTrigger(id,target,step,time){
         this.worker.postMessage({ method: 'removeTrigger', id: id,target: target,step: step,time: time });
+    }
+    set_group({id,field,value,step}) {
+        this.worker.postMessage({ method: 'set_group', id: id,field: field,value: value,step: step });
     }
 }
 export { Prop, Animator, Lerp, Constant }

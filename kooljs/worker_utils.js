@@ -710,7 +710,9 @@ set_group_orientation(id,orientation){
  */
 start_group(directions, indices) {
     indices.map((indices2,i)=>{
+        if(!this.lerp_registry.active_groups.has(i)){
         this.matrix_chain_registry.start_matrix_chain(directions[i],indices2)
+        }
         // this.start_animations(this.matrix_chain_registry.indices.get(indices2))
     })
     this.start_loop();
@@ -718,38 +720,43 @@ start_group(directions, indices) {
 
 stop_group(indices) {
     indices.map((id,i)=>{
-    this.lerp_registry.active_groups.delete(this.id)
-    this.lerp_registry.active_group_indices.get(this.id).clear()
-    this.stop_animations(this.matrix_chains.indices.get(id))
+    if(this.lerp_registry.active_groups.has(id)){
+        this.lerp_registry.active_groups.delete(id)
+        this.lerp_registry.active_group_indices.get(id).clear()
+        this.stop_animations(this.matrix_chain_registry.indices.get(id))
+    }
+
     })
 }
 
 set_group_values(id,field,value,step){
     switch(field){
         case "max_duration":
-            this.matrix_chain_registry.max_duration.set(id,value)
+            this.matrix_chain_registry.max_duration[id]=value
             break;
         case "min_duration":
-            this.matrix_chain_registry.min_duration.set(id,value)
+            this.matrix_chain_registry.min_duration[id]=value
             break;
         case "progress":
-            this.matrix_chain_registry.progress.set(id,value)
+            this.matrix_chain_registry.progress[id]=value
             break;
         case "sequence_length":
-            this.matrix_chain_registry.sequence_length.set(id,value)
+            this.matrix_chain_registry.sequence_length[id]=value
             break;
         case "group_loop":
-            this.matrix_chain_registry.group_loop.set(id,value)
+            this.matrix_chain_registry.group_loop[id]=value
         case "orientation_step":
             this.matrix_chain_registry.orientation_step.set(id,value)
             break;
         case "ref_matrix":
-            if(this,matrix_chain_registry.uni_size[id]==1){
-                this.matrix_chain_registry.ref_matrix.get(id).set(step,value)
-            }
+            if(this.matrix_chain_registry.uni_size[id]==1){
+                this.matrix_chain_registry.ref_matrix.get(id).get(step).map((x,i)=>{
+                    this.matrix_chain_registry.ref_matrix.get(id).get(step)[i]=value[i]
+                })
+                }
             else{
                 const size=this.matrix_chain_registry.max_length[id]
-                this.matrix_chain_registry.ref_matrix.get(id).set(id*size+step,value)
+                this.matrix_chain_registry.ref_matrix.get(id).set(id*size+step).map((x,i)=>x=   value[i])
             }
             
             break;

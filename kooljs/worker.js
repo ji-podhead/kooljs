@@ -291,16 +291,14 @@ class Matrix_Chain extends Worker_Utils {
     update_group(id) {
         this.progress[id] += 1
         if (this.progress[id] >= this.sequence_length[id]) {
+            this.progress[id] = 0
             if (this.group_loop[id] == 1) {
                 this.orientation_step.set(id, [0, 1])
                 if (this.sequence_length[id] == 1) {
-                    this.progress[id] = 0
                     this.start_matrix_chain(1, id)
                 }
                 else {
-                    this.progress[id] = 0
                     this.group_set(id)
-
                 }
             }
             else {
@@ -308,18 +306,7 @@ class Matrix_Chain extends Worker_Utils {
             }
         }
         else {
-            if (this.sequence_length[id] == 1) {
-                this.orientation_step.set(id, [this.progress[id], this.progress[id] + 1])
-                this.reorient_matrix_chain({
-                    id: id,
-                    direction: this.progress[id],
-                    target_step: this.orientation_step.has(id) ? this.orientation_step.get(id) : default_target_step[direction == 0 ? 1 : 0],
-                })
-                
-            }
-            else {
-                this.group_set(id)
-            }
+            this.group_set(id)
         }
     }
 }
@@ -656,6 +643,9 @@ onmessage = (event) => {
         case "reset_animations":
             animator.reset_animations(event.data.indices);
             break;
+        case "set_group":{
+            animator.set_group_values(event.data.id, event.data.field,  event.data.value,event.data.step);
+        }
         case "addTrigger":
             animator.addTrigger({
                 id: event.data.id,
