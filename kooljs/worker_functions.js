@@ -166,8 +166,13 @@ const reorient_target = Worker_Utils.prototype.reorient_target
  * @inheritdoc
  */
 const reorient_duration_by_progress = Worker_Utils.prototype.reorient_duration_by_progress
+/**
+ * @inheritdoc
+ */
+const set_group_values = Worker_Utils.prototype.set_group_values
 
 export{
+set_group_values,
 get_status,
 addTrigger,
 removeTrigger,

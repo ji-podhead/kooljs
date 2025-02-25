@@ -121,7 +121,7 @@ class Constant {
         this.value=animator.constant_map.get(type).get(this.id)
         if(render_triggers!=undefined||render_callbacks!=undefined){
             if(render_callbacks!=undefined){
-                animator.constant_map.get("render_callbacks").set(this.id, add_to_buffer(animator,"buffer",new Uint8Array(render_callbacks)))
+                animator.constant_map.get("render_callbacks").set(this.id, render_callbacks)
             }
             if(render_triggers!=undefined){
                 animator.constant_map.get("render_triggers").set(this.id, add_to_buffer(animator,"buffer",new Uint8Array(render_triggers)))
@@ -413,21 +413,25 @@ class MatrixChain{
         {this.animator.update_constant(this.animator.matrix_chain_map.orientation_step.id,"matrix",[step,invert_step])}
         else{console.error("step out of bounds! max length is: " + this.animator.matrix_chain_map.max_length.value)}
     }
-    constructor(animator,{reference_matrix,min_duration,max_duration,custom_delay=-1,loop, group_loop,start_step=0, target_step=1,sequence_length=1,id_prefix="",callback,group_index=undefined}){
+    constructor(animator,{length,reference_matrix,min_duration,max_duration,custom_delay=-1,loop, group_loop,start_step=0, target_step=1,sequence_length=2,id_prefix="",callback,group_index=undefined}){
         group_loop=group_loop=undefined?false:group_loop
         loop=loop=undefined?false:loop
-        const length=reference_matrix.length
+        // const length=reference_matrix.length
         this.uni_reference=false
+        this.animator=animator
         if(reference_matrix.length!=length){
             if(reference_matrix.length==1){
+                this.animator.matrix_chain_map.get("uni_size").push(1)
                 this.uni_reference=true
             }
             else{
                 return error("ref matrix either needs to have a length of 1 or " + length)
             }
+        }else{
+            this.animator.matrix_chain_map.get("uni_size").push(0)
         }
         
-        this.animator=animator
+        
         this.group=new Group(animator,((val) => callback(val,id_prefix)),3)
         this.id=this.group.id
         animator.results.get("group_results").set(this.id,new Map())
@@ -473,6 +477,7 @@ class MatrixChain{
             this.animator.matrix_chain_map.get("orientation_step").set(this.id,[0,1])
         }
         var mLerp,delay_temp
+        var steps=[reference_matrix[0][start_step],reference_matrix[0][target_step]]
         for (let i = 0; i < length; i++) {
                 if(typeof(custom_delay)=="object" && custom_delay.callback!=undefined){
                     delay_temp= 0
@@ -483,9 +488,12 @@ class MatrixChain{
                 else{
                     delay_temp= custom_delay
                 }
+                if(this.uni_reference!=true){
+                    steps=[reference_matrix[i][start_step],reference_matrix[i][target_step]]
+                }
             mLerp= new Matrix_Lerp(animator,{
                 duration:min_duration,
-                steps: [reference_matrix[i][start_step],reference_matrix[i][target_step]],
+                steps: steps,
                 delay:delay_temp,
                 loop: loop,
                 group:this.id,
@@ -537,6 +545,7 @@ class Animator {
         this.matrix_chain_map.set("min_duration",[])
         this.matrix_chain_map.set("max_duration",[])
         this.matrix_chain_map.set("max_length",[])
+        this.matrix_chain_map.set("uni_size",[])
         //--> constant <--
         this.constant_map = new Map()
         this.constant_map.set("number", new Map())
@@ -665,7 +674,7 @@ class Animator {
                 this.chain_map.set(key, add_to_buffer(this,"buffer",new Uint8Array(value)))
             }
         })
-        ints=["custom_delay","sequence_length","group_loop","min_duration","max_duration","max_length"]
+        ints=["custom_delay","sequence_length","group_loop","min_duration","max_duration","max_length","uni_size"]
         this.matrix_chain_map.forEach((value,key) => {
             if (ints.includes(key)) {
                 this.matrix_chain_map.set(key, add_to_buffer(this,"buffer",new Uint8Array(value)))

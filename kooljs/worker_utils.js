@@ -89,17 +89,18 @@ class Worker_Utils{
     values.map((x) => {
         if (this.sequence_registry.lengths[x.id] != x.values.length - 1) {
             if (this.lerp_registry.loop[x.id] == 1) {
-                removeTrigger(
-                    x.id,
-                    x.id,
-                    this.sequence_registry.lengths[x.id] - 1,
-                    this.lerp_registry.duration[x.id]
+                this.removeTrigger(
+                   {id:x.id,
+                    target:x.id,
+                    step:this.sequence_registry.lengths[x.id] - 1,
+                    time:this.lerp_registry.duration[x.id]}
                 );
-                addTrigger(
-                    x.id,
-                    x.id,
-                    x.values.length - 2,
-                    this.lerp_registry.duration[x.id]
+                this.addTrigger(
+                    {
+                    id:x.id,
+                    target:x.id,
+                    step:x.values.length - 2,
+                    time:this.lerp_registry.duration[x.id]}
                 );
                 //this.trigger_registry.get(x.id).set(lerpChain_registry.lengths[x.id]-1,undefined)
             }
@@ -197,56 +198,40 @@ stop_loop() {
 
     reset_animations(indices) {
     if (indices == "all") {
-        this.stop_loop();
-        indices = this.lerp_registry.activelist;
+        if(this.sequence_registry!=undefined){this.sequence_registry.stop_loop()}
+        else {this.stop_loop()}
+        indices = this.lerp_registry.type.map((t,i)=>{return i});
     }
     //stop_animations(indices)
-    const stopped = {
-        number: [],
-        matrix: [],
-        group: [],
-    };
-    this.sequence_registry.hard_reset(indices);
+    var stopped=0
+    const results={
+        number_results: new Map(),
+        matrix_results: new Map(),
+    }
+    //this.sequence_registry.hard_reset(indices);
     indices.map((x) => {
         this.sequence_registry.reset(x);
         this.lerp_registry.activate(x);
-        if (
-            this.lerp_registry.activelist.includes(x) == false ||
-            this.loop_resolver == null
-        ) {
-            stopped.push(x);
-
+            stopped+=1
             switch (this.lerp_registry.type[x]) {
                 case 2:
-                    this.lerp_registry.number_results[x]= this.sequence_registry.buffer[this.lerp_registry.lerp_chain_start[x]]
+                    results.number_results.set(x,this.sequence_registry.buffer[this.lerp_registry.lerp_chain_start[x]])
                     break;
                 case 3:
-                    if (this.lerp_registry.group_results.has(x)) {
-                        this.lerp_registry.group_results.get(x).set(
+                        results.matrix_results.set(
                             x,
                             this.sequence_registry.matrix_sequences.get(x).get(0)
                         );
-                    }
-                    else {
-                        this.lerp_registry.matrix_results.set(
-                            x,
-                            this.sequence_registry.matrix_sequences.get(x).get(0)
-                        );
-                    }
                     break;
                 default:
                     break;
             }
-        }
     });
-    if (stopped.length > 0)
+    if ( this.loop_resolver == null&&stopped> 0)
         postMessage({
             message: "render",
-            number_results: this.lerp_registry.number_results,
-            matrix_results: this.lerp_registry.matrix_results,
-            group_results: this.lerp_registry.group_results,
-            spring_results: this.lerp_registry.spring_results,
-            result_indices: indices,
+            number_results: results.number_results,
+            matrix_results: results.matrix_results,
         });
 }
 /**
@@ -737,6 +722,38 @@ stop_group(indices) {
     this.lerp_registry.active_group_indices.get(this.id).clear()
     this.stop_animations(this.matrix_chains.indices.get(id))
     })
+}
+
+set_group_values(id,field,value,step){
+    switch(field){
+        case "max_duration":
+            this.matrix_chain_registry.max_duration.set(id,value)
+            break;
+        case "min_duration":
+            this.matrix_chain_registry.min_duration.set(id,value)
+            break;
+        case "progress":
+            this.matrix_chain_registry.progress.set(id,value)
+            break;
+        case "sequence_length":
+            this.matrix_chain_registry.sequence_length.set(id,value)
+            break;
+        case "group_loop":
+            this.matrix_chain_registry.group_loop.set(id,value)
+        case "orientation_step":
+            this.matrix_chain_registry.orientation_step.set(id,value)
+            break;
+        case "ref_matrix":
+            if(this,matrix_chain_registry.uni_size[id]==1){
+                this.matrix_chain_registry.ref_matrix.get(id).set(step,value)
+            }
+            else{
+                const size=this.matrix_chain_registry.max_length[id]
+                this.matrix_chain_registry.ref_matrix.get(id).set(id*size+step,value)
+            }
+            
+            break;
+    }
 }
 }
 export{
