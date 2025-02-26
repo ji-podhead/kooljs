@@ -215,37 +215,43 @@ class Matrix_Chain extends Worker_Utils {
             })
         })
     }
-    reorient_matrix_chain({ id, target_step, direction }) {
+    reorient_matrix_chain({ id, target_step, direction,reorientate,use_start_reference }) {
         var indices = this.indices.get(id)
         indices.map((index, i) => {
             var ref = this.ref_matrix.get(id)
+            var start_ref
             const current = this.get_lerp_value(index);
             var base
             if(this.uni_size[id]=1){
                 base=0
             }
             else[
-                base = i * this.sequence_length[id]+1
+                base = i * this.max_length[id]
             ]
             this.lerp_registry.active_group_indices.get(id).add(index)
+            if (use_start_reference)  {
+                start_ref = ref.get(target_step[direction==1?0:1] + base);
+            }
             ref = ref.get(target_step[direction] + base);
-            if (ref[1] == current) {
+            if (ref == current) {
                 return console.log("target animation is reachead");
             }
             this.hard_reset(index);
-            this.reorient_target({
+            if(reorientate)this.reorient_target({
                 index: index,
                 step: 0, // this is alway zero, since the matrix itself has a steplength of 2, but the ref matrix lnegth can be bigger
                 direction: 1,
                 matrix_row: 0,
                 verbose: false,
                 reference: ref,
+                start_reference: start_ref
+
             });
             if (this.custom_delay[id] >= 0) {
                 const delay = (this.lambda_call(this.custom_delay[id], { animation_index: index, index: i, indices: indices, direction: direction, target_step: target_step }) || 0)
                 this.set_delay(index, delay);
             }
-            this.reorient_duration_by_progress({
+            if(reorientate=="progress")this.reorient_duration_by_progress({
                 index: index,
                 min_duration: this.min_duration[id],
                 max_duration: this.max_duration[id],
@@ -253,14 +259,17 @@ class Matrix_Chain extends Worker_Utils {
             });
         });
     }
-    start_matrix_chain(direction, id) {
+    start_matrix_chain(direction, id,reorientate="progress",use_start_reference) {
         this.result_map.clear()
+        const target= this.orientation_step.get(id)// ? this.orientation_step.get(id) : default_target_step[direction == 0 ? 1 : 0]
         this.lerp_registry.group_results_render.set(id, this.result_map)
         //this.lerp_registry.active_group_indices_render.set(id,this.lerp_registry.active_group_indices.get(id))
         this.reorient_matrix_chain({
             id: id,
             direction: direction,
-            target_step: this.orientation_step.has(id) ? this.orientation_step.get(id) : default_target_step[direction == 0 ? 1 : 0],
+            target_step: target,
+            reorientate:reorientate,
+            use_start_reference:use_start_reference
         })
         this.lerp_registry.active_groups.add(id)
     }
@@ -274,7 +283,7 @@ class Matrix_Chain extends Worker_Utils {
                 base=0
             }
             else{
-                base = i * this.sequence_length[id]+1
+                base = i * this.max_length[id]
             }
             const start_index = base + this.progress[id]
             const end_index = base + this.progress[id] + 1
@@ -306,7 +315,7 @@ class Matrix_Chain extends Worker_Utils {
             }
         }
         else {
-            this.group_set(id)
+             this.group_set(id)
         }
     }
 }
@@ -632,7 +641,7 @@ onmessage = (event) => {
             animator.stop_animations(event.data.indices);
             break;
         case "start_groups":
-            animator.start_group(event.data.directions, event.data.indices);
+            animator.start_group(event.data.directions, event.data.indices,event.data.reorientate,event.data.use_start_reference);
             break;
         case "stop_groups":
             animator.stop_group(event.data.indices);

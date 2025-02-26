@@ -797,8 +797,8 @@ class Animator {
     start_animations(indices) {
         this.worker.postMessage({ method: 'start_animations', indices: indices });
     }
-    start_groups(indices,directions) {
-        this.worker.postMessage({ method: 'start_groups', indices: indices, directions: directions });
+    start_groups(indices,directions,reorientate="progress",use_start_reference) {
+        this.worker.postMessage({ method: 'start_groups', indices: indices, directions: directions,reorientate:reorientate,use_start_reference:use_start_reference });
     }
     stop_groups(indices) {
         this.worker.postMessage({ method: 'stop_groups', indices: indices });

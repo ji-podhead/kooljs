@@ -534,11 +534,18 @@ stop_loop() {
     direction=1,
     reference,
     matrix_row = 0,
+    start_reference,
     verbose = false,
+
 }) {
     verbose && console.log("replacing indices " + index);
     if (this.lerp_registry.type[index] != 2) {
-        this.setMatrix(index, step, this.get_lerp_value(index));
+        if(start_reference){
+            this.setMatrix(index, step, start_reference);
+        }
+        else{
+            this.setMatrix(index, step, this.get_lerp_value(index));
+        }
         this.setMatrix(index, step + direction, reference, matrix_row);
     } else {
         this.setLerp(index, step, reference);
@@ -546,6 +553,7 @@ stop_loop() {
     }
 //    verbose && console.log("reoriented animation with index " + index);
 }
+
 /**
  * Reorients the duration of an animation.
  *
@@ -708,10 +716,10 @@ set_group_orientation(id,orientation){
  *
  * @category Animation
  */
-start_group(directions, indices) {
+start_group(directions, indices,reorientate,use_start_reference) {
     indices.map((indices2,i)=>{
         if(!this.lerp_registry.active_groups.has(i)){
-        this.matrix_chain_registry.start_matrix_chain(directions[i],indices2)
+        this.matrix_chain_registry.start_matrix_chain(directions[i],indices2,reorientate,use_start_reference)
         }
         // this.start_animations(this.matrix_chain_registry.indices.get(indices2))
     })
@@ -719,10 +727,15 @@ start_group(directions, indices) {
 }
 
 stop_group(indices) {
+    if(indices=="all"){
+        
+        indices=[...this.lerp_registry.active_groups]
+    }
     indices.map((id,i)=>{
     if(this.lerp_registry.active_groups.has(id)){
         this.lerp_registry.active_groups.delete(id)
-        this.lerp_registry.active_group_indices.get(id).clear()
+        this.lerp_registry.active_group_indices.get(id).clear() 
+        this.matrix_chain_registry.progress[id]=0
         this.stop_animations(this.matrix_chain_registry.indices.get(id))
     }
 
