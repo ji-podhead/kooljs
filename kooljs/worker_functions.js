@@ -189,7 +189,7 @@ const stop_group = Worker_Utils.prototype.stop_group
 const reverse_group_delays = Worker_Utils.prototype.reverse_group_delays
 
 export{
-    reverse_group_delays,
+reverse_group_delays,
     start_group,
 stop_group,
     get_group_values,

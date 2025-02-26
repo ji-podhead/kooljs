@@ -212,16 +212,18 @@ stop_loop() {
     indices.map((x) => {
         this.sequence_registry.reset(x);
         this.lerp_registry.activate(x);
-            stopped+=1
+            
             switch (this.lerp_registry.type[x]) {
                 case 2:
                     results.number_results.set(x,this.sequence_registry.buffer[this.lerp_registry.lerp_chain_start[x]])
+                    stopped+=1
                     break;
                 case 3:
                         results.matrix_results.set(
                             x,
                             this.sequence_registry.matrix_sequences.get(x).get(0)
                         );
+                        stopped+=1
                     break;
                 default:
                     break;

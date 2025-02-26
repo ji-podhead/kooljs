@@ -826,7 +826,11 @@ class Animator {
         this.worker.postMessage({ method: 'reset_animations', indices: indices });
     }
     get_size(){
-        return this.animation_objects.size
+        return this.chain_map.get("progress").length
+        //return this.animation_objects.size
+    }
+    get_matrix_size(){
+        return this.chain_map.get("lengths").size
     }
     get_constant_size(type){
         return this.constant_map.get(type).size
