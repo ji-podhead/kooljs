@@ -48,7 +48,12 @@ const worker_functions =
   "reorient_target",
   "reorient_duration_by_distance",
   "reorient_duration_by_progress",
-  "set_group_orientation"
+  "set_group_orientation",
+  "get_group_values",
+"set_group_values",
+"stop_group",
+"start_group",
+"reverse_group_delays"
 ]
 var old_length,newlength,ofset,temp
 function add_to_buffer(animator,target,array){

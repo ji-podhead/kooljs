@@ -705,6 +705,18 @@ stop_loop() {
         this.sequence_registry.matrix_sequences.set(id, newMap);
     }
 }
+reverse_group_delays(id){
+    this.matrix_chain_registry.indices.get(id).map((val,i)=>{
+        // if(i==this.matrix_chain_registry.indices.get(id).length-1){
+        //     return
+        // }
+        const target_index=this.matrix_chain_registry.indices.get(id).length-i
+        const target=this.matrix_chain_registry.indices.get(id)[target_index-1]
+        const target_delay=this.get_delay(target)
+        this.set_delay(target,this.get_delay(val))
+        this.set_delay(val,target_delay)
+    })
+}
 set_group_orientation(id,orientation){  
     this.matrix_chain_registry.orientation_step.set(id,orientation)
 }
@@ -741,7 +753,15 @@ stop_group(indices) {
 
     })
 }
-
+get_group_values(id){
+    return{
+        active:this.lerp_registry.active_groups.has(id),
+        progress:this.matrix_chain_registry.progress[id],
+        orientation:this.matrix_chain_registry.orientation_step.get(id),
+        active_indices:this.lerp_registry.active_group_indices.get(id),
+        loop:this.matrix_chain_registry.group_loop[id]
+    }
+}
 set_group_values(id,field,value,step){
     switch(field){
         case "max_duration":

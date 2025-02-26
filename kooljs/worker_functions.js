@@ -170,9 +170,30 @@ const reorient_duration_by_progress = Worker_Utils.prototype.reorient_duration_b
  * @inheritdoc
  */
 const set_group_values = Worker_Utils.prototype.set_group_values
+/**
+ * @inheritdoc
+ */
+const get_group_values = Worker_Utils.prototype.get_group_values
+/**
+ * @inheritdoc
+ */
+const start_group = Worker_Utils.prototype.start_group
+/**
+ * @inheritdoc
+ */
+const stop_group = Worker_Utils.prototype.stop_group
+
+/**
+ * @inheritdoc
+ */
+const reverse_group_delays = Worker_Utils.prototype.reverse_group_delays
 
 export{
-set_group_values,
+    reverse_group_delays,
+    start_group,
+stop_group,
+    get_group_values,
+    set_group_values,
 get_status,
 addTrigger,
 removeTrigger,

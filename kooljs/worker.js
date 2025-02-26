@@ -187,7 +187,7 @@ class LerpSequence extends Worker_Utils {
 }
 var indices
 class Matrix_Chain extends Worker_Utils {
-    constructor(indices, ref_matrix, uni_size,orientation_step, max_duration, min_duration, custom_delay, group_loop, max_length, sequence_length, animator) {
+    constructor(indices, ref_matrix, uni_size,orientation_step, max_duration, min_duration, custom_delay,  group_loop, max_length, sequence_length, animator) {
         super()
         this.indices = indices;
         this.ref_matrix = ref_matrix;
@@ -248,7 +248,7 @@ class Matrix_Chain extends Worker_Utils {
 
             });
             if (this.custom_delay[id] >= 0) {
-                const delay = (this.lambda_call(this.custom_delay[id], { animation_index: index, index: i, indices: indices, direction: direction, target_step: target_step }) || 0)
+                const delay = (this.lambda_call(this.custom_delay[id], { animation_index: index, index: i, indices: indices, progress:this.progress[id],direction: direction, target_step: target_step }) || 0)
                 this.set_delay(index, delay);
             }
             if(reorientate=="progress")this.reorient_duration_by_progress({
