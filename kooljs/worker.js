@@ -559,7 +559,8 @@ class Animator extends Worker_Utils {
                         if (triggers_step != undefined) {
                             targets = triggers_step.get(this.lerp_registry.progress[index] - 1);
                             targets && targets.map((target) => {
-                                if (target == index) { this.hard_reset(target); this.lerp_registry.number_results_render.delete }
+                                if (target == index) {
+                                     this.hard_reset(target); this.lerp_registry.number_results_render.delete }
                                 else this.soft_reset(target);
 
                             });
