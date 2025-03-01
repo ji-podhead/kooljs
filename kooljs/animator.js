@@ -53,7 +53,8 @@ const worker_functions =
 "set_group_values",
 "stop_group",
 "start_group",
-"reverse_group_delays"
+"reverse_group_delays",
+"reset_group"
 ]
 var old_length,newlength,ofset,temp
 function add_to_buffer(animator,target,array){
@@ -418,7 +419,7 @@ class MatrixChain{
         {this.animator.update_constant(this.animator.matrix_chain_map.orientation_step.id,"matrix",[step,invert_step])}
         else{console.error("step out of bounds! max length is: " + this.animator.matrix_chain_map.max_length.value)}
     }
-    constructor(animator,{length,reference_matrix,min_duration,max_duration,custom_delay=-1,loop, group_loop,start_step=0, target_step=1,sequence_length,id_prefix="",callback,group_index=undefined}){
+    constructor(animator,{length,reference_matrix,min_duration,max_duration,custom_delay=-1,loop, group_loop,start_step=0, target_step=1,sequence_length,id_prefix="",callback}){
         group_loop=group_loop=undefined?false:group_loop
         loop=loop=undefined?false:loop
         // const length=reference_matrix.length

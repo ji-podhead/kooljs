@@ -215,7 +215,7 @@ class Matrix_Chain extends Worker_Utils {
             })
         })
     }
-    reorient_matrix_chain({ id, target_step, direction,reorientate,use_start_reference }) {
+    reorient_matrix_chain({ id, target_step, direction,reorientate }) {
         var indices = this.indices.get(id)
         indices.map((index, i) => {
             var ref = this.ref_matrix.get(id)
@@ -225,11 +225,11 @@ class Matrix_Chain extends Worker_Utils {
             if(this.uni_size[id]=1){
                 base=0
             }
-            else[
+            else{
                 base = i * this.max_length[id]
-            ]
+            }
             this.lerp_registry.active_group_indices.get(id).add(index)
-            if (use_start_reference)  {
+            if (reorientate!="progress")  {
                 start_ref = ref.get(target_step[direction==1?0:1] + base);
             }
             ref = ref.get(target_step[direction] + base);
@@ -259,7 +259,39 @@ class Matrix_Chain extends Worker_Utils {
             });
         });
     }
-    start_matrix_chain(direction, id,reorientate="progress",use_start_reference) {
+    /**
+     * Resets a group of animations.
+     * @param {number} id - The id of the group.
+     */
+    reset_group(id,start,target){ 
+                if(start!=undefined){
+                    if (start==target|| this.ref_matrix.get(id).get(start)==undefined || this.ref_matrix.get(id).get(target)==undefined) {
+                        return console.log("start or target is not valie");
+                    }
+                    var indices = this.indices.get(id)
+                        indices.map((index, i) => {
+                            var target_ref = this.ref_matrix.get(id)
+                            var start_ref
+                            var base
+                            if(this.uni_size[id]=1){
+                                base=0
+                            }
+                            else{base = i * this.max_length[id]}
+                            start_ref = target_ref.get(start + base);
+                            target_ref = target_ref.get(target + base);
+
+                            this.hard_reset(index);
+                            this.setMatrix(index, 0, start_ref);
+                            this.setMatrix(index, 1, target_ref);
+                        });
+                    
+                }else{
+                    indices.map((index, i) => {
+                    this.hard_reset(index);
+                    })
+                }
+    }
+    start_matrix_chain(direction, id,reorientate="progress") {
         this.result_map.clear()
         const target= this.orientation_step.get(id)// ? this.orientation_step.get(id) : default_target_step[direction == 0 ? 1 : 0]
         this.lerp_registry.group_results_render.set(id, this.result_map)
@@ -269,7 +301,6 @@ class Matrix_Chain extends Worker_Utils {
             direction: direction,
             target_step: target,
             reorientate:reorientate,
-            use_start_reference:use_start_reference
         })
         this.lerp_registry.active_groups.add(id)
     }

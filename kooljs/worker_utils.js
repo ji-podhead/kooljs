@@ -279,11 +279,16 @@ stop_loop() {
  * @param {number[]} value - the matrix to set. The matrix is a 1 dimensional array of floats with a length that is a multiple of 4 (e.g. [r1, g1, b1, a1, r2, g2, b2, a2])
  */
  setMatrix(index, step, value) {
-    // console.log(lerpChain_registry.matrixChains.get(index).get(step))
+    try{
     value.map((x, i) => {
         this.sequence_registry.matrix_sequences.get(index).get(step)[i] = x;
     });
-    // lerpChain_registry.matrixChains.get(index).get(step)
+    }
+    catch(err){
+        console.error(` error in setMatrix:
+            ${err}`
+        )
+    }
 }
 /**
  * Updates a constant value.
@@ -727,19 +732,32 @@ set_group_orientation(id,orientation){
  *
  * @param {number[]} directions - The directions for the animation sequence.
  * @param {number[]} indices - The indices for the animation sequence.
- *
+ * @param {number[] | false} reorient - [start,target] | false if you ont want to set the current lerp value as the new start value
+ * otherwise the matrix animation wont be set
  * @category Animation
  */
-start_group(directions, indices,reorientate,use_start_reference) {
+start_group(directions, indices,reorient) {
     indices.map((indices2,i)=>{
         if(!this.lerp_registry.active_groups.has(i)){
-        this.matrix_chain_registry.start_matrix_chain(directions[i],indices2,reorientate,use_start_reference)
+        this.matrix_chain_registry.start_matrix_chain(directions[i],indices2,reorient)
         }
         // this.start_animations(this.matrix_chain_registry.indices.get(indices2))
     })
     this.start_loop();
 }
+/**
+ * Resets all animations of a group.
+ * You can optionally reorientate the group during the reset if you pass a reference.
+ *
+ * @param {number} id - The identifier of the group to reset.
+ * @param {Array} start - the target reference to use for the start value
+ * @param {number} target - The target reference index to use during the reset.
+ */
 
+reset_group(id,start,target){
+    this.matrix_chain_registry.reset_group(id,start,target)
+    
+}
 stop_group(indices) {
     if(indices=="all"){
         

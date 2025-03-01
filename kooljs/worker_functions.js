@@ -1,3 +1,10 @@
+// Copyright (c) 2025 Ji-Podhead and Project Contributors
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, subject to the following conditions:
+// 1. All commercial uses of the Software must:
+//    a) Include visible attribution to all contributors (listed in CONTRIBUTORS.md).
+//    b) Provide a direct link to the original project repository (https://github.com/ji-podhead/kooljs).
+// 2. The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
 // tis scripts purpose is to supply the corresponding worker functions and their docstrings for the users lambda and callback functions
 import { Worker_Utils } from "kooljs/worker_utils";
 
@@ -8,7 +15,7 @@ const get_status = Worker_Utils.prototype.get_status
 /**
  * @inheritdoc
  */
-const  set_group_orientation=Worker_Utils.prototype.set_group_orientation
+const set_group_orientation = Worker_Utils.prototype.set_group_orientation
 
 /**
  * @inheritdoc
@@ -187,52 +194,57 @@ const stop_group = Worker_Utils.prototype.stop_group
  * @inheritdoc
  */
 const reverse_group_delays = Worker_Utils.prototype.reverse_group_delays
+/**
+ * @inheritdoc
+ */
+const reset_group = Worker_Utils.prototype.reset_group
 
-export{
-reverse_group_delays,
+export {
+    reset_group,
+    reverse_group_delays,
     start_group,
-stop_group,
+    stop_group,
     get_group_values,
     set_group_values,
-get_status,
-addTrigger,
-removeTrigger,
-get_active_group_indices,
-get_time,
-set_time,
-get_step,
-set_step,
-get_sequence_length,
-set_sequence_start,
-get_sequence_start,
-set_sequence_length,
-is_active,
-get_active,
-start_animations,
-stop_animations,
-setLerp,
-setMatrix,
-get_lerp_value,
-soft_reset,
-hard_reset,
-get_duration,
-set_duration,
-change_framerate,
-get_constant,
-get_constant_number,
-get_constant_row,
-render_constant,
-update_constant,
-set_delay,
-get_delay,
-get_delay_delta,
-set_delay_delta,
-lambda_call,
-get_step_lerp_target_value,
-reorient_duration,
-reorient_duration_by_distance,
-reverse,
-reorient_target,
-set_group_orientation,
-reorient_duration_by_progress,
+    get_status,
+    addTrigger,
+    removeTrigger,
+    get_active_group_indices,
+    get_time,
+    set_time,
+    get_step,
+    set_step,
+    get_sequence_length,
+    set_sequence_start,
+    get_sequence_start,
+    set_sequence_length,
+    is_active,
+    get_active,
+    start_animations,
+    stop_animations,
+    setLerp,
+    setMatrix,
+    get_lerp_value,
+    soft_reset,
+    hard_reset,
+    get_duration,
+    set_duration,
+    change_framerate,
+    get_constant,
+    get_constant_number,
+    get_constant_row,
+    render_constant,
+    update_constant,
+    set_delay,
+    get_delay,
+    get_delay_delta,
+    set_delay_delta,
+    lambda_call,
+    get_step_lerp_target_value,
+    reorient_duration,
+    reorient_duration_by_distance,
+    reverse,
+    reorient_target,
+    set_group_orientation,
+    reorient_duration_by_progress,
 }
