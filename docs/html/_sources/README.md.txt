@@ -254,7 +254,6 @@ import {
   animProps.stop_active = animator.Lambda({
     callback: (() => {
       get_constant_row(`${animProps.indices.id}`, 0).map((i) => {
-        debugger
         if (get_constant_number(`${animProps.selected.id}`) != i) {
           if (get_constant_row(`${animProps.reference_matrix.id}`, 0) != get_lerp_value(i)) {
             lambda_call(`${animProps.replace_indices.id}`, { index: i, ref_step: 0 })

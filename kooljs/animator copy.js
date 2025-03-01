@@ -433,7 +433,6 @@ class MatrixChain{
                     reference:ref
                 });
                 if(delay_invert&&direction==0){
-                    debugger
                     const target=get_delay(indices[indices.length]-index)
 
                     set_delay(indices[indices.length]-index, get_delay(index))
@@ -455,11 +454,9 @@ class MatrixChain{
         callback:  ((direction,ref_id,indices_id,orientation_step,delay_invert,min_duration,max_duration)=>{
         const ref_matrix=get_constant_row(ref_id,0)
         const indices=get_constant_row(indices_id,0)
-            debugger
         if(typeof(orientation_step)=="number"){
          orientation_step=get_constant(orientation_step,"matrix")
         }
-        debugger
         lambda_call(`${animProps.reorient_matrix_chain.id}`,{
             indices:indices,
             direction:direction,
