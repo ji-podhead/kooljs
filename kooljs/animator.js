@@ -431,7 +431,6 @@ class MatrixChain{
 
             sequence_length=reference_matrix[0].length
         }
-        
         this.animator=animator
         if(reference_matrix.length!=length){
             if(reference_matrix.length==1){
@@ -444,8 +443,6 @@ class MatrixChain{
         }else{
             this.animator.matrix_chain_map.get("uni_size").push(0)
         }
-        
-        
         this.group=new Group(animator,((val) => callback(val,id_prefix)),3)
         this.id=this.group.id
         animator.results.get("group_results").set(this.id,new Map())
@@ -456,14 +453,12 @@ class MatrixChain{
         this.animator.matrix_chain_map.get("sequence_length").push(sequence_length)
         group_loop=group_loop==false?0:1
         this.animator.matrix_chain_map.get("group_loop").push(group_loop)
-
         if(typeof(custom_delay)=="object" && custom_delay.callback!=undefined){
             const lambda=new Lambda(animator,custom_delay)
             this.animator.matrix_chain_map.get("custom_delay").push(lambda.id)
         }
         else 
         {
-            this.animator.matrix_chain_map.get("custom_delay").push(-1)
             if(typeof(custom_delay)=="object"){
                 if(custom_delay.length!=length){
                     return Error("MatrixChain failed! your delay list has not the right length! This would break the Registry, so pls fix that!")
@@ -472,10 +467,11 @@ class MatrixChain{
             else if(typeof(custom_delay)!="number"){
                 return Error("MatrixChain failed! your delay is not a number, list! This would break the Registry, so pls fix that!")
             }
-            else{
-                console.warn("no valid delay given, setting it to 0")
+            else if(custom_delay<0 || custom_delay==undefined){
                 custom_delay=0
+                console.warn("no valid delay given, setting it to -1")
             }
+            this.animator.matrix_chain_map.get("custom_delay").push(-1)
         }
         if(reference_matrix[0].length>2){
             if(target_step==undefined) target_step==start_step+1
@@ -524,7 +520,6 @@ class MatrixChain{
     reference_matrix.map((r,i)=>{
         new_ref.set(i,add_to_buffer(animator,"buffer",r)) 
     })
-
     //reference_matrix.map((x,i)=>new_ref.set(i,new Float32Array(x)))
     this.animator.matrix_chain_map.get("ref_matrix").set(this.id,new_ref)
     this.indices= add_to_buffer(animator,"buffer",new Uint8Array(this.indices))
