@@ -222,7 +222,7 @@ class Matrix_Chain extends Worker_Utils {
             var start_ref
             const current = this.get_lerp_value(index);
             var base
-            if(this.uni_size[id]=1){
+            if(this.uni_size[id]==1){
                 base=0
             }
             else{
@@ -247,7 +247,7 @@ class Matrix_Chain extends Worker_Utils {
                 start_reference: start_ref
 
             });
-            if (this.custom_delay[id] >= 0) {
+            if (this.custom_delay[id] !=255) {
                 const delay = (this.lambda_call(this.custom_delay[id], { animation_index: index, index: i, indices: indices, progress:this.progress[id],direction: direction, target_step: target_step }) || 0)
                 this.set_delay(index, delay);
             }
@@ -273,7 +273,7 @@ class Matrix_Chain extends Worker_Utils {
                             var target_ref = this.ref_matrix.get(id)
                             var start_ref
                             var base
-                            if(this.uni_size[id]=1){
+                            if(this.uni_size[id]==1){
                                 base=0
                             }
                             else{base = i * this.max_length[id]}
@@ -310,7 +310,7 @@ class Matrix_Chain extends Worker_Utils {
         const ref = this.ref_matrix.get(id)
         this.indices.get(id).map((index, i) => {
             var base
-            if(this.uni_size[id]=1){
+            if(this.uni_size[id]==1){
                 base=0
             }
             else{
@@ -335,7 +335,7 @@ class Matrix_Chain extends Worker_Utils {
             if (this.group_loop[id] == 1) {
                 this.orientation_step.set(id, [0, 1])
                 if (this.sequence_length[id] == 1) {
-                    this.start_matrix_chain(1, id)
+                    this.start_matrix_chain(1, id,true)
                 }
                 else {
                     this.group_set(id)
