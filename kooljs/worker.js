@@ -248,7 +248,9 @@ class Matrix_Chain extends Worker_Utils {
 
             });
             if (this.custom_delay[id] !=255) {
+
                 const delay = (this.lambda_call(this.custom_delay[id], { animation_index: index, index: i, indices: indices, progress:this.progress[id],direction: direction, target_step: target_step },this) || 0)
+
                 this.set_delay(index, delay);
             }
             if(reorientate=="progress")this.reorient_duration_by_progress({

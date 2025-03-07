@@ -260,6 +260,7 @@ function addTiggers(
     } else {
       animationTriggers.push(loop_trigger);
     }
+
   } else {
     animator.registry_map.get("loop").push(0);
   }
@@ -283,6 +284,7 @@ function addTiggers(
           }
           frames.get(x[1]).push(x[0]);
         });
+
 
         frames.forEach((targets, frame) => {
           frames.set(
