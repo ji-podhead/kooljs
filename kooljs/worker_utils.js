@@ -123,13 +123,15 @@ class Worker_Utils{
 /**
  * Calls a lambda  stored in callback_map with the given id and arguments.
  * @param {number} id - The id of the lambda  to call
- * @param {any[]} args - The arguments to pass to the lambda 
+ * @param {any[]} args - The arguments to pass to the lambda
+ * @param {object} scope - The scope reference, required for safely calling the function.
  */
- lambda_call(id, args) {
+ lambda_call(id, args,scope) {
     try {
         // console.log(args)
         // console.log(id)
-        return this.callback_map.get(id)(args);
+        return this.callback_map.get(id).apply(scope,args==undefined?[scope]:Array.isArray(args)?[...args,scope]:[args,scope]);
+
     } catch (err) {
         console.error("error in lambda call", id);
         console.error(this.callback_map.get(id));
@@ -204,7 +206,7 @@ stop_loop() {
     }
     //stop_animations(indices)
     var stopped=0
-    const results={
+    const results={ 
         number_results: new Map(),
         matrix_results: new Map(),
     }
@@ -588,15 +590,40 @@ stop_loop() {
             console.log("new start_duration for " + index + " is " + duration);
     }
 }
+/**
+ * Linearly interpolates between two values.
+ *
+ * @param {number} value - The current value of the animation.
+ * @param {number} target - The target value of the animation.
+ * @param {number} min - The minimum value of the animation.
+ * @param {number} max - The maximum value of the animation.
+ * @param {number} threshold - The value to return if the interpolation would result in a value less than this.
+ * @returns {number} The interpolated value.
+ */
  lerp(value, target, min, max, threshold) {
     const t = (value - min) / (max - min);
     const result = target * t + (1 - t) * threshold;
     return result;
 }
+/**
+ * Normalizes a distance between two values to a value between 0 and 1.
+ * @param {number} target - The target value.
+ * @param {number} current - The current value.
+ * @param {number} max - The maximum value.
+ * @returns {number} - The normalized distance.
+ */
  normalizeDistance(target, current, max) {
     const distance = Math.abs(current - target);
     return distance / Math.abs(max - target);
 }
+/**
+ * Clamps a value to a minimum and maximum value.
+ *
+ * @param {number} value - The value to clamp.
+ * @param {number} min - The minimum value.
+ * @param {number} max - The maximum value.
+ * @returns {number} The clamped value.
+ */
  clamp(value, min, max) {
     return Math.min(Math.max(value, min), max);
 }
@@ -614,7 +641,7 @@ stop_loop() {
  * @param {string} opts.mode - The mode to use for calculating the distance. Possible values are "max_distance",
  *                             "manhattan_distance", "cosine_similarity", and "vector_magnitude".
  *
- * @returns {number} - The new duration of the animation.
+ * @returns {object} - {duration,differences}
  */
  reorient_duration_by_distance({
     index,
@@ -623,30 +650,39 @@ stop_loop() {
     min_duration,
     max_duration,
     mode = "max_distance",
+    reorientate_steps=false
 }) {
     const current = this.get_lerp_value(index);
 
     if (this.lerp_registry.type[index] != 2) {
+        var dif
         switch (mode) {
             case "max_distance":
                 const distances = [];
+                dif=[]
                 for (let i = 0; i < target.length; i++) {
                     distances.push(Math.abs(target[i] - current[i]));
+                    dif.push(target[i] - current[i])
                 }
                 distance = Math.max(...distances);
+                
                 break;
             case "manhattan_distance":
                 distance = 0;
+                dif=[]
                 for (let i = 0; i < target.length; i++) {
                     distance += Math.abs(target[i] - current[i]);
+                    dif.push(target[i] - current[i])
                 }
                 break;
             case "cosine_similarity":
                 const dotProduct = 0;
                 const magnitudeTarget = 0;
                 const magnitudeCurrent = 0;
+                dif=[]
                 for (let i = 0; i < target.length; i++) {
                     dotProduct += target[i] * current[i];
+                    dif.push(target[i] - current[i])
                     magnitudeTarget += target[i] ** 2;
                     magnitudeCurrent += current[i] ** 2;
                 }
@@ -656,8 +692,10 @@ stop_loop() {
                 break;
             case "vector_magnitude":
                 distance = 0;
+                dif=[]
                 for (let i = 0; i < target.length; i++) {
                     distance += (target[i] - current[i]) ** 2;
+                    dif.push((target[i] - current[i]))
                 }
                 distance = Math.sqrt(distance);
                 break;
@@ -671,7 +709,10 @@ stop_loop() {
     //Math.min(max_duration, Math.max(min_duration, distance * max_distance));
     this.soft_reset(index);
     this.set_duration(index, duration);
-    return duration;
+    return {
+        duration:duration,
+        diffrences:dif
+    };
 }
  reorient_duration_by_progress({ index, min_duration, max_duration,soft_reset=true }) {
     const progress = this.get_time(index) / max_duration;

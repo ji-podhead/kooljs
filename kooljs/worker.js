@@ -39,7 +39,7 @@ class Lerp extends Worker_Utils {
         this.loop_resolver = null;
         lerp_callback_ids.forEach((val, key) => {
             // no shallow copy just copying the pointer
-            this.lerp_callbacks.set(key, callback_map.get(val));
+            this.lerp_callbacks.set(key, val);
         });
     }
     activate(id) {
@@ -248,7 +248,7 @@ class Matrix_Chain extends Worker_Utils {
 
             });
             if (this.custom_delay[id] !=255) {
-                const delay = (this.lambda_call(this.custom_delay[id], { animation_index: index, index: i, indices: indices, progress:this.progress[id],direction: direction, target_step: target_step }) || 0)
+                const delay = (this.lambda_call(this.custom_delay[id], { animation_index: index, index: i, indices: indices, progress:this.progress[id],direction: direction, target_step: target_step },this) || 0)
                 this.set_delay(index, delay);
             }
             if(reorientate=="progress")this.reorient_duration_by_progress({
@@ -419,15 +419,24 @@ class Animator extends Worker_Utils {
         triggers.forEach((trigger, key) => this.trigger_registry.set(key, trigger));
         condi_new.forEach((val, key) => {
             try {
-                this.callback_map.set(key, eval(val));
-            } catch (err) {
-                console.error(
-                    "failed to eval callback function on the worker for: " + key
-                );
-                console.error(val);
-                console.error(err);
+              this.callback_map.set(key, new Function('return ' + val)({scope:this}));
+              console.log(typeof(this.callback_map.get(key)))
+            } catch (e) {
+              console.error(e);
             }
-        });
+          });
+
+        // condi_new.forEach((val, key) => {
+        //     try {
+        //         this.callback_map.set(key, eval(val));
+        //     } catch (err) {
+        //         console.error(
+        //             "failed to eval callback function on the worker for: " + key
+        //         );
+        //         console.error(val);
+        //         console.error(err);
+        //     }
+        // });
         this.lerp_registry = new Lerp(
             results,
             this.callback_map,
@@ -567,16 +576,16 @@ class Animator extends Worker_Utils {
                     if (allow_render == 0) {
                         delta_t = this.lerp_registry.progress[index] / this.lerp_registry.duration[index];
                         if (method != undefined) res = method(index, delta_t, target, reference)
-                        args = {
-                            id: index,
-                            value: res,
-                            step: this.sequence_registry.progress[index],
-                            time: this.lerp_registry.progress[index],
-                            step: this.sequence_registry.progress[index],
-                        };
                         if (this.lerp_registry.lerp_callbacks.has(index)) {
                             try {
-                                this.lerp_registry.lerp_callbacks.get(index)(args);
+                                args = {
+                                    id: index,
+                                    value: res,
+                                    step: this.sequence_registry.progress[index],
+                                    time: this.lerp_registry.progress[index],
+                                    step: this.sequence_registry.progress[index],
+                                };
+                                this.lambda_call(this.lerp_registry.lerp_callbacks.get(index),args,this)
                             }
                             catch (err) { console.log(err) }
                         }
@@ -664,7 +673,7 @@ onmessage = (event) => {
             animator.change_framerate(event.data.fps_new);
             break;
         case "lambda_call":
-            animator.lambda_call(event.data.id, event.data.args);
+            animator.lambda_call(event.data.id, event.data.args,animator);
             break;
         case "start_animations":
             animator.start_animations(event.data.indices);

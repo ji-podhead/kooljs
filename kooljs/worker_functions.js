@@ -198,8 +198,22 @@ const reverse_group_delays = Worker_Utils.prototype.reverse_group_delays
  * @inheritdoc
  */
 const reset_group = Worker_Utils.prototype.reset_group
-
+/**
+ * @inheritdoc
+ */
+const lerp = Worker_Utils.prototype.lerp
+/**
+ * @inheritdoc
+ */
+const normalizeDistance = Worker_Utils.prototype.normalizeDistance
+/**
+ * @inheritdoc
+ */
+const clamp = Worker_Utils.prototype.clamp
 export {
+    lerp,
+    normalizeDistance,
+    clamp,
     reset_group,
     reverse_group_delays,
     start_group,
