@@ -216,6 +216,10 @@ function addCallback(animator, callback, animProps) {
   } else if (typeof callback != "string") {
     return console.log("callback is not a string and animProps is undefined");
   }
+  if(callback.includes("kooljs_worker_functions__WEBPACK_IMPORTED_MODULE")){
+    return console.error(`your call back is invalid and will cause errors!!!
+callback:   ${callback}`)
+  }
   animator.callback_map.set(lambda_index, callback);
   return lambda_index;
 }
