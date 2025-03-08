@@ -419,14 +419,7 @@ class Animator extends Worker_Utils {
         this.callback_map = new Map();
         this.update_group = undefined
         triggers.forEach((trigger, key) => this.trigger_registry.set(key, trigger));
-        condi_new.forEach((val, key) => {
-            try {
-              this.callback_map.set(key, new Function('return ' + val)({scope:this}));
-              console.log(typeof(this.callback_map.get(key)))
-            } catch (e) {
-              console.error(e);
-            }
-          });
+       
 
         // condi_new.forEach((val, key) => {
         //     try {
@@ -482,6 +475,19 @@ class Animator extends Worker_Utils {
         this.lerp_registry.matrix_chain_registry = this.matrix_chain_registry
 
         this.constant_registry = new Constant(constants, this)
+        condi_new.forEach((val, key) => {
+            try {
+                console.log(val.args)
+                //const args=Array.from([...val.args,val.key])
+                this.callback_map.set(key, {callback:undefined,props:val.props,key:val.key})
+             const func =new Function(val.args[val.args.length-1], `return ${val.callback}`)
+             this.callback_map.set(key, {callback:func,props:val.props,key:val.key})
+     
+                   //func()//...[...val.args,this.callback_map.get(this.callback_map.size-1).props])
+            } catch (e) {
+              console.error(e);
+            }
+          });
         this.animateLoop = async function () {
             try {
                 this.loop_resolver = new AbortController();
@@ -587,7 +593,7 @@ class Animator extends Worker_Utils {
                                     time: this.lerp_registry.progress[index],
                                     step: this.sequence_registry.progress[index],
                                 };
-                                this.lambda_call(this.lerp_registry.lerp_callbacks.get(index),args,this)
+                                this.lambda_call(this.lerp_registry.lerp_callbacks.get(index),args)
                             }
                             catch (err) { console.log(err) }
                         }
@@ -675,7 +681,9 @@ onmessage = (event) => {
             animator.change_framerate(event.data.fps_new);
             break;
         case "lambda_call":
-            animator.lambda_call(event.data.id, event.data.args,animator);
+            const id =event.data.id
+            const args = event.data.args
+            animator.lambda_call(id,args);
             break;
         case "start_animations":
             animator.start_animations(event.data.indices);

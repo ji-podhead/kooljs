@@ -161,58 +161,136 @@ class Constant {
   }
 }
 var lambda_index;
-function addCallback(animator, callback, animProps) {
-  function add_scope(str) {
+function addCallback(animator, callback, animProps,key,id) {
+ lambda_index = animator.callback_map.size;
+ var args
+ 
+  function findCommasOutsideBrackets(str) {
+    var between_bracket1=0
+    var between_bracket2=0
+    var is_valid=true
+    str=[...str]
+    const positions=[0]
+    str.map((x,i)=>{
+      if(x=="{"){
+        between_bracket1+=1
+      }
+      else if(x=="}"){
+        between_bracket1-=1
+      }
+      else if(x=="[")
+      {
+        between_bracket2+=1
+      }
+      else if(x=="]")
+      {
+        between_bracket1-=1
+      }
+      else if(x==","){
+        if((between_bracket1==0&&between_bracket2==0))
+      {
+        // is_valid=false
+        positions.push(i)
+
+      }else{
+        
+       }
+    }
+      
+    })
+    positions.push(str.length)
+    return positions
+  }
+  function add_props(str) {
+    function splitAt(str, index) {
+      return [str.slice(0, index), str.slice(index)];
+    }
+   key=JSON.stringify(key).slice(1,key.length+1)
     str = str.replace(/\([^)]*\)/, (match) => {
       if (match === '()') {
-        return '(scope)';
-      } else {
-        return match.replace(')', ', scope)');
-      }
+        args="()"
+        return `(${key})`;
+        //return "()"
+        args=""
+      } else  {
+        
+        
+//         if (!commas.valid) {
+//           return console.error(`your arguments in your lambda function should only be empty, a single element(array,typedArray,number,object,Map,Set...)!
+// orig. arguments: ${match}
+//             `)
+//         }else{
+          args=match.replace("(","").replace(")","")
+          const commas=findCommasOutsideBrackets(args)
+          const subarrays = [];
+          for (let i = 0; i < commas.length - 1; i++) {
+            var start = commas[i]
+            var end = commas[i + 1];
+            if(i>0){
+              start+=1
+              //end-=1
+            }
+            const subarray = args.slice(start, end);
+            subarrays.push(subarray.trim());
+          }
+          subarrays.push(`${key}=this.callback_map.get(${lambda_index}).props,animator=this`)
+         // subarrays.push("animator=this")
+          args=subarrays
+      //  match=match.replace(')', `, ${key}=this.callback_map.get(${lambda_index}).props)`);
+        //wreturn "()"
+        return match}
+      //}
     });
     return str
   }
   
-  lambda_index = animator.callback_map.size;
+ 
   if (typeof callback == "function") {
     callback = callback.toString();
-    callback = add_scope(callback)
+    callback= add_props(callback)
     callback = worker_functions.reduce((str, func) => {
-      str = str.replace(new RegExp(`\\(0,kooljs_worker_functions__WEBPACK_IMPORTED_MODULE_(\\d+?)__.${func}\\)`, "g"), "scope." + func);
+      // str = str.replace(new RegExp(`\\(0,kooljs_worker_functions__WEBPACK_IMPORTED_MODULE_(\\d+?)__.${func}\\)`, "g"), 
+      str = str.replace(new RegExp(`\\(0,kooljs_worker_functions__WEBPACK_IMPORTED_MODULE_(\\d+?)__.${func}\\)`, "g"), (()=>{
+        args.push(`${func}=this.${func}`);
+          return func
+          })
+        +func
+    
+    );
 
-      if(func=="lambda_call"){
-        const regex = /lambda_call\([^)]*\)/g;
-          var match = regex.exec(str);
-          if (match) {
-            const lambdaCallString = match[0];
-            match = add_scope(lambdaCallString);
-            str = str.replace(regex, match);}
-      }
+      // if(func=="lambda_call"){
+      //   const regex = /lambda_call\([^)]*\)/g;
+      //     var match = regex.exec(str);
+      //     if (match) {
+      //       const lambdaCallString = match[0];
+      //       match = add_scope(lambdaCallString);
+      //       str = str.replace(regex, match);}
+      // }
       return str;
     }, callback);
 
-    var val;
-    callback = callback.replace(/`\$\{([^}]+)\}`/g, (match, group) => {
-      group = group.split(".");
-      group.map((x, i) => {
-        if (i > 0) {
-          try {
-            val = val[x];
-          } catch {
-            console.warn("error in callback: " + callback);
-            console.error(
-              "animProps is missing the entry: " + x + " in " + group
-            );
-          }
-        } else {
-          val = animProps;
-        }
-      });
-      if (val != undefined && group.length > 1) {
-        return val;
-      }
-      return match;
-    });
+    // var val;
+    // callback = callback.replace(/`\$\{([^}]+)\}`/g, (match, group) => {
+    //   group = group.split(".");
+    //   group.map((x, i) => {
+    //     if (i > 0) {
+    //       try {
+    //         val = val[x];
+    //       } catch {
+    //         console.warn("error in callback: " + callback);
+    //         console.error(
+    //           "animProps is missing the entry: " + x + " in " + group
+    //         );
+    //       }
+    //     } else {
+    //       val = animProps;
+    //     }
+    //   });
+    //   if (val != undefined && group.length > 1) {
+    //     return val;
+    //   }
+    //   return match;
+    // });
   } else if (typeof callback != "string") {
     return console.log("callback is not a string and animProps is undefined");
   }
@@ -220,7 +298,7 @@ function addCallback(animator, callback, animProps) {
     return console.error(`your call back is invalid and will cause errors!!!
 callback:   ${callback}`)
   }
-  animator.callback_map.set(lambda_index, callback);
+  animator.callback_map.set(lambda_index, {callback:callback,props:animProps,key:key,args:args});
   return lambda_index;
 }
 class Lambda {
@@ -232,8 +310,9 @@ class Lambda {
    *      * The used props need to have this structure: &#96;${prop}&#96;
    * @returns {number} id  - animator.lambda_map.size
    */
-  constructor(animator, { callback, animProps }) {
-    this.id = addCallback(animator, callback, animProps);
+  constructor(animator, { callback, animProps,key }) {
+
+    this.id = addCallback(animator, callback, animProps,key);
     this.animator = animator;
   }
   call(args) {
@@ -388,7 +467,7 @@ class Lerp {
     animator.active_buffer_bytelength += 1;
     const callback_id =
       callback != undefined
-        ? addCallback(animator, callback.callback, callback.animProps)
+        ? addCallback(animator, callback.callback, callback.animProps,callback.key)
         : undefined;
     if (type != 4) {
       animator.results.get("number_results").push(steps[0]);
@@ -536,7 +615,7 @@ class Matrix_Lerp {
     animator.registry_map.get("smoothstep").push(smoothstep);
     matrix_lerp_id =
       callback != undefined
-        ? addCallback(animator, callback.callback, callback.animProps)
+        ? addCallback(animator, callback.callback, callback.animProps,callback.key)
         : undefined;
     if (type != 4) {
       animator.results

@@ -122,22 +122,28 @@ class Worker_Utils{
 
 /**
  * Calls a lambda  stored in callback_map with the given id and arguments.
- * @param {number} id - The id of the lambda  to call
+ * @param {number} id - The id of the lambda  to call5
  * @param {any[]} args - The arguments to pass to the lambda
- * @param {object} scope - The scope reference, required for safely calling the function.
  */
- lambda_call(id, args,scope) {
-    try {
-        // console.log(args)
-        // console.log(id)
-        return this.callback_map.get(id).apply(scope,args==undefined?[scope]:Array.isArray(args)?[...args,scope]:[args,scope]);
 
+
+lambda_call(id, args) {
+    try {
+      console.log(id, args);
+      const props = this.callback_map.get(id).props
+      const argsArray =[]
+     args.map((x)=>{argsArray.push([x])})
+     argsArray.push([props])
+      console.log(argsArray);
+       var res = this.callback_map.get(id).callback.bind(this)()      
+       res=res(...args)
+       console.log(res)
+      return res
     } catch (err) {
-        console.error("error in lambda call", id);
-        console.error(this.callback_map.get(id));
-        console.error(err);
+      console.error(`Error in lambda call ${id}:`, err);
+      console.error(this.callback_map.get(id));
     }
-}
+  }
 // ----------------------------------------> EVENTS <--
 
 
