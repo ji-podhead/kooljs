@@ -119,22 +119,19 @@ class Worker_Utils{
 lambda_call(id, args) {
     try {
         const callbackObject = this.callback_map.get(id);
-        if (!callbackObject || typeof callbackObject.callback !== 'function') {
-            return;
+        if (callbackObject && typeof callbackObject.callback === 'function') {
+            const final_args = [];
+            if (callbackObject.args) {
+                callbackObject.args.forEach(argName => {
+                    if (args && Object.prototype.hasOwnProperty.call(args, argName)) {
+                        final_args.push(args[argName]);
+                    } else {
+                        final_args.push(undefined);
+                    }
+                });
+            }
+            return callbackObject.callback.apply(this, final_args);
         }
-
-        const final_args = [];
-        if (callbackObject.args) {
-            callbackObject.args.forEach(argName => {
-                if (args && typeof args === 'object' && Object.prototype.hasOwnProperty.call(args, argName)) {
-                    final_args.push(args[argName]);
-                } else {
-                    final_args.push(undefined);
-                }
-            });
-        }
-
-        return callbackObject.callback.apply(this, final_args);
     } catch (err) {
         console.error(`Error in lambda call for id ${id}:`, err);
         console.error(this.callback_map.get(id));
@@ -173,7 +170,7 @@ stop_loop() {
         indices.map((id) => {
             this.lerp_registry.deactivate(id);
         });
-    
+
     if (this.lerp_registry.active_numbers.length == 0&&
         this.lerp_registry.active_timelines.size == 0&&
         this.lerp_registry.active_matrices.size == 0&&
@@ -192,14 +189,14 @@ stop_loop() {
         indices = this.lerp_registry.type.map((t,i)=>{return i});
     }
     var stopped=0
-    const results={ 
+    const results={
         number_results: new Map(),
         matrix_results: new Map(),
     }
     indices.map((x) => {
         this.sequence_registry.reset(x);
         this.lerp_registry.activate(x);
-            
+
             switch (this.lerp_registry.type[x]) {
                 case 2:
                     results.number_results.set(x,this.sequence_registry.buffer[this.lerp_registry.lerp_chain_start[x]])
@@ -280,7 +277,7 @@ stop_loop() {
         return this.lerp_registry.active_matrices.has(id)
     }
 } else {return this.lerp_registry.active_group_indices.get(this.lerp_registry.group.get(id)).has(id)}
-    
+
 }
 
  get_step(id) {
@@ -299,7 +296,7 @@ stop_loop() {
     else{
         return this.lerp_registry.active_group_indices.get(group).has(id)
     }
-    
+
 }
 
  soft_reset(id) {
@@ -473,7 +470,7 @@ stop_loop() {
                     dif.push(target[i] - current[i])
                 }
                 distance = Math.max(...distances);
-                
+
                 break;
             case "manhattan_distance":
                 distance = 0;
@@ -529,7 +526,7 @@ stop_loop() {
         this.soft_reset(index);
     }
     else{
-        
+
     }
     this.set_duration(index, duration);
     return duration;
@@ -562,7 +559,7 @@ reverse_group_delays(id){
         this.set_delay(val,target_delay)
     })
 }
-set_group_orientation(id,orientation){  
+set_group_orientation(id,orientation){
     this.matrix_chain_registry.orientation_step.set(id,orientation)
 }
 
@@ -578,17 +575,17 @@ start_group(directions, indices,reorient) {
 
 reset_group(id,start,target){
     this.matrix_chain_registry.reset_group(id,start,target)
-    
+
 }
 stop_group(indices) {
     if(indices=="all"){
-        
+
         indices=[...this.lerp_registry.active_groups]
     }
     indices.map((id,i)=>{
     if(this.lerp_registry.active_groups.has(id)){
         this.lerp_registry.active_groups.delete(id)
-        this.lerp_registry.active_group_indices.get(id).clear() 
+        this.lerp_registry.active_group_indices.get(id).clear()
         this.matrix_chain_registry.progress[id]=0
         this.stop_animations(this.matrix_chain_registry.indices.get(id))
     }
@@ -633,7 +630,7 @@ set_group_values(id,field,value,step){
                 const size=this.matrix_chain_registry.max_length[id]
                 this.matrix_chain_registry.ref_matrix.get(id).set(id*size+step).map((x,i)=>x=   value[i])
             }
-            
+
             break;
     }
 }
