@@ -125,25 +125,27 @@ class Worker_Utils{
  * @param {number} id - The id of the lambda  to call5
  * @param {any[]} args - The arguments to pass to the lambda
  */
-
-
 lambda_call(id, args) {
     try {
-      console.log(id, args);
-      const props = this.callback_map.get(id).props
-      const argsArray =[]
-     args.map((x)=>{argsArray.push([x])})
-     argsArray.push([props])
-      console.log(argsArray);
-       var res = this.callback_map.get(id).callback.bind(this)()      
-       res=res(...args)
-       console.log(res)
-      return res
+        const callbackObject = this.callback_map.get(id);
+        if (callbackObject && typeof callbackObject.callback === 'function') {
+            const final_args = [];
+            if (callbackObject.args) {
+                callbackObject.args.forEach(argName => {
+                    if (args && args.hasOwnProperty(argName)) {
+                        final_args.push(args[argName]);
+                    } else {
+                        final_args.push(undefined);
+                    }
+                });
+            }
+            return callbackObject.callback.apply(this, final_args);
+        }
     } catch (err) {
-      console.error(`Error in lambda call ${id}:`, err);
-      console.error(this.callback_map.get(id));
+        console.error(`Error in lambda call for id ${id}:`, err);
+        console.error(this.callback_map.get(id));
     }
-  }
+}
 // ----------------------------------------> EVENTS <--
 
 
@@ -866,4 +868,3 @@ set_group_values(id,field,value,step){
 export{
 Worker_Utils
 }
-
