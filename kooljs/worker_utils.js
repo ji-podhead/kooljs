@@ -81,9 +81,6 @@ class Worker_Utils{
     } else {
         this.trigger_registry.get(id).get(step).set(time, undefined);
     }
-    // else{
-    //     this.trigger_registry.get(id).set(step,undefined)
-    // }
 }
  update(type, values) {
     values.map((x) => {
@@ -102,7 +99,6 @@ class Worker_Utils{
                     step:x.values.length - 2,
                     time:this.lerp_registry.duration[x.id]}
                 );
-                //this.trigger_registry.get(x.id).set(lerpChain_registry.lengths[x.id]-1,undefined)
             }
             this.sequence_registry.lengths[x.id] = x.values.length - 1;
         }
@@ -120,11 +116,6 @@ class Worker_Utils{
     });
 }
 
-/**
- * Calls a lambda  stored in callback_map with the given id and arguments.
- * @param {number} id - The id of the lambda  to call5
- * @param {any[]} args - The arguments to pass to the lambda
- */
 lambda_call(id, args) {
     try {
         const callbackObject = this.callback_map.get(id);
@@ -132,7 +123,7 @@ lambda_call(id, args) {
             const final_args = [];
             if (callbackObject.args) {
                 callbackObject.args.forEach(argName => {
-                    if (args && args.hasOwnProperty(argName)) {
+                    if (args && Object.prototype.hasOwnProperty.call(args, argName)) {
                         final_args.push(args[argName]);
                     } else {
                         final_args.push(undefined);
@@ -160,10 +151,7 @@ stop_loop() {
         this.loop_resolver = null;
     }
 }
-/**
- * starts a list of animations
- * @param {Array<number>} indices an array of ids of the animations to start
- */
+
   start_animations(indices) {
     indices.map((id) => {
         this.lerp_registry.delete_group_member(id)
@@ -171,10 +159,7 @@ stop_loop() {
     });
     this.start_loop();
 }
-/**
- * stops a list of animations
- * @param {Array<number>|string} indices an array of ids of the animations to stop; if "all", stops all animations
- */
+
 
   stop_animations(indices) {
     if (indices === "all") {
@@ -195,16 +180,7 @@ stop_loop() {
     }
 }
 }
-/**
- * Resets a list of animations.
- *
- * If "all" is passed, stops the animation loop and resets all active animations.
- * Otherwise, resets each animation in the provided indices, re-activates it, and
- * updates the results based on its type. If any animations were stopped and reset,
- * a render message is posted with the updated results.
- *
- * @param {Array<number>|string} indices - An array of animation IDs to reset, or "all" to reset all animations.
- */
+
 
     reset_animations(indices) {
     if (indices == "all") {
@@ -212,13 +188,11 @@ stop_loop() {
         else {this.stop_loop()}
         indices = this.lerp_registry.type.map((t,i)=>{return i});
     }
-    //stop_animations(indices)
     var stopped=0
     const results={ 
         number_results: new Map(),
         matrix_results: new Map(),
     }
-    //this.sequence_registry.hard_reset(indices);
     indices.map((x) => {
         this.sequence_registry.reset(x);
         this.lerp_registry.activate(x);
@@ -246,20 +220,11 @@ stop_loop() {
             matrix_results: results.matrix_results,
         });
 }
-/**
- * Changes the framerate of the animation loop.
- *
- * @param {number} fps_new - The new framerate in frames per second.
- */
+
   change_framerate(fps_new) {
     this.fps = fps_new;
 }
-/**
- * This  can be called by the worker when a constant value is changed.
- * The main thread will receive a message with the changed value.
- * @param {number} id - the id of the constant
- * @param {number} type - the type of the constant (0 = number, 1 = matrix)
- */
+
   render_constant(id, type) {
     postMessage({
         message: "render_constant",
@@ -271,23 +236,11 @@ stop_loop() {
 
 // ----------------------------------------> User API <--
 
-/**
- * Sets a Lerp target value for a certain step of an animation.
- * @param {number} index - the index of the animation
- * @param {number} step - the step for which the value should be set
- * @param {number} value - the value to set
- */
  setLerp(index, step, value) {
-    //console.log(lerpChain_registry.buffer[this.lerp_registry.lerp_chain_start[index]+step])
     this.sequence_registry.buffer[this.lerp_registry.lerp_chain_start[index] + step] =
         value;
 }
-/**
- * Sets the matrix lerp target value for a certain step of an animation.
- * @param {number} index - the index of the animation
- * @param {number} step - the step for which the value should be set
- * @param {number[]} value - the matrix to set. The matrix is a 1 dimensional array of floats with a length that is a multiple of 4 (e.g. [r1, g1, b1, a1, r2, g2, b2, a2])
- */
+
  setMatrix(index, step, value) {
     try{
     value.map((x, i) => {
@@ -300,37 +253,19 @@ stop_loop() {
         )
     }
 }
-/**
- * Updates a constant value.
- * @param {number} id - the id of the constant to update
- * @param {string} type - the type of the constant (number or matrix)
- * @param {number | number[]} value - the new value of the constant
- */
+
  update_constant(id, type, value) {
     this.constant_registry.update(type, id, value);
 }
-/**
- * Gets a constant value.
- * @param {number} id - the id of the constant
- * @param {string} type - the type of the constant (number or matrix)
- * @returns {number | number[]} value - the value of the constant
- */
+
  get_constant(id, type) {
     return this.constant_registry.get(type, id);
 }
-/**
- * Gets the current progress of the animation.
- * @param {number} id - The identifier for the animation.
- * @returns {number} - The current progress value of the animation.
- */
+
  get_time(id) {
     return this.lerp_registry.progress[id];
 }
-/**
- * Checks if an animation is currently running.
- * @param {number} id - The identifier for the animation.
- * @returns {boolean} - true if the animation is currently running, false otherwise.
- */
+
 
  is_active(id) {
     if(!this.lerp_registry.active_groups.has(this.lerp_registry.group.has(id)) || !this.lerp_registry.active_group_indices.get(this.lerp_registry.group.get(id)).has(id)){
@@ -344,19 +279,11 @@ stop_loop() {
 } else {return this.lerp_registry.active_group_indices.get(this.lerp_registry.group.get(id)).has(id)}
     
 }
-/**
- * Gets the current step of the animation.
- * @param {number} id - The identifier for the animation.
- * @returns {number} - The current step value of the animation.
- */
+
  get_step(id) {
     return this.sequence_registry.progress(id);
 }
-/**
- * Gets the lerp result value of an animation.
- * @param {number} id - The identifier for the animation.
- * @returns {number} - The lerp result value of the animation.
- */
+
 
  get_lerp_value(id) {
     type=this.lerp_registry.type[id]
@@ -371,34 +298,19 @@ stop_loop() {
     }
     
 }
-/**
- * Starts and resets an animation if its finished, or not playing.
- * @param {number} id - The identifier for the animation.
- */
+
  soft_reset(id) {
     this.sequence_registry.soft_reset(id);
 }
-/**
- * Starts and resets an animation.
- * @param {number} id - The identifier for the animation.
- */
+
  hard_reset(id) {
     this.sequence_registry.reset(id);
 }
-/**
- * Sets the current progress of an animation and updates the delta t value accordingly.
- * @param {number} id - The identifier for the animation.
- * @param {number} val - The new progress value for the animation.
- */
+
  set_time(id, val) {
     this.lerp_registry.progress = val;
 }
-/**
- * Sets the current step of an animation.
- * If the provided step value exceeds the maximum length of the animation, it will be set to the maximum length.
- * @param {number} id - The identifier for the animation.
- * @param {number} val - The desired step value for the animation.
- */
+
 
  set_step(id, val) {
     this.sequence_registry.progress[id] =
@@ -418,16 +330,6 @@ stop_loop() {
  get_sequence_length(id) {
     return this.sequence_registry.lengths[id];
 }
-/**
- * Retrieves the target value for a specific step of an animation.
- *
- * This  determines the type of the animation and returns the target value
- * for the specified step.
- *
- * @param {number} id - The identifier for the animation.
- * @param {number} step - The step for which to retrieve the target value.
- * @returns {number|number[]} - The target value for the specified step of the animation.
- */
 
  get_step_lerp_target_value(id, step) {
     if (this.lerp_registry.type[id] == 2)
@@ -436,79 +338,43 @@ stop_loop() {
         return this.sequence_registry.matrix_sequences.get(id).get(step);
 }
 
-/**
- * Gets the duration of an animation.
- * @param {number} id - The identifier for the animation.
- * @returns {number} - The duration of the animation.
- */
+
  get_duration(id) {
     return this.lerp_registry.duration[id];
 }
-/**
- * Sets the duration of an animation.
- * @param {number} id - The identifier for the animation.
- * @param {number} val - The desired duration value for the animation.
- */
+
  set_duration(id, val) {
     this.lerp_registry.duration[id] = val;
 }
-/**
- * Retrieves the delay of an animation.
- * @param {number} id - The identifier for the animation.
- * @returns {number} - The delay value of the animation.
- */
+
 
  get_delay(id) {
     return this.lerp_registry.delay[id];
 }
-/**
- * Sets the delay of an animation.
- * @param {number} id - The identifier for the animation.
- * @param {number} val - The desired delay value for the animation.
- */
+
  set_delay(id, val) {
     this.lerp_registry.delay[id] = val;
 }
 
-/**
- * Retrieves the current delay progress value of an animation.
- * @param {number} id - The identifier for the animation.
- * @returns {number} - The current delay progress value of the animation.
- */
+
  get_delay_delta(id) {
     return this.lerp_registry.delay_delta[id];
 }
-/**
- * Sets the current delay progress value for an animation.
- * @param {number} id - The identifier for the animation.
- * @param {number} val - The desired delay progress value for the animation.
- */
+
  set_delay_delta(id, val) {
     this.lerp_registry.delay_delta[id] = val;
 }
 
-/**
- * Retrieves a specific row from a matrix constant.
- * @param {number} id - The identifier for the matrix constant.
- * @param {number} row - The index of the row to retrieve from the matrix constant.
- * @returns {Array} - The specified row from the matrix constant.
- */
+
  get_constant_row(id, row) {
     return this.constant_registry.get_row(id, row);
 }
 
-/**
- * Retrieves a constant number value by its identifier.
- * @param {number} id - The identifier for the constant number.
- * @returns {number} - The constant number value associated with the given identifier.
- */
+
  get_constant_number(id) {
     return this.constant_registry.get_number(id);
 }
-/**
- * Retrieves an array of all active animation identifiers.
- * @returns {Array<number>} - An array of active animation identifiers.
- */
+
  get_active_group_indices(group){
     return this.lerp_registry.active_groups.get(group)
 }
@@ -520,31 +386,11 @@ stop_loop() {
         case(4): return this.lerp_registry.active_timelines
 }
 }
-/**
- * Retrieves a boolean indicating whether the animation loop is currently running.
- * @returns {boolean} - true if the animation loop is currently running, false otherwise.
- */
+
  get_status() {
     return this.loop_resolver != null;
 }
 
-/**
- * Replaces the target value for a specific step of an animation with a new one.
- *
- * If the animation type is not a matrix-chain, the  will set the lerp values
- * at the specified step and step + direction accordingly.
- *
- * If the animation type is a matrix-chain, the  will set the matrix values
- * at the specified step and step + direction accordingly.
- *
- * @param {object} opts - An object containing the following properties:
- * @param {number} opts.index - The index of the animation to reorient.
- * @param {number} opts.step - The step for which to reorient the target value.
- * @param {number} opts.direction - The direction (+1 or -1) in which to reorient the target value.
- * @param {number|number[]} opts.reference - The new target value to set for the animation.
- * @param {number[]} opts.matrix_row - The matrix row to set as the new target value.
- * @param {boolean} opts.verbose - Whether to log information about the reorientation process.
- */
  reorient_target({
     index,
     step=0,
@@ -568,20 +414,8 @@ stop_loop() {
         this.setLerp(index, step, reference);
         this.setLerp(index, step + direction, matrix_row);
     }
-//    verbose && console.log("reoriented animation with index " + index);
 }
 
-/**
- * Reorients the duration of an animation.
- *
- * If min_duration is given, the  will soft_reset the animation and set its duration to the minimum of max_duration and max_duration - current_time + min_duration.
- *
- * @param {object} opts - An object containing the following properties:
- * @param {number} opts.index - The index of the animation to reorient.
- * @param {number} opts.min_duration - The minimum duration of the animation.
- * @param {number} opts.max_duration - The maximum duration of the animation.
- * @param {boolean} opts.verbose - Whether to log information about the reorientation process.
- */
  reorient_duration({
     index,
     min_duration,
@@ -598,59 +432,22 @@ stop_loop() {
             console.log("new start_duration for " + index + " is " + duration);
     }
 }
-/**
- * Linearly interpolates between two values.
- *
- * @param {number} value - The current value of the animation.
- * @param {number} target - The target value of the animation.
- * @param {number} min - The minimum value of the animation.
- * @param {number} max - The maximum value of the animation.
- * @param {number} threshold - The value to return if the interpolation would result in a value less than this.
- * @returns {number} The interpolated value.
- */
+
  lerp(value, target, min, max, threshold) {
     const t = (value - min) / (max - min);
     const result = target * t + (1 - t) * threshold;
     return result;
 }
-/**
- * Normalizes a distance between two values to a value between 0 and 1.
- * @param {number} target - The target value.
- * @param {number} current - The current value.
- * @param {number} max - The maximum value.
- * @returns {number} - The normalized distance.
- */
+
  normalizeDistance(target, current, max) {
     const distance = Math.abs(current - target);
     return distance / Math.abs(max - target);
 }
-/**
- * Clamps a value to a minimum and maximum value.
- *
- * @param {number} value - The value to clamp.
- * @param {number} min - The minimum value.
- * @param {number} max - The maximum value.
- * @returns {number} The clamped value.
- */
+
  clamp(value, min, max) {
     return Math.min(Math.max(value, min), max);
 }
 
-/**
- * Reorients the duration of an animation based on the distance between the current value
- * and a target value.
- *
- * @param {object} opts - An object containing the following properties:
- * @param {number} opts.index - The index of the animation to reorient.
- * @param {number|number[]} opts.target - The target value towards which to reorient the animation.
- * @param {number} opts.max_distance - The max distance.
- * @param {number} opts.min_duration - The minimum duration of the animation.
- * @param {number} opts.max_duration - The maximum duration of the animation.
- * @param {string} opts.mode - The mode to use for calculating the distance. Possible values are "max_distance",
- *                             "manhattan_distance", "cosine_similarity", and "vector_magnitude".
- *
- * @returns {object} - {duration,differences}
- */
  reorient_duration_by_distance({
     index,
     target,
@@ -714,7 +511,6 @@ stop_loop() {
         distance = Math.abs(target - max_distance);
     duration =
         min_duration + (distance / max_distance) * (max_duration - min_duration);
-    //Math.min(max_duration, Math.max(min_duration, distance * max_distance));
     this.soft_reset(index);
     this.set_duration(index, duration);
     return {
@@ -726,7 +522,6 @@ stop_loop() {
     const progress = this.get_time(index) / max_duration;
 
     duration = min_duration + progress * (max_duration - min_duration);
-    //Math.min(max_duration, Math.max(min_duration, distance * max_distance));
     if(soft_reset){
         this.soft_reset(index);
     }
@@ -736,13 +531,7 @@ stop_loop() {
     this.set_duration(index, duration);
     return duration;
 }
-/**
- * Reverses the order of the lerp or matrix values in the animation sequence.
- *
- * @param {number|string} id - The identifier for the animation or the lerp-chain to reverse.
- *
- * @category Animation
- */
+
  reverse(id) {
     if (type(id) != "number") {
         for (
@@ -763,9 +552,6 @@ stop_loop() {
 }
 reverse_group_delays(id){
     this.matrix_chain_registry.indices.get(id).map((val,i)=>{
-        // if(i==this.matrix_chain_registry.indices.get(id).length-1){
-        //     return
-        // }
         const target_index=this.matrix_chain_registry.indices.get(id).length-i
         const target=this.matrix_chain_registry.indices.get(id)[target_index-1]
         const target_delay=this.get_delay(target)
@@ -776,32 +562,16 @@ reverse_group_delays(id){
 set_group_orientation(id,orientation){  
     this.matrix_chain_registry.orientation_step.set(id,orientation)
 }
-    /**
- * Starts an animation sequence for a matrix chain.
- *
- * @param {number[]} directions - The directions for the animation sequence.
- * @param {number[]} indices - The indices for the animation sequence.
- * @param {number[] | false} reorient - [start,target] | false if you ont want to set the current lerp value as the new start value
- * otherwise the matrix animation wont be set
- * @category Animation
- */
+
 start_group(directions, indices,reorient) {
     indices.map((indices2,i)=>{
         if(!this.lerp_registry.active_groups.has(i)){
         this.matrix_chain_registry.start_matrix_chain(directions[i],indices2,reorient)
         }
-        // this.start_animations(this.matrix_chain_registry.indices.get(indices2))
     })
     this.start_loop();
 }
-/**
- * Resets all animations of a group.
- * You can optionally reorientate the group during the reset if you pass a reference.
- *
- * @param {number} id - The identifier of the group to reset.
- * @param {Array} start - the target reference to use for the start value
- * @param {number} target - The target reference index to use during the reset.
- */
+
 
 reset_group(id,start,target){
     this.matrix_chain_registry.reset_group(id,start,target)
