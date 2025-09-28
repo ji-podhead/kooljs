@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ji-Podhead - Portfolio</title>
+    <style>
+        :root {
+            --primary-color: #00ff41;
+            --background-color: #000000;
+            --text-color: #e0e0e0;
+            --card-bg-color: #1a1a1a;
+            --border-color: #333;
+            --font-main: 'Georgia', serif;
+            --font-mono: 'Courier New', Courier, monospace;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: var(--font-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.7;
+        }
+
+        #hero {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #matrix-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .hero-content {
+            z-index: 2;
+            position: relative;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 2rem 4rem;
+            border: 1px solid var(--primary-color);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+        }
+
+        .hero-content h1 {
+            font-size: 4.5rem;
+            color: var(--primary-color);
+            margin: 0;
+            text-shadow: 0 0 15px var(--primary-color);
+            font-family: var(--font-mono);
+        }
+
+        .hero-content p {
+            font-size: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        main {
+            padding: 2rem;
+        }
+
+        section {
+            max-width: 1200px;
+            margin: 5rem auto;
+            padding: 3rem;
+            border-top: 1px solid var(--border-color);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+
+        section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        h2 {
+            font-size: 3rem;
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 3rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-family: var(--font-mono);
+        }
+
+        .project-card {
+            background: var(--card-bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 255, 65, 0.1);
+        }
+
+        .project-card h3 {
+            margin-top: 0;
+            font-size: 2rem;
+            color: #fff;
+        }
+
+        .project-card .date {
+            color: #aaa;
+            font-style: italic;
+            margin-bottom: 1rem;
+        }
+
+        .project-card ul {
+            padding-left: 20px;
+            margin-bottom: 1.5rem;
+        }
+
+        .skills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .skill-tag {
+            background: #2a2a2a;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        .skill-tag:hover {
+            background-color: var(--primary-color);
+            color: var(--background-color);
+            border-color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+    <main>
+        <section id="hero">
+            <canvas id="matrix-container"></canvas>
+            <div class="hero-content">
+                <h1>Ji-Podhead</h1>
+                <p>MLOps & Full-Stack Development</p>
+            </div>
+        </section>
+
+        <section id="projects">
+            <h2>Projekte</h2>
+            <div class="project-card">
+                <h3>Machine Vision Framework</h3>
+                <p class="date">Juli 2025 – Heute</p>
+                <ul>
+                    <li>Developed a comprehensive, modular framework for efficient data acquisition and sensor integration, focusing on robust control and real-time feedback.</li>
+                    <li>Multi-Sensor Support: Seamlessly integrates various cameras (v4l, GigE/GeniCam) and lidar systems.</li>
+                    <li>Advanced Data Management: Features ROS bag analysis, PTP control, and real-time monitoring of critical parameters.</li>
+                    <li>RESTful API: Built a high-performance backend using FastAPI + PostgreSQL.</li>
+                    <li>Dynamic Dashboard: Created a TypeScript dashboard with a web-terminal, WebViz, and feature/settings section.</li>
+                    <li>ROS2 Integration: Implemented a minimalist ROS2 controller with drivers managed via ROS2 services.</li>
+                    <li>Containerized: Leveraged Docker Compose for a modular, scalable architecture.</li>
+                </ul>
+                <div class="skills-container">
+                    <span class="skill-tag">geniCam</span><span class="skill-tag">ROS2</span><span class="skill-tag">PostgreSQL</span><span class="skill-tag">FastAPI</span><span class="skill-tag">Machine Vision</span><span class="skill-tag">Webviz</span><span class="skill-tag">CICD</span>
+                </div>
+            </div>
+            <div class="project-card">
+                <h3>Infrastructure & Cloud Solutions for QMS</h3>
+                <p class="date">September 2025</p>
+                 <ul>
+                    <li>Designed and implemented a comprehensive infrastructure solution to support Quality Management Systems (QMS).</li>
+                    <li>Established a hybrid cloud environment using KVM, integrated with Zero Trust Access VPN for secure access, and automated NAS updates.</li>
+                    <li>Authored company policies for SSH, shared resource access, and password management (Fido Keys).</li>
+                    <li>Created an emergency strategy featuring automated alerts (Netdata) and defined incident reporting workflows.</li>
+                </ul>
+                <div class="skills-container">
+                    <span class="skill-tag">PostgreSQL</span><span class="skill-tag">Terraform</span><span class="skill-tag">Tailscale</span><span class="skill-tag">Netdata</span><span class="skill-tag">Ansible</span><span class="skill-tag">CICD</span>
+                </div>
+            </div>
+             <div class="project-card">
+                <h3>Fashion Recommendation System</h3>
+                <p class="date">April 2025 – Juni 2025</p>
+                <ul>
+                    <li>Fashion Recommendation System using Vector DBs/Search for Shopping items with Virtual Try On and LLM-Stylist-Agent.</li>
+                    <li>Creating the Architecture including FastAPI, PineCone DB-Integration, Vultr Servers, and local Model Integration.</li>
+                    <li>Training of a Fashion-VDM Model.</li>
+                    <li>Scraping using Selenium and AI-Crawlers (crawl4ai, scrapegraph).</li>
+                </ul>
+                <div class="skills-container">
+                    <span class="skill-tag">Vector DBs</span><span class="skill-tag">FastAPI</span><span class="skill-tag">PineCone</span><span class="skill-tag">Selenium</span><span class="skill-tag">LangChain</span><span class="skill-tag">AI-Agents</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="skills">
+            <h2>Skills</h2>
+            <div class="skills-container">
+                <span class="skill-tag">Machine Vision</span><span class="skill-tag">GKE</span><span class="skill-tag">PostgreSQL</span><span class="skill-tag">Wireshark</span><span class="skill-tag">Tailscale</span><span class="skill-tag">Netdata</span><span class="skill-tag">QMS</span><span class="skill-tag">CICD</span><span class="skill-tag">ROS2</span><span class="skill-tag">Webviz</span><span class="skill-tag">Rviz</span><span class="skill-tag">gigE</span><span class="skill-tag">geniCam</span><span class="skill-tag">PTP</span><span class="skill-tag">V4L</span><span class="skill-tag">Nvidia Jetson</span><span class="skill-tag">pypi</span><span class="skill-tag">Bitbucket</span><span class="skill-tag">Ubuntu</span><span class="skill-tag">Docker</span><span class="skill-tag">Jenkins</span><span class="skill-tag">JIRA</span><span class="skill-tag">D3.js</span><span class="skill-tag">pydantic</span><span class="skill-tag">LightGBM</span><span class="skill-tag">Google Earth Engine</span><span class="skill-tag">Gradient Boosting</span><span class="skill-tag">AgentOps</span><span class="skill-tag">MLOps</span><span class="skill-tag">GCP</span><span class="skill-tag">GenAi</span><span class="skill-tag">Vultr</span><span class="skill-tag">Vertex AI</span><span class="skill-tag">LangChain</span><span class="skill-tag">PineCone</span><span class="skill-tag">FastAPI</span><span class="skill-tag">CrewAi</span><span class="skill-tag">Selenium</span><span class="skill-tag">GraphQL</span><span class="skill-tag">NLP</span><span class="skill-tag">Scikit-learn</span><span class="skill-tag">Computer Vision</span><span class="skill-tag">Rust</span><span class="skill-tag">Go</span><span class="skill-tag">Java</span><span class="skill-tag">C#</span><span class="skill-tag">JavaScript</span><span class="skill-tag">Python</span><span class="skill-tag">Redux.js</span><span class="skill-tag">OpenGL</span><span class="skill-tag">Git</span><span class="skill-tag">SQL</span><span class="skill-tag">OpenCV</span><span class="skill-tag">AWS</span><span class="skill-tag">PHP</span><span class="skill-tag">Terraform</span><span class="skill-tag">Ansible</span><span class="skill-tag">MongoDB</span><span class="skill-tag">gRPC</span><span class="skill-tag">Bash</span><span class="skill-tag">PyTorch</span><span class="skill-tag">RHEL</span><span class="skill-tag">React.js</span><span class="skill-tag">DevOps</span>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Ji-Podhead</p>
+    </footer>
+
+    <script>
+        // Matrix Animation Script
+        (function() {
+            var canvas = document.getElementById('matrix-container');
+            if (!canvas) return;
+            var ctx = canvas.getContext('2d');
+
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            var fontSize = 16;
+            var columns = Math.floor(canvas.width / fontSize);
+            var drops = [];
+            for (var i = 0; i < columns; i++) {
+                drops[i] = 1;
+            }
+
+            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+            function draw() {
+                ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = "#00ff41";
+                ctx.font = fontSize + "px " + getComputedStyle(document.body).getPropertyValue('--font-mono');
+
+                for (var i = 0; i < drops.length; i++) {
+                    var text = chars[Math.floor(Math.random() * chars.length)];
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+            }
+
+            var interval = setInterval(draw, 33);
+
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                columns = Math.floor(canvas.width / fontSize);
+                drops = [];
+                for (var i = 0; i < columns; i++) {
+                    drops[i] = 1;
+                }
+            });
+        })();
+
+        // Scroll Animation
+        (function() {
+            const sections = document.querySelectorAll('section');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            sections.forEach(section => {
+                if (section.id !== 'hero') { // Don't animate hero section
+                    observer.observe(section);
+                } else {
+                    section.classList.add('visible');
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

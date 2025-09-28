@@ -376,14 +376,15 @@ class Constant extends Worker_Utils {
         this.render_callbacks = constants.get("render_callbacks");
     }
     update(type, id, value) {
-        //["matrix","number"].includes["type"]&&this.reg.get(type).has(id)&&
         this.reg.get(type).set(id, value);
-        if (this.render_callbacks.has(id))
-            this.render_callbacks.get(id).map((l) => {
-                this.animator.callback_map.get(l.id)(l.args);
+        if (this.render_callbacks.has(id)) {
+            this.render_callbacks.get(id).forEach((l) => {
+                this.animator.lambda_call(l.id, l.args);
             });
-        if (this.render_triggers.has(id))
+        }
+        if (this.render_triggers.has(id)) {
             this.animator.start_animations(this.render_triggers.get(id));
+        }
     }
     get(type, index, row) {
         if (row != undefined) {
@@ -475,19 +476,6 @@ class Animator extends Worker_Utils {
         this.lerp_registry.matrix_chain_registry = this.matrix_chain_registry
 
         this.constant_registry = new Constant(constants, this)
-        condi_new.forEach((val, key) => {
-            try {
-                console.log(val.args)
-                //const args=Array.from([...val.args,val.key])
-                this.callback_map.set(key, {callback:undefined,props:val.props,key:val.key})
-             const func =new Function(val.args[val.args.length-1], `return ${val.callback}`)
-             this.callback_map.set(key, {callback:func,props:val.props,key:val.key})
-     
-                   //func()//...[...val.args,this.callback_map.get(this.callback_map.size-1).props])
-            } catch (e) {
-              console.error(e);
-            }
-          });
         this.animateLoop = async function () {
             try {
                 this.loop_resolver = new AbortController();
@@ -630,9 +618,23 @@ class Animator extends Worker_Utils {
             //this.result_buffer = result_buffer.transfer(result_buffer.byteLength);
         }
     }
+    async initialize_callbacks(callbacks) {
+        for (const [key, val] of callbacks.entries()) {
+            try {
+                const func_string = `export default (${val.args.join(',')}) => { ${val.callback} }`;
+                const blob = new Blob([func_string], { type: 'text/javascript' });
+                const url = URL.createObjectURL(blob);
+                const module = await import(url);
+                URL.revokeObjectURL(url);
+                this.callback_map.set(key, { callback: module.default, props: val.props, key: val.key, args: val.args });
+            } catch (e) {
+                console.error(`Failed to initialize callback for key ${key}:`, e);
+            }
+        }
+    }
 }
 var const_map_new;
-onmessage = (event) => {
+onmessage = async (event) => {
     switch (event.data.method) {
         case "init":
             animator = new Animator(
@@ -646,6 +648,7 @@ onmessage = (event) => {
                 event.data.matrix_chain_map,
                 event.data.spring_map
             );
+            await animator.initialize_callbacks(event.data.callback_map);
             break;
         case "update":
             animator.update(event.data.type, event.data.data);
@@ -672,7 +675,18 @@ onmessage = (event) => {
             animator.start_loop();
             break;
         case "set_lambda":
-            animator.callback_map.set(event.data.id, eval(event.data.callback));
+            (async () => {
+                try {
+                    const func_string = `export default ${event.data.callback}`;
+                    const blob = new Blob([func_string], { type: 'text/javascript' });
+                    const url = URL.createObjectURL(blob);
+                    const module = await import(url);
+                    URL.revokeObjectURL(url);
+                    animator.callback_map.set(event.data.id, { callback: module.default });
+                } catch (e) {
+                    console.error("Failed to set lambda for id: " + event.data.id, e);
+                }
+            })();
             break;
         case "stop":
             animator.stop_loop();
