@@ -621,14 +621,12 @@ class Animator extends Worker_Utils {
     async initialize_callbacks(callbacks) {
         for (const [key, val] of callbacks.entries()) {
             try {
-                const func_string = `export default (${val.args.join(',')}) => { ${val.callback} }`;
-                const blob = new Blob([func_string], { type: 'text/javascript' });
-                const url = URL.createObjectURL(blob);
-                const module = await import(url);
-                URL.revokeObjectURL(url);
-                this.callback_map.set(key, { callback: module.default, props: val.props, key: val.key, args: val.args });
+                // The path is relative to the worker's location, so we adjust it.
+                // Assuming the 'public' folder is at the root, and the worker is in 'kooljs'.
+                const module = await import(val.path);
+                this.callback_map.set(key, { callback: module.default, props: val.props, key: val.key });
             } catch (e) {
-                console.error(`Failed to initialize callback for key ${key}:`, e);
+                console.error(`Failed to initialize callback for key ${key} from path ${val.path}:`, e);
             }
         }
     }
@@ -673,20 +671,6 @@ onmessage = async (event) => {
             break;
         case "start":
             animator.start_loop();
-            break;
-        case "set_lambda":
-            (async () => {
-                try {
-                    const func_string = `export default ${event.data.callback}`;
-                    const blob = new Blob([func_string], { type: 'text/javascript' });
-                    const url = URL.createObjectURL(blob);
-                    const module = await import(url);
-                    URL.revokeObjectURL(url);
-                    animator.callback_map.set(event.data.id, { callback: module.default });
-                } catch (e) {
-                    console.error("Failed to set lambda for id: " + event.data.id, e);
-                }
-            })();
             break;
         case "stop":
             animator.stop_loop();

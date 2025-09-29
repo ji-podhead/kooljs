@@ -161,158 +161,23 @@ class Constant {
   }
 }
 var lambda_index;
-function addCallback(animator, callback, animProps,key,id) {
- lambda_index = animator.callback_map.size;
- var args
- 
-  function findCommasOutsideBrackets(str) {
-    var between_bracket1=0
-    var between_bracket2=0
-    var is_valid=true
-    str=[...str]
-    const positions=[0]
-    str.map((x,i)=>{
-      if(x=="{"){
-        between_bracket1+=1
-      }
-      else if(x=="}"){
-        between_bracket1-=1
-      }
-      else if(x=="[")
-      {
-        between_bracket2+=1
-      }
-      else if(x=="]")
-      {
-        between_bracket1-=1
-      }
-      else if(x==","){
-        if((between_bracket1==0&&between_bracket2==0))
-      {
-        // is_valid=false
-        positions.push(i)
-
-      }else{
-        
-       }
-    }
-      
-    })
-    positions.push(str.length)
-    return positions
+function addCallback(animator, path, animProps, key) {
+  lambda_index = animator.callback_map.size;
+  if (typeof path !== "string") {
+    return console.log("callback path is not a string");
   }
-  function add_props(str) {
-    function splitAt(str, index) {
-      return [str.slice(0, index), str.slice(index)];
-    }
-   key=JSON.stringify(key).slice(1,key.length+1)
-    str = str.replace(/\([^)]*\)/, (match) => {
-      if (match === '()') {
-        args="()"
-        return `(${key})`;
-        //return "()"
-        args=""
-      } else  {
-        
-        
-//         if (!commas.valid) {
-//           return console.error(`your arguments in your lambda function should only be empty, a single element(array,typedArray,number,object,Map,Set...)!
-// orig. arguments: ${match}
-//             `)
-//         }else{
-          args=match.replace("(","").replace(")","")
-          const commas=findCommasOutsideBrackets(args)
-          const subarrays = [];
-          for (let i = 0; i < commas.length - 1; i++) {
-            var start = commas[i]
-            var end = commas[i + 1];
-            if(i>0){
-              start+=1
-              //end-=1
-            }
-            const subarray = args.slice(start, end);
-            subarrays.push(subarray.trim());
-          }
-          subarrays.push(`${key}=this.callback_map.get(${lambda_index}).props,animator=this`)
-         // subarrays.push("animator=this")
-          args=subarrays
-      //  match=match.replace(')', `, ${key}=this.callback_map.get(${lambda_index}).props)`);
-        //wreturn "()"
-        return match}
-      //}
-    });
-    return str
-  }
-  
- 
-  if (typeof callback == "function") {
-    callback = callback.toString();
-    callback= add_props(callback)
-    callback = worker_functions.reduce((str, func) => {
-      // str = str.replace(new RegExp(`\\(0,kooljs_worker_functions__WEBPACK_IMPORTED_MODULE_(\\d+?)__.${func}\\)`, "g"), 
-      str = str.replace(new RegExp(`\\(0,kooljs_worker_functions__WEBPACK_IMPORTED_MODULE_(\\d+?)__.${func}\\)`, "g"), (()=>{
-        args.push(`${func}=this.${func}`);
-          return func
-          })
-        +func
-    
-    );
-
-      // if(func=="lambda_call"){
-      //   const regex = /lambda_call\([^)]*\)/g;
-      //     var match = regex.exec(str);
-      //     if (match) {
-      //       const lambdaCallString = match[0];
-      //       match = add_scope(lambdaCallString);
-      //       str = str.replace(regex, match);}
-      // }
-      return str;
-    }, callback);
-
-    // var val;
-    // callback = callback.replace(/`\$\{([^}]+)\}`/g, (match, group) => {
-    //   group = group.split(".");
-    //   group.map((x, i) => {
-    //     if (i > 0) {
-    //       try {
-    //         val = val[x];
-    //       } catch {
-    //         console.warn("error in callback: " + callback);
-    //         console.error(
-    //           "animProps is missing the entry: " + x + " in " + group
-    //         );
-    //       }
-    //     } else {
-    //       val = animProps;
-    //     }
-    //   });
-    //   if (val != undefined && group.length > 1) {
-    //     return val;
-    //   }
-    //   return match;
-    // });
-  } else if (typeof callback != "string") {
-    return console.log("callback is not a string and animProps is undefined");
-  }
-  if(callback.includes("kooljs_worker_functions__WEBPACK_IMPORTED_MODULE")){
-    return console.error(`your call back is invalid and will cause errors!!!
-callback:   ${callback}`)
-  }
-  animator.callback_map.set(lambda_index, {callback:callback,props:animProps,key:key,args:args});
+  animator.callback_map.set(lambda_index, { path: path, props: animProps, key: key });
   return lambda_index;
 }
 class Lambda {
   /**
    * @param {Animator} animator - the Animator Instance
-   * @param {string | function  } callback - the type of the constant can be number, matrix
-   * @param {dict |  undefined} animProps - used to pass your animation properties.
-   *      * ***Only needed if you pass a function as a callback.***
-   *      * The used props need to have this structure: &#96;${prop}&#96;
-   * @returns {number} id  - animator.lambda_map.size
+   * @param {string} path - The path to the javascript module that holds the callback.
+   * @param {dict | undefined} animProps - used to pass your animation properties.
+   * @returns {number} id - animator.lambda_map.size
    */
-  constructor(animator, { callback, animProps,key }) {
-
-    this.id = addCallback(animator, callback, animProps,key);
+  constructor(animator, { path, animProps, key }) {
+    this.id = addCallback(animator, path, animProps, key);
     this.animator = animator;
   }
   call(args) {
@@ -389,8 +254,9 @@ class Lerp {
    * @param {number} [smoothstep=1] - the smoothstep value for the animation
    * @param {number} [delay=0] - the delay before the animation starts
    * @param {Array} [animationTriggers] - the animation triggers
-   * @param {function|string} [callback.callback] - the callback function for when the animation is finished
-   * @param {dict | undefined} [callback.animProps] - the props used for the callback, when callback is not a string
+   * @param {object} [callback] - the callback for when the animation is finished
+   * @param {string} [callback.path] - the path to the callback module
+   * @param {dict | undefined} [callback.animProps] - the props used for the callback
    * @param {Array} [steps] - the steps of the animation
    * @param {boolean} [loop=false] - whether or not the animation should loop
    * @param {number} [steps_max_length] - the maximum length of the steps array
@@ -467,7 +333,7 @@ class Lerp {
     animator.active_buffer_bytelength += 1;
     const callback_id =
       callback != undefined
-        ? addCallback(animator, callback.callback, callback.animProps,callback.key)
+        ? addCallback(animator, callback.path, callback.animProps, callback.key)
         : undefined;
     if (type != 4) {
       animator.results.get("number_results").push(steps[0]);
@@ -496,8 +362,9 @@ class Timeline {
    * @param {Number} [render_interval=1] - The interval at which the animation should render.
    * @param {Number} [delay=0] - The delay before the animation starts.
    * @param {Object} [animationTriggers] - Animation triggers.
-   * @param {function|string} [callback.callback] - the callback function for when the animation is finished
-   * @param {dict | undefined} [callback.animProps] - the props used for the callback, when callback is not a string
+   * @param {object} [callback] - the callback for when the animation is finished
+   * @param {string} [callback.path] - the path to the callback module
+   * @param {dict | undefined} [callback.animProps] - the props used for the callback
    * @param {Boolean} [loop=false] - Whether the animation should loop.
    * @param {Number} [length] - The amount of steps in the timeline. length of 1 equals steps.length=2. ***This is a required parameter if steps is not defined***.
    * @returns {Lerp} The created Timeline object as a Lerp instance.
@@ -548,8 +415,9 @@ class Matrix_Lerp {
    * @param {number} [smoothstep=1] - the smoothstep value for the animation
    * @param {number} [delay=0] - the delay before the animation starts
    * @param {Array} [animationTriggers] - the animation triggers
-   * @param {function|string} [callback.callback] - the callback function for when the animation is finished
-   * @param {dict | undefined} [callback.animProps] - the props used for the callback, when callback is not a string
+   * @param {object} [callback] - the callback for when the animation is finished
+   * @param {string} [callback.path] - the path to the callback module
+   * @param {dict | undefined} [callback.animProps] - the props used for the callback
    * @param {Array} [steps] - the steps of the animation
    * @param {boolean} [loop=false] - whether or not the animation should loop
    * @param {number} [steps_max_length] - the maximum length of the steps array
@@ -615,7 +483,7 @@ class Matrix_Lerp {
     animator.registry_map.get("smoothstep").push(smoothstep);
     matrix_lerp_id =
       callback != undefined
-        ? addCallback(animator, callback.callback, callback.animProps,callback.key)
+        ? addCallback(animator, callback.path, callback.animProps, callback.key)
         : undefined;
     if (type != 4) {
       animator.results
@@ -717,7 +585,7 @@ class MatrixChain {
     this.animator.matrix_chain_map.get("sequence_length").push(sequence_length);
     group_loop = group_loop == false ? 0 : 1;
     this.animator.matrix_chain_map.get("group_loop").push(group_loop);
-    if (typeof custom_delay == "object" && custom_delay.callback != undefined) {
+    if (typeof custom_delay == "object" && custom_delay.path != undefined) {
       const lambda = new Lambda(animator, custom_delay);
       this.animator.matrix_chain_map.get("custom_delay").push(lambda.id);
     } else {
@@ -767,7 +635,7 @@ class MatrixChain {
     for (let i = 0; i < length; i++) {
       if (
         typeof custom_delay == "object" &&
-        custom_delay.callback != undefined
+        custom_delay.path != undefined
       ) {
         delay_temp = 0;
       } else if (typeof custom_delay == "object") {
@@ -1069,12 +937,13 @@ error: ` + err
    * Creates a new lambda animation with the given condition and callback.
    * The callback is a function that is called when the condition is true.
    * The callback is called with the value of the lerp animation that triggered the condition.
-   * @param {function(number):boolean} condition - A function that takes one argument, the value of the lerp animation and returns true if the condition is met.
-   * @param {function(number)} callback - A function that takes one argument, the value of the lerp animation that triggered the condition.
+   * @param {object} args - Arguments for the lambda.
+   * @param {string} args.path - The path to the javascript module that holds the callback.
+   * @param {object} [args.animProps] - The props used for the callback.
    * @return {Lambda} The lambda animation that was created.
    */
-  Lambda(condition, callback) {
-    return new Lambda(this, condition, callback);
+  Lambda(args) {
+    return new Lambda(this, args);
   }
   set_lambda(id, callback, condition = true) {
     this.worker.postMessage({
